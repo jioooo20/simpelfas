@@ -1,0 +1,1 @@
+SIMPELFAS (Sistem Manajemen Pelaporan dan Perbaikan Fasilitas Kampus) adalah aplikasi website yang digunakan untuk mempermudah proses pelaporan kerusakan serta pemantauan perbaikan fasilitas di lingkungan kampus. Sistem ini dirancang agar mahasiswa dan staf kampus dapat melaporkan masalah dengan cepat, dan pihak terkait dapat menindaklanjuti secara efisien. (upcoming)
