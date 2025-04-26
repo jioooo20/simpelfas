@@ -21,6 +21,15 @@
                     <span class="sidebar-text">Profil</span>
                 </a>
             </li>
+            <li>
+                <form method="POST" action="{{ route('keluar') }}">
+                    @csrf
+                    <button type="submit" class="flex items-center gap-4 p-2 rounded-md hover:bg-slate-700 text-red-500">
+                        <i class="fa-solid fa-sign-out-alt"></i>
+                        <span class="sidebar-text">Logout</span>
+                    </button>
+                </form>
+            </li>
         </ul>
     </nav>
 </div>
