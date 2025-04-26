@@ -25,4 +25,13 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:1')->prefix('admin')->group(function (): void {
         Route::get('/', [AdminController::class, 'dasbor'])->name('admin');
     });
+    Route::middleware('role:2')->prefix('sarpra')->group(function (): void {
+        // Route::get('/', [AdminController::class, 'dasbor'])->name('admin');
+    });
+    Route::middleware('role:3')->prefix('teknisi')->group(function (): void {
+        // Route::get('/', [AdminController::class, 'dasbor'])->name('admin');
+    });
+    Route::middleware('role:4')->prefix('users')->group(function (): void {
+        // Route::get('/', [AdminController::class, 'dasbor'])->name('admin');
+    });
 });
