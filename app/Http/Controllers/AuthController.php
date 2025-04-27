@@ -30,9 +30,7 @@ class AuthController extends Controller
             return redirect()->intended('/');
         }
 
-        return back()->withErrors([
-            'username' => 'Username atau password salah.',
-        ]);
+        return back()->with('login_error', 'Username atau password salah.');
     }
 
     public function logout(Request $request)

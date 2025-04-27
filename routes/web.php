@@ -5,11 +5,13 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Carbon\Carbon;
+
 
 Route::get('login', [AuthController::class, 'login'])->name('login');
 Route::post('login', [AuthController::class, 'postlogin'])->name('postlogin');
+Route::get('keluar', [AuthController::class, 'logout'])->middleware('auth')->name('keluar');
 Route::post('keluar', [AuthController::class, 'logout'])->middleware('auth')->name('keluar');
-// Route::get('keluar', [AuthController::class, 'logout'])->middleware('auth')->name('keluar');
 
 
 
@@ -34,4 +36,11 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:4')->prefix('users')->group(function (): void {
         // Route::get('/', [AdminController::class, 'dasbor'])->name('admin');
     });
+});
+
+
+
+//lucu lucuan
+Route::get('/realtime-clock', function () {
+    return Carbon::now()->translatedFormat('l, d F Y H:i:s');
 });
