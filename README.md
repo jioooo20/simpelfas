@@ -4,7 +4,7 @@ SIMPELFAS (Sistem Manajemen Pelaporan dan Perbaikan Fasilitas Kampus) adalah apl
 
 
 
-Repositori ini adalah proyek `Simpelfas`. Gunakan panduan di bawah ini untuk proses clone, pull, dan push dengan aman agar terhindar dari konflik kode.
+Gunakan panduan di bawah ini untuk proses clone, pull, dan push dengan aman agar terhindar dari konflik kode.
 
 ```bash
 # Clone repository
