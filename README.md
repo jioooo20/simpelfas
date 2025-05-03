@@ -18,7 +18,7 @@ git stash pop         # Kembalikan perubahan lokal
 
 # Jika terjadi konflik saat stash pop:
 # (perbaiki file yang konflik secara manual)
-git add .
+git add <file nya>
 git commit -m "Fix conflict after pull"
 
 # Git Push (pastikan sinkronisasi dengan remote terlebih dahulu)
@@ -32,7 +32,7 @@ git add .
 git commit -m "Fix conflict before push"
 
 # Setelah semua aman, lakukan push:
-git push origin main  # Ganti 'main' dengan nama branch jika berbeda
+git push 
 
 # Selalu cek status branch:
 git status
