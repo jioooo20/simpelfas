@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->setLocale('id')) }}">
+<html lang="{{ str_replace('_', '-', app()->setLocale('id')) }}" data-theme="night">
 
 <head>
     <meta charset="UTF-8">
@@ -45,11 +45,11 @@
     </style>
 </head>
 
-<body class="bg-indigo-50">
+<body class="bg-base-300">
     @include('layouts.sidebar')
     @include('layouts.header')
 
-    <div class="ml-64 p-3 transition-all duration-300" id="main-content">
+    <div class="ml-64 p-2 transition-all duration-300" id="main-content">
         @yield('content')
     </div>
 

@@ -26,6 +26,14 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:1')->prefix('admin')->group(function (): void {
         Route::get('/', [AdminController::class, 'dasbor'])->name('admin');
+        Route::prefix('role')->group(function (): void {
+            Route::get('/', [AdminController::class, 'role'])->name('admin.role');
+            Route::post('/add', [AdminController::class, 'role_add'])->name('admin.role-add');
+            Route::get('/{id}/edit', [AdminController::class, 'role_edit_delete_modal'])->name('admin.role-edit');
+            Route::put('/{id}/update', [AdminController::class, 'role_update'])->name('admin.role-update');
+            Route::get('/{id}/delete', [AdminController::class, 'role_edit_delete_modal'])->name('admin.role-delete');
+            Route::delete('/{id}/deleted', [AdminController::class, 'role_deleted'])->name('admin.role-deleted');
+        });
     });
     Route::middleware('role:2')->prefix('sarpra')->group(function (): void {
         // Route::get('/', [AdminController::class, 'dasbor'])->name('admin');

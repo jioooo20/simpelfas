@@ -178,7 +178,7 @@
                 close: true,
                 gravity: "top",
                 position: "right",
-                backgroundColor: "linear-gradient(to right, #ffa07a, #ff3737)",
+                backgroundColor: "linear-gradient(to right, #ff3737, #ffa07a)",
                 stopOnFocus: true,
             }).showToast();
         }
