@@ -14,10 +14,10 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         $data = [
-            ['role_id' => 1, 'role_kode' => 'ADM', 'role_nama' => 'Administrator'],
-            ['role_id' => 2, 'role_kode' => 'SRPR', 'role_nama' => 'Sarana Prasarana'],
-            ['role_id' => 3, 'role_kode' => 'TKN', 'role_nama' => 'Teknisi'],
-            ['role_id' => 4, 'role_kode' => 'USERS', 'role_nama' => 'Staff/Dosen/Mahasiswa'],
+            ['role_id' => 1, 'role_kode' => 'ADM', 'role_nama' => 'Administrator', 'role_deskripsi' => 'Administrator sistem dengan akses penuh'],
+            ['role_id' => 2, 'role_kode' => 'SRPR', 'role_nama' => 'Sarana Prasarana', 'role_deskripsi' => 'Mengelola sarana dan prasarana kampus'],
+            ['role_id' => 3, 'role_kode' => 'TKN', 'role_nama' => 'Teknisi', 'role_deskripsi' => 'Melakukan perbaikan dan pemeliharaan peralatan'],
+            ['role_id' => 4, 'role_kode' => 'USERS', 'role_nama' => 'Staff/Dosen/Mahasiswa', 'role_deskripsi' => 'Pengguna layanan fasilitas kampus'],
         ];
 
         DB::table('m_role')->insert($data);

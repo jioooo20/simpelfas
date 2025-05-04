@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id('role_id');
             $table->string('role_kode', 10)->unique();
             $table->string('role_nama', 50);
+            $table->string('role_deskripsi')->nullable();
         });
     }
 

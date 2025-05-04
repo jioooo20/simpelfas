@@ -17,6 +17,7 @@ class RoleModel extends Model
         'role_id',
         'role_kode',
         'role_nama',
+        'role_deskripsi',
     ];
 
     public function user()
