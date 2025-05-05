@@ -2,11 +2,11 @@
 @section('judul', 'Hak Akses')
 @section('content')
     <div class="container mx-auto px-4 py-4">
-        <div class="bg-base-100 inset-shadow-lg ring-2 ring-border-secondary rounded-lg p-6">
+        <div class="bg-base-100 shadow-lg border border-base-content rounded-xl p-6">
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <h1 class="text-2xl font-bold text-base-content text-center md:text-left">Pengelolaan Hak Akses</h1>
                 <button onclick="add_role_modal.showModal()"
-                    class="btn btn-accent btn-sm rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2 w-full md:w-auto">
+                    class="btn bg-blue-200 text-black hover:bg-blue-300 border-blue-200 hover:border-blue-300 btn-sm rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2 w-full md:w-auto">
                     <i class="bi bi-plus-circle text-lg"></i>
                     <span>Tambah Hak Akses</span>
                 </button>
@@ -34,11 +34,11 @@
                                 <td>{{ $role->jumlah_user }}</td>
                                 <td class="flex gap-2">
                                     <a href="{{ route('admin.role-edit', $role->role_id) }}"
-                                        class="text-secondary hover:text-secondary-focus">
+                                        class="text-indigo-400 hover:text-indigo-800-focus">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                     <a href="{{ route('admin.role-delete', $role->role_id) }}"
-                                        class="text-error hover:text-error-focus">
+                                        class="text-red-500 hover:text-red-500-focus">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 </td>

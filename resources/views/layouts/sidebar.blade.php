@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
             <img src="{{ asset('images/default-profile.png') }}" alt="Profile Picture"
-                class="w-8 h-8 rounded-full object-cover border-1 border-primary ring-2 ring-opacity-50 ring-primary">
+                class="w-8 h-8 rounded-full object-cover border-1 border-base-content ring-2 ring-opacity-50 ring-base-content">
             <span class="text-md judul sidebar-text">{{ Str::limit(Auth::user()->nama, 13) }}</span>
         </div>
         <div id="toggle-button-container" class="flex justify-end w-16">
@@ -13,8 +13,6 @@
             </button>
         </div>
     </div>
-    <hr class="border-t border-2 border-neutral-content my-2">
-
     <nav class="flex-1">
         <ul class="space-y-2">
             <li>
@@ -28,7 +26,7 @@
                 <a href="#" @click="open = ! open"
                     class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                     <i class="fa-solid fa-user group-hover:text-primary transition-transform duration-200"></i>
-                    <span class="sidebar-text">Manajemen User</span>
+                    <span class="sidebar-text">Pengelolaan User</span>
                     <i class="fa-solid fa-chevron-down ml-auto transition-transform duration-200"
                         :class="{ 'rotate-180': open }"></i>
                 </a>
@@ -121,7 +119,7 @@
 
             <li>
                 <a href="{{ route('keluar') }}"
-                    class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 text-error group"
+                    class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 text-red-500 group"
                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <i class="fa-solid fa-sign-out-alt group-hover:scale-110 transition-transform duration-200"></i>
                     <span class="sidebar-text">Logout</span>
@@ -142,50 +140,40 @@
             const mainContent = document.getElementById('main-content');
             const header = document.getElementById('header');
             const sidebarTitleContainer = document.querySelector('#sidebar .flex.items-center.gap-3');
-            const navLinks = document.querySelectorAll('#sidebar nav ul li > a'); // Targetkan link level pertama
+            const navLinks = document.querySelectorAll('#sidebar nav ul li > a');
             const chevronIcons = document.querySelectorAll('#sidebar nav ul li > a i.fa-chevron-down');
             const toggleButtonContainer = document.getElementById('toggle-button-container');
-            const submenus = document.querySelectorAll('#sidebar nav ul li ul'); // Semua submenu containers
+            const submenus = document.querySelectorAll('#sidebar nav ul li ul');
 
-            // Toggle sidebar width classes
             sidebar.classList.toggle('w-64');
             sidebar.classList.toggle('w-20');
 
-            // Toggle main content margin classes
             mainContent.classList.toggle('ml-64');
             mainContent.classList.toggle('ml-20');
 
-            // Toggle header margin classes
             header.classList.toggle('ml-64');
             header.classList.toggle('ml-20');
 
-            // Hide/show text elements
             texts.forEach(text => {
                 text.classList.toggle('hidden');
             });
 
-            // Hide/show sidebar title container
             sidebarTitleContainer.classList.toggle('hidden');
 
-            // Toggle nav link justification
             navLinks.forEach(link => {
                 link.classList.toggle('justify-start');
                 link.classList.toggle('justify-center');
             });
 
-            // Toggle chevron icon visibility
             chevronIcons.forEach(icon => {
                 icon.classList.toggle('hidden');
             });
 
-            // Handle submenu state and visibility
             if (sidebar.classList.contains('w-20')) {
-                // Force close and hide all submenus when sidebar is collapsed
                 submenus.forEach(submenu => {
-                    submenu.classList.add('hidden'); // Force hide submenu
+                    submenu.classList.add('hidden');
                 });
 
-                // Using Alpine.js to close the state
                 if (window.Alpine) {
                     document.querySelectorAll('[x-data]').forEach(el => {
                         if (el.__x && el.__x.$data.hasOwnProperty('open')) {
@@ -194,15 +182,11 @@
                     });
                 }
             } else {
-                // When expanding, keep submenus hidden until clicked
-                // This prevents them from auto-showing when sidebar expands
                 submenus.forEach(submenu => {
-                    // Remove the forced hidden class but let Alpine control visibility
                     submenu.classList.remove('hidden');
                 });
             }
 
-            // Adjust toggle button container justification
             if (sidebar.classList.contains('w-20')) {
                 toggleButtonContainer.classList.remove('justify-end');
                 toggleButtonContainer.classList.add('justify-center');
