@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->setLocale('id')) }}" data-theme="night">
+<html lang="{{ str_replace('_', '-', app()->setLocale(locale: 'id')) }}" data-theme="night">
 
 <head>
     <meta charset="UTF-8">
@@ -45,7 +45,7 @@
     </style>
 </head>
 
-<body class="bg-base-300">
+<body class="bg-base-100">
     @include('layouts.sidebar')
     @include('layouts.header')
 

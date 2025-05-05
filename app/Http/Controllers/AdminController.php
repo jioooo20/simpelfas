@@ -36,14 +36,14 @@ class AdminController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return redirect()->back()
+                return redirect()->route('admin.role')
                     ->withInput()
                     ->with('error', $validator->errors()->first());
             }
 
             $existingRole = RoleModel::where('role_kode', $request->role_kode)->first();
             if ($existingRole) {
-                return redirect()->back()
+                return redirect()->route('admin.role')
                     ->withInput()
                     ->with('error', 'Gagal menambahkan role. Kode sudah digunakan!!');
             }
@@ -57,7 +57,7 @@ class AdminController extends Controller
             return redirect()->route('admin.role')
                 ->with('success', 'Role berhasil ditambahkan');
         } catch (\Exception $e) {
-            return redirect()->back()
+            return redirect()->route('admin.role')
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }

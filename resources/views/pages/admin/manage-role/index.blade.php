@@ -2,11 +2,11 @@
 @section('judul', 'Hak Akses')
 @section('content')
     <div class="container mx-auto px-4 py-4">
-        <div class="bg-base-100 shadow-lg rounded-lg p-6">
+        <div class="bg-base-100 inset-shadow-lg ring-2 ring-border-secondary rounded-lg p-6">
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <h1 class="text-2xl font-bold text-base-content text-center md:text-left">Pengelolaan Hak Akses</h1>
                 <button onclick="add_role_modal.showModal()"
-                    class="btn btn-primary btn-sm rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2 w-full md:w-auto">
+                    class="btn btn-accent btn-sm rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2 w-full md:w-auto">
                     <i class="bi bi-plus-circle text-lg"></i>
                     <span>Tambah Hak Akses</span>
                 </button>

@@ -1,6 +1,6 @@
 {{-- header --}}
 <div id="header"
-    class="flex items-center justify-between bg-base-100 shadow-md px-6 py-3 ml-64 transition-all duration-300">
+    class="flex items-center justify-between bg-base-100 px-6 py-1 pt-5 ml-64 transition-all duration-300">
     <div class="flex items-center gap-4">
         <span class="text-2xl judul text-content-accent">Simpelfas</span>
     </div>

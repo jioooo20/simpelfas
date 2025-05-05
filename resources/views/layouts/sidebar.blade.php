@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
             <img src="{{ asset('images/default-profile.png') }}" alt="Profile Picture"
-                class="w-8 h-8 rounded-full object-cover">
+                class="w-8 h-8 rounded-full object-cover border-1 border-primary ring-2 ring-opacity-50 ring-primary">
             <span class="text-md judul sidebar-text">{{ Str::limit(Auth::user()->nama, 13) }}</span>
         </div>
         <div id="toggle-button-container" class="flex justify-end w-16">
@@ -13,7 +13,7 @@
             </button>
         </div>
     </div>
-    <hr class="border-t border-2 border-base-content opacity-20 my-2">
+    <hr class="border-t border-2 border-neutral-content my-2">
 
     <nav class="flex-1">
         <ul class="space-y-2">
