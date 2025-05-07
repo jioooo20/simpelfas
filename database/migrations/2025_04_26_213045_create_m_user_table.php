@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('m_user', function (Blueprint $table) {
             $table->id("user_id");
             $table->unsignedBigInteger("role_id")->index();//indexing untuk fk
-            $table->string("username", 32)->unique();//uniq agar tidak ada yg sama
+            $table->string("identitas", 32)->unique();//uniq agar tidak ada yg sama
             $table->string("nama", 50);
             $table->string("password");
+            $table->string("email");
             $table->mediumText("profile_image")->nullable();
             $table->timestamps();
 

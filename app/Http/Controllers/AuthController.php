@@ -20,17 +20,17 @@ class AuthController extends Controller
     public function postlogin(Request $request)
     {
         $request->validate([
-            'username' => 'required|min:5',
+            'identitas' => 'required',
             'password' => 'required|min:5',
         ]);
-        $credentials = $request->only('username', 'password');
+        $credentials = $request->only('identitas', 'password');
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             return redirect()->intended('/');
         }
 
-        return back()->with('login_error', 'Username atau password salah.');
+        return back()->with('login_error', 'Identitas atau password salah.');
     }
 
     public function logout(Request $request)
