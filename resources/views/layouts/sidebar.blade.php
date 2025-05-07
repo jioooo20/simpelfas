@@ -3,8 +3,9 @@
     class="transition-all duration-300 bg-base-100 text-base-content w-64 h-screen p-4 flex flex-col fixed top-0">
     <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
-            <img src="{{ asset('images/default-profile.png') }}" alt="Profile Picture"
-                class="w-8 h-8 rounded-full object-cover border-1 border-base-content ring-2 ring-opacity-50 ring-base-content">
+            <img class="h-8 w-8 rounded-full"
+            src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->nama) }}&background=4338ca&color=fff"
+            alt="{{ Auth::user()->nama }}" loading="lazy">
             <span class="text-md judul sidebar-text">{{ Str::limit(Auth::user()->nama, 13) }}</span>
         </div>
         <div id="toggle-button-container" class="flex justify-end w-16">
@@ -38,7 +39,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                        <a href="{{ route('admin.user') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                             <i class="fa-solid fa-user-plus group-hover:text-primary transition-transform duration-200"></i>
                             <span class="sidebar-text text-sm">Pengguna</span>
                         </a>
