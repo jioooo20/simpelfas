@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simpelfas | Masuk</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
@@ -151,12 +152,12 @@
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 input-icon pointer-events-none">
                                     <i class="fas fa-user fa-sm"></i>
                                 </span>
-                                <input id="username" name="username" type="text" autocomplete="username" required
-                                    placeholder="Username"
+                                <input id="identitas" name="identitas" type="text" autocomplete="identitas" required
+                                    placeholder="Identitas NIM / NIP"
                                     class="form-input block w-full rounded-lg shadow-sm sm:text-sm placeholder-gray-400"
-                                    aria-describedby="username-error" value="{{ old('username') }}">
+                                    aria-describedby="identitas-error" value="{{ old('identitas') }}">
                             </div>
-                            <p id="username-error" class="error-message">Username minimal 5 karakter!</p>
+                            <p id="identitas-error" class="error-message">Identitas minimal 5 karakter!</p>
                         </div>
 
                         <div>
@@ -216,13 +217,13 @@
             @endif
 
             const form = document.querySelector("#loginForm");
-            const usernameInput = document.querySelector("#username");
+            const identitasInput = document.querySelector("#identitas");
             const passwordInput = document.querySelector("#password");
             const submitButton = document.querySelector("#submitButton");
             const togglePassword = document.querySelector("#togglePassword");
 
             function validateInput(input, errorElement, minLength) {
-                const errorMsg = errorElement; 
+                const errorMsg = errorElement;
                 if (input.value.length > 0 && input.value.length < minLength) {
                     input.classList.add("input-error");
                     errorMsg.style.display = "block";
@@ -235,8 +236,8 @@
                 }
             }
 
-            usernameInput.addEventListener("input", function () {
-                validateInput(this, document.querySelector("#username-error"), 5);
+            identitasInput.addEventListener("input", function () {
+                validateInput(this, document.querySelector("#identitas-error"), 10);
             });
 
             passwordInput.addEventListener("input", function () {
@@ -246,14 +247,14 @@
             form.addEventListener("submit", function (event) {
                 event.preventDefault();
 
-                const isUsernameValid = validateInput(usernameInput, document.querySelector("#username-error"), 5);
+                const isIdentitasValid = validateInput(identitasInput, document.querySelector("#identitas-error"), 5);
                 const isPasswordValid = validateInput(passwordInput, document.querySelector("#password-error"), 5);
 
                 let isFilled = true;
-                if (!usernameInput.value) {
-                    usernameInput.classList.add("input-error");
-                    document.querySelector("#username-error").textContent = "Username wajib diisi!";
-                    document.querySelector("#username-error").style.display = "block";
+                if (!identitasInput.value) {
+                    identitasInput.classList.add("input-error");
+                    document.querySelector("#identitas-error").textContent = "Identitas wajib diisi!";
+                    document.querySelector("#identitas-error").style.display = "block";
                     isFilled = false;
                 }
                  if (!passwordInput.value) {
@@ -263,7 +264,7 @@
                     isFilled = false;
                 }
 
-                if (isUsernameValid && isPasswordValid && isFilled) {
+                if (isIdentitasValid && isPasswordValid && isFilled) {
                     submitButton.disabled = true;
                     if (submitButton.classList.contains('btn-primary')) {
                          submitButton.classList.add("btn-loading");
@@ -279,10 +280,10 @@
                     form.submit();
                 } else {
 
-                     if (!isFilled && !usernameInput.value) {
-                         usernameInput.focus();
-                     } else if (!isUsernameValid) {
-                         usernameInput.focus();
+                     if (!isFilled && !identitasInput.value) {
+                         identitasInput.focus();
+                     } else if (!isIdentitasValid) {
+                         identitasInput.focus();
                      } else if (!isFilled && !passwordInput.value) {
                          passwordInput.focus();
                      } else if (!isPasswordValid) {
