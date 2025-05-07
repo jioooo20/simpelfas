@@ -34,6 +34,14 @@ Route::middleware('auth')->group(function () {
             Route::get('/{id}/delete', [AdminController::class, 'role_edit_delete_modal'])->name('admin.role-delete');
             Route::delete('/{id}/deleted', [AdminController::class, 'role_deleted'])->name('admin.role-deleted');
         });
+        Route::prefix('user')->group(function (): void {
+            Route::get('/', [AdminController::class, 'user'])->name('admin.user');
+            Route::post('/add', [AdminController::class, 'user_add'])->name('admin.user-add');
+            // Route::get('/{id}/edit', [AdminController::class, 'user_edit_delete_modal'])->name('admin.user-edit');
+            // Route::put('/{id}/update', [AdminController::class, 'user_update'])->name('admin.user-update');
+            // Route::get('/{id}/delete', [AdminController::class, 'user_edit_delete_modal'])->name('admin.user-delete');
+            // Route::delete('/{id}/deleted', [AdminController::class, 'user_deleted'])->name('admin.user-deleted');
+        });
     });
     Route::middleware('role:2')->prefix('sarpra')->group(function (): void {
         // Route::get('/', [AdminController::class, 'dasbor'])->name('admin');

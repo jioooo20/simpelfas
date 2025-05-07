@@ -130,4 +130,45 @@ class AdminController extends Controller
             return redirect()->route('admin.role')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    public function user()
+    {
+        $table = UserModel::with('role')->paginate();
+        $roles = RoleModel::all();
+        return view('pages.admin.manage-user.index', compact('table', 'roles'));
+    }
+
+    public function user_add(Request $request)
+    {
+        // try {
+            $validator = Validator::make($request->all(), [
+                'nama' => 'required|max:50',
+                'identitas' => 'required|max:20|unique:m_user,identitas',
+                'email' => 'required|email|max:60|unique:m_user,email',
+                'password' => 'required|min:5|max:20',
+                'role_id' => 'required|exists:m_role,role_id',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->route('admin.user')
+                    ->withInput()
+                    ->with('error', $validator->errors()->first());
+            }
+
+            UserModel::create([
+                'nama' => $request->nama,
+                'identitas' => $request->identitas,
+                'email' => $request->email,
+                'password' => bcrypt($request->password),
+                'role_id' => $request->role_id,
+            ]);
+
+            return redirect()->route('admin.user')
+                ->with('success', 'User berhasil ditambahkan');
+        // } catch (\Exception $e) {
+        //     return redirect()->route('admin.user')
+        //         ->withInput()
+        //         ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        // }
+    }
 }
