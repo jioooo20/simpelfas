@@ -2,37 +2,37 @@
 @section('judul', 'Hak Akses')
 @section('content')
     <div class="container mx-auto px-4 py-4">
-        <div class="bg-base-100 shadow-lg border border-base-content rounded-xl p-6">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                <h1 class="text-2xl font-bold text-base-content text-center md:text-left">Pengelolaan Hak Akses</h1>
-                <button onclick="add_role_modal.showModal()"
-                    class="btn bg-blue-200 text-black hover:bg-blue-300 border-blue-200 hover:border-blue-300 btn-sm rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2 w-full md:w-auto">
-                    <i class="bi bi-plus-circle text-lg"></i>
-                    <span>Tambah Hak Akses</span>
-                </button>
-            </div>
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h1 class="text-3xl font-bold text-base-content text-center md:text-left">Pengelolaan Hak Akses</h1>
+            <button onclick="add_role_modal.showModal()"
+                class="btn bg-primary text-white hover:bg-blue-600 border-primary hover:border-blue-600 btn-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2 w-full md:w-auto">
+                <i class="fas fa-fas fa-plus"></i>
+                <span>Tambah Hak Akses</span>
+            </button>
+        </div>
 
+        <div class="bg-base-100 shadow-md border rounded-xl p-6">
             <div class="overflow-x-auto">
                 <table class="table table-zebra w-full">
                     <thead>
                         <tr class="bg-base-200">
-                            <th>ID</th>
+                            <th class="flex gap-2 justify-center">ID</th>
                             <th>Kode</th>
                             <th>Nama Role</th>
                             <th>Deskripsi</th>
                             <th>Jumlah Pengguna</th>
-                            <th>Aksi</th>
+                            <th class="flex gap-2 justify-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($table as $role)
                             <tr class="hover">
-                                <td>{{ $role->role_id }}</td>
+                                <td class="flex gap-2 justify-center">{{ $role->role_id }}</td>
                                 <td>{{ $role->role_kode }}</td>
                                 <td class="font-medium">{{ $role->role_nama }}</td>
                                 <td>{{ $role->role_deskripsi }}</td>
                                 <td>{{ $role->jumlah_user }}</td>
-                                <td class="flex gap-2">
+                                <td class="flex gap-2 justify-center">
                                     <a href="{{ route('admin.role-edit', $role->role_id) }}"
                                         class="text-indigo-400 hover:text-indigo-800-focus">
                                         <i class="bi bi-pencil-square"></i>

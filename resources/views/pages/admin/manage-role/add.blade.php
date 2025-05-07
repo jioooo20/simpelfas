@@ -18,8 +18,8 @@
             </div>
 
             <div class="modal-action">
-                <button type="button" class="btn btn-sm" onclick="add_role_modal.close()">Cancel</button>
-                <button type="submit" class="btn btn-sm btn-primary">Save Role</button>
+                <button type="button" class="btn btn-sm" onclick="add_role_modal.close()">Batal</button>
+                <button type="submit" class="btn btn-sm btn-primary">Simpan</button>
             </div>
         </form>
     </div>
@@ -38,7 +38,7 @@
                     position: "right",
                     style: {
                         background: "linear-gradient(to right, #f87171, #ef4444)",
-                        borderRadius: "8px", 
+                        borderRadius: "8px",
                         boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
                     },
                     stopOnFocus: true,

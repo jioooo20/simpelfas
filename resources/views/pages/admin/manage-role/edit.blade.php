@@ -20,8 +20,8 @@
                 <textarea id="role_deskripsi" name="role_deskripsi" rows="3" class="textarea textarea-bordered w-full" required>{{ isset($data) ? $data->role_deskripsi : '' }}</textarea>
             </div>
             <div class="modal-action">
-                <a href="{{ route('admin.role') }}" class="btn btn-sm">Cancel</a>
-                <button type="submit" class="btn btn-sm btn-primary">Save Role</button>
+                <a href="{{ route('admin.role') }}" class="btn btn-sm">Batal</a>
+                <button type="submit" class="btn btn-sm btn-primary">Simpan</button>
             </div>
         </form>
     </div>
