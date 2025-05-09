@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simpelfas | Masuk</title>
+    <title>Masuk</title>
+    <link rel="icon" href="{{ asset('logo.png') }}" type="image/x-icon"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.tailwindcss.com"></script>
@@ -32,6 +33,7 @@
             padding-bottom: 0.6rem;
             line-height: 1.5;
         }
+
         .form-input:focus {
             border-color: #6366f1;
             background-color: #fff;
@@ -39,7 +41,7 @@
             outline: none;
         }
 
-        .form-input:focus + .input-icon {
+        .form-input:focus+.input-icon {
             color: #6366f1;
         }
 
@@ -52,6 +54,7 @@
             color: white;
             transition: background-color 0.3s ease;
         }
+
         .btn-primary:hover {
             background-color: #4338ca;
         }
@@ -62,6 +65,7 @@
             border: 1px solid #e5e7eb;
             transition: background-color 0.3s ease;
         }
+
         .btn-secondary:hover {
             background-color: #e5e7eb;
         }
@@ -78,6 +82,7 @@
             margin-left: 8px;
             vertical-align: middle;
         }
+
         .btn-primary.btn-loading::after {
             border: 2px solid #fff;
             border-top-color: transparent;
@@ -98,7 +103,8 @@
         }
 
         .input-error {
-            border-color: #ef4444 !important; /* Red border */
+            border-color: #ef4444 !important;
+            /* Red border */
             box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
         }
 
@@ -114,6 +120,7 @@
             transition: all 0.3s ease;
             border: 1px solid #e5e7eb;
         }
+
         .social-icon:hover {
             background-color: #e5e7eb;
             color: #374151;
@@ -123,16 +130,19 @@
 
 <body>
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden  bg-gradient-to-br from-blue-50 to-indigo-200 flex flex-col lg:flex-row max-w-5xl w-full my-8">
+        <div
+            class="bg-white rounded-2xl shadow-xl overflow-hidden  bg-gradient-to-br from-blue-50 to-indigo-200 flex flex-col lg:flex-row max-w-5xl w-full my-8">
 
             <div class="hidden lg:flex lg:w-[55%] items-center justify-center p-12 relative flex-col">
-                 <div class="absolute top-8 left-8 flex items-center space-x-2">
-                    <svg class="h-8 w-auto text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="absolute top-8 left-8 flex items-center space-x-2">
+                    {{-- <svg class="h-8 w-auto text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
+                    </svg> --}}
+                    <img src="{{ asset('logo.png') }}" alt="Logo" class="h-8 w-auto">
                     <span class="font-semibold text-xl text-indigo-700">Simpelfas</span>
                 </div>
-                <img src="{{ asset('landing.png') }}" alt="Welcome illustration" class="max-w-md w-full h-auto object-contain">
+                <img src="{{ asset('landing.png') }}" alt="Welcome illustration"
+                    class="max-w-md w-full h-auto object-contain">
             </div>
 
             <div class="w-full lg:w-[45%] flex flex-col justify-center py-12 px-8 sm:px-12">
@@ -141,7 +151,8 @@
                         Selamat Datang
                     </h2>
                     <p class="text-sm text-gray-500 mb-8 text-center lg:text-left">
-                        Ayo, masuk sekarang! Laporkan kerusakan fasilitas dengan mudah dan bantu kami menjaganya tetap dalam kondisi terbaik.
+                        Ayo, masuk sekarang! Laporkan kerusakan fasilitas dengan mudah dan bantu kami menjaganya tetap
+                        dalam kondisi terbaik.
                     </p>
 
                     <form class="space-y-5" action="{{ route('postlogin') }}" method="POST" id="loginForm" novalidate>
@@ -149,7 +160,8 @@
 
                         <div>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 input-icon pointer-events-none">
+                                <span
+                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 input-icon pointer-events-none">
                                     <i class="fas fa-user fa-sm"></i>
                                 </span>
                                 <input id="identitas" name="identitas" type="text" autocomplete="identitas" required
@@ -162,7 +174,8 @@
 
                         <div>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 input-icon pointer-events-none">
+                                <span
+                                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 input-icon pointer-events-none">
                                     <i class="fas fa-lock fa-sm"></i>
                                 </span>
                                 <input id="password" name="password" type="password" autocomplete="current-password"
@@ -187,9 +200,11 @@
                             </button>
                         </div>
 
-                         <div class="text-center mt-6">
+                        <div class="text-center mt-6">
                             <p class="text-sm text-gray-600">
-                                Lupa password? <a href="#" class="text-indigo-600 hover:text-indigo-800 font-medium transition">Hubungi admin</a>
+                                Lupa password? <a href="#"
+                                    class="text-indigo-600 hover:text-indigo-800 font-medium transition">Hubungi
+                                    admin</a>
                             </p>
                         </div>
                     </form>
@@ -199,7 +214,7 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             @if (session('login_error'))
                 Toastify({
                     text: "{{ session('login_error') }}",
@@ -227,7 +242,8 @@
                 if (input.value.length > 0 && input.value.length < minLength) {
                     input.classList.add("input-error");
                     errorMsg.style.display = "block";
-                    errorMsg.textContent = `${input.name.charAt(0).toUpperCase() + input.name.slice(1)} minimal ${minLength} karakter!`;
+                    errorMsg.textContent =
+                        `${input.name.charAt(0).toUpperCase() + input.name.slice(1)} minimal ${minLength} karakter!`;
                     return false;
                 } else {
                     input.classList.remove("input-error");
@@ -236,19 +252,21 @@
                 }
             }
 
-            identitasInput.addEventListener("input", function () {
+            identitasInput.addEventListener("input", function() {
                 validateInput(this, document.querySelector("#identitas-error"), 10);
             });
 
-            passwordInput.addEventListener("input", function () {
+            passwordInput.addEventListener("input", function() {
                 validateInput(this, document.querySelector("#password-error"), 5);
             });
 
-            form.addEventListener("submit", function (event) {
+            form.addEventListener("submit", function(event) {
                 event.preventDefault();
 
-                const isIdentitasValid = validateInput(identitasInput, document.querySelector("#identitas-error"), 5);
-                const isPasswordValid = validateInput(passwordInput, document.querySelector("#password-error"), 5);
+                const isIdentitasValid = validateInput(identitasInput, document.querySelector(
+                    "#identitas-error"), 5);
+                const isPasswordValid = validateInput(passwordInput, document.querySelector(
+                    "#password-error"), 5);
 
                 let isFilled = true;
                 if (!identitasInput.value) {
@@ -257,7 +275,7 @@
                     document.querySelector("#identitas-error").style.display = "block";
                     isFilled = false;
                 }
-                 if (!passwordInput.value) {
+                if (!passwordInput.value) {
                     passwordInput.classList.add("input-error");
                     document.querySelector("#password-error").textContent = "Password wajib diisi!";
                     document.querySelector("#password-error").style.display = "block";
@@ -267,32 +285,33 @@
                 if (isIdentitasValid && isPasswordValid && isFilled) {
                     submitButton.disabled = true;
                     if (submitButton.classList.contains('btn-primary')) {
-                         submitButton.classList.add("btn-loading");
+                        submitButton.classList.add("btn-loading");
                     } else {
-                         submitButton.classList.add("btn-loading");
+                        submitButton.classList.add("btn-loading");
                     }
                     submitButton.innerHTML = 'Logging in... <span class="btn-loading-spinner"></span>';
 
-                    if (window.getComputedStyle(submitButton, '::after').getPropertyValue('content') !== 'none') {
-                         submitButton.innerHTML = 'Logging in...';
+                    if (window.getComputedStyle(submitButton, '::after').getPropertyValue('content') !==
+                        'none') {
+                        submitButton.innerHTML = 'Logging in...';
                     }
 
                     form.submit();
                 } else {
 
-                     if (!isFilled && !identitasInput.value) {
-                         identitasInput.focus();
-                     } else if (!isIdentitasValid) {
-                         identitasInput.focus();
-                     } else if (!isFilled && !passwordInput.value) {
-                         passwordInput.focus();
-                     } else if (!isPasswordValid) {
-                         passwordInput.focus();
-                     }
+                    if (!isFilled && !identitasInput.value) {
+                        identitasInput.focus();
+                    } else if (!isIdentitasValid) {
+                        identitasInput.focus();
+                    } else if (!isFilled && !passwordInput.value) {
+                        passwordInput.focus();
+                    } else if (!isPasswordValid) {
+                        passwordInput.focus();
+                    }
                 }
             });
 
-            togglePassword.addEventListener("click", function () {
+            togglePassword.addEventListener("click", function() {
                 const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
                 passwordInput.setAttribute("type", type);
                 const icon = this.querySelector("i");

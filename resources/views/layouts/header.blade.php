@@ -16,7 +16,7 @@
 @push('skrip')
     <script>
         function updateClock() {
-            fetch('/realtime-clock') 
+            fetch('/realtime-clock')
                 .then(response => response.text())
                 .then(data => {
                     document.getElementById('realtime-clock').innerText = data;

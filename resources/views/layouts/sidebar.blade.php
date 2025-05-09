@@ -2,7 +2,7 @@
 <div id="sidebar"
     class="transition-all duration-300 bg-base-100 text-base-content w-64 h-screen p-4 flex flex-col fixed top-0">
     <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 my-1">
             <img class="h-8 w-8 rounded-full"
             src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->nama) }}&background=4338ca&color=fff"
             alt="{{ Auth::user()->nama }}" loading="lazy">
@@ -16,13 +16,13 @@
     </div>
     <nav class="flex-1">
         <ul class="space-y-2">
+            @if(in_array(Auth::user()->role_id, ['1']))
             <li>
                 <a href="{{ route('admin') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                     <i class="fa-solid fa-gauge group-hover:text-primary transition-transform duration-200"></i>
                     <span class="sidebar-text">Dashboard</span>
                 </a>
             </li>
-            @if(in_array(Auth::user()->role_id, ['1']))
             <li x-data="{ open: false }">
                 <a href="#" @click="open = ! open"
                     class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
@@ -116,6 +116,24 @@
 
             {{-- warga polinema --}}
             @if(in_array(Auth::user()->role_id, ['4']))
+            <li>
+                <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                    <i class="fa-solid fa-file-circle-plus w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                    <span class="sidebar-text">Buat Laporan</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                    <i class="fa-solid fa-clipboard-check w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                    <span class="sidebar-text">Status Laporan</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                    <i class="fa-solid fa-comments w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                    <span class="sidebar-text">Umpan Balik</span>
+                </a>
+            </li>
             @endif
 
             <li>
@@ -140,7 +158,7 @@
             const texts = document.querySelectorAll('.sidebar-text');
             const mainContent = document.getElementById('main-content');
             const header = document.getElementById('header');
-            const sidebarTitleContainer = document.querySelector('#sidebar .flex.items-center.gap-3');
+            const sidebarTitleContainer = document.querySelector('#sidebar .flex.items-center.gap-2');
             const navLinks = document.querySelectorAll('#sidebar nav ul li > a');
             const chevronIcons = document.querySelectorAll('#sidebar nav ul li > a i.fa-chevron-down');
             const toggleButtonContainer = document.getElementById('toggle-button-container');
