@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UsersController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -50,7 +51,7 @@ Route::middleware('auth')->group(function () {
         // Route::get('/', [AdminController::class, 'dasbor'])->name('admin');
     });
     Route::middleware('role:4')->prefix('users')->group(function (): void {
-        // Route::get('/', [AdminController::class, 'dasbor'])->name('admin');
+        Route::get('/', [UsersController::class, 'index'])->name('users');
     });
 });
 
