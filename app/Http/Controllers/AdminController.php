@@ -133,14 +133,30 @@ class AdminController extends Controller
 
     public function user()
     {
-        $table = UserModel::with('role')->paginate();
+        $table = UserModel::with('role');
         $roles = RoleModel::all();
         return view('pages.admin.manage-user.index', compact('table', 'roles'));
     }
 
     public function user_add(Request $request)
     {
-        // try {
+        try {
+            // Check if identitas already exists
+            $existingIdentitas = UserModel::where('identitas', $request->identitas)->first();
+            if ($existingIdentitas) {
+                return redirect()->route('admin.user')
+                    ->withInput()
+                    ->with('error', 'Gagal membuat akun, Identitas sudah digunakan!');
+            }
+
+            // Check if email already exists
+            $existingEmail = UserModel::where('email', $request->email)->first();
+            if ($existingEmail) {
+                return redirect()->route('admin.user')
+                    ->withInput()
+                    ->with('error', 'Gagal membuat akun, Email sudah digunakan!');
+            }
+
             $validator = Validator::make($request->all(), [
                 'nama' => 'required|max:50',
                 'identitas' => 'required|max:20|unique:m_user,identitas',
@@ -165,10 +181,10 @@ class AdminController extends Controller
 
             return redirect()->route('admin.user')
                 ->with('success', 'User berhasil ditambahkan');
-        // } catch (\Exception $e) {
-        //     return redirect()->route('admin.user')
-        //         ->withInput()
-        //         ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        // }
+        } catch (\Exception $e) {
+            return redirect()->route('admin.user')
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 }
