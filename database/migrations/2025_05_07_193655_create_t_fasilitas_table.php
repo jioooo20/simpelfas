@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('ruang_id')->references('ruang_id')->on('m_ruang');
-            $table->foreign('kategori_fasilitas_id')->references('kategori_fasilitas_id')->on('m_kategori_fasilitas');
+            $table->foreign('barang_id')->references('barang_id')->on('m_barang');
         });
     }
 
