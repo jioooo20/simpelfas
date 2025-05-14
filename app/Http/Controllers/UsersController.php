@@ -11,5 +11,9 @@ class UsersController extends Controller
         return view('pages.users.laporan.index');
     }
 
+    public function statusLaporan()
+    {
+        return view('pages.users.status-laporan.index');
+    }
 
 }
