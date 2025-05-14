@@ -15,13 +15,13 @@ return new class extends Migration
             $table->id('fasilitas_id');
             $table->unsignedBigInteger('ruang_id')->index();
             $table->unsignedBigInteger('kategori_fasilitas_id')->index();
+            $table->unsignedBigInteger('barang_id')->index();
             $table->string('fasilitas_kode', 10)->unique();
             $table->string('fasilitas_nama', 100);
             $table->string('fasilitas_spesifikasi')->nullable();
             $table->date('fasilitas_tanggal_pengadaan');
             $table->enum('fasilitas_status', ['Baik', 'Dalam Perbaikan', 'Rusak Ringan', 'Rusak Berat']);
             $table->timestamps();
-
             $table->foreign('ruang_id')->references('ruang_id')->on('m_ruang');
             $table->foreign('barang_id')->references('barang_id')->on('m_barang');
         });
@@ -32,6 +32,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('t_fasilitas', function (Blueprint $table) {
+            $table->dropForeign(['ruang_id']);
+            $table->dropForeign(['barang_id']);
+        });
         Schema::dropIfExists('t_fasilitas');
     }
 };
