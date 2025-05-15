@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('m_barang', function (Blueprint $table) {
             $table->id('barang_id');
-            $table->string('barang_kode', 10)->unique();
-            $table->string('barang_nama', 100);
-            $table->string('barang_deskripsi')->nullable();    
+            $table->string('kode_barang', 20)->unique();
+            $table->string('nama_barang');
+            $table->text('deskripsi')->nullable();
             $table->timestamps();
         });
     }

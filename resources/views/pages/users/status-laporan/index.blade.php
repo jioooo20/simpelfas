@@ -20,7 +20,7 @@
         </div>
 
         <div class="overflow-x-auto rounded-xl border border-gray-200">
-            <table class="table w-full">
+            <table class="table table-zebra w-full">
                 <thead class="bg-base-200 text-base-content">
                 <tr class="text-center">
                     <th>No</th>
