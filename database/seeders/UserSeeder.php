@@ -34,10 +34,10 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'identitas' => '33333333333',
+                'identitas' => '3333333333',
                 'nama' => 'Teknisi',
                 'password' => Hash::make('12345'),
-                'email' => '33333333333@polinema.ac.id',
+                'email' => '3333333333@polinema.ac.id',
                 'role_id' => 3,
                 'created_at' => now(),
                 'updated_at' => now(),
