@@ -11,5 +11,9 @@ class UsersController extends Controller
         return view('pages.users.laporan.index');
     }
 
+    public function UmpanBalik() {
+        return view ('pages.users.feedback.index');
+    }
+
 
 }

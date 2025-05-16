@@ -52,6 +52,8 @@ Route::middleware('auth')->group(function () {
     });
     Route::middleware('role:4')->prefix('users')->group(function (): void {
         Route::get('/', [UsersController::class, 'index'])->name('users');
+        Route::get('/feedback',[UsersController::class, 'UmpanBalik'])->name('users.feedback');
+        
     });
 });
 

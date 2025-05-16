@@ -12,5 +12,11 @@
                 asdjsdfjkdsf
             </div>
         </div>
+        <br>
+        <div class="bg-base-100 shadow-md border rounded-xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                asdjsdfjkdsf
+            </div>
+        </div>
     </div>
 @endsection
