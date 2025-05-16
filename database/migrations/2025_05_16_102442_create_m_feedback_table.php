@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('rating')->nullable();
             $table->timestamps();
 
-            $table->foreign('pelaporan_id')->references('id')->on('pelaporan')->onDelete('cascade');
+            $table->foreign('pelaporan_id')->references('pelaporan_id')->on('m_pelaporan')->onDelete('cascade');
         });
     }
 
