@@ -31,33 +31,45 @@
         document.addEventListener('DOMContentLoaded', function() {
             @if (session('error'))
                 Toastify({
-                    text: "{{ session('error') }}",
-                    duration: 2000,
-                    close: true,
+                    text: `<div class="flex items-center gap-3">
+                              <i class="bi bi-exclamation-circle-fill text-xl"></i>
+                              <span>{{ session('error') }}</span>
+                           </div>`,
+                    duration: 3000,
                     gravity: "top",
                     position: "right",
-                    style: {
-                        background: "linear-gradient(to right, #f87171, #ef4444)",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-                    },
+                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    className: "rounded-lg shadow-md",
                     stopOnFocus: true,
+                    // close: true,
+                    escapeMarkup: false,
+                    style: {
+                        padding: "12px 20px",
+                        fontWeight: "500",
+                        minWidth: "300px"
+                    },
                 }).showToast();
             @endif
 
             @if (session('success'))
                 Toastify({
-                    text: "{{ session('success') }}",
-                    duration: 2000,
-                    close: true,
+                    text: `<div class="flex items-center gap-3">
+                              <i class="bi bi-check-circle-fill text-xl"></i>
+                              <span>{{ session('success') }}</span>
+                           </div>`,
+                    duration: 3000,
                     gravity: "top",
                     position: "right",
-                    style: {
-                        background: "linear-gradient(to right, #4ade80, #22c55e)",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-                    },
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                    className: "rounded-lg shadow-md",
                     stopOnFocus: true,
+                    // close: true,
+                    escapeMarkup: false,
+                    style: {
+                        padding: "12px 20px",
+                        fontWeight: "500",
+                        minWidth: "300px"
+                    },
                 }).showToast();
             @endif
         });
