@@ -22,11 +22,7 @@
                     <span class="label-text">Email</span>
                 </label>
                 <input type="email" name="email" class="input input-bordered"
-                       title="Masukkan alamat email yang valid"
-                       oninput="validateEmail(this)"
-                       required
-                        maxlength="60"
-                       />
+                    title="Masukkan alamat email yang valid" oninput="validateEmail(this)" required maxlength="60" />
                 <div id="email-validation-message" class="text-xs text-red-500 mt-1 hidden">
                     Format email tidak valid
                 </div>
@@ -35,10 +31,8 @@
                 <label class="label">
                     <span class="label-text">Password</span>
                 </label>
-                <input type="password" id="password" name="password" class="input input-bordered"
-                    minlength="5"
-                    title="Password harus minimal 5 karakter"
-                    required />
+                <input type="password" id="password" name="password" class="input input-bordered" minlength="5"
+                    title="Password harus minimal 5 karakter" required />
                 <label class="label">
                     <span class="label-text-alt text-gray-500">Minimal 5 karakter</span>
                 </label>
@@ -66,49 +60,49 @@
 @push('skrip')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            @if (session('error'))
+            @if (session('success'))
                 Toastify({
-                    text: "{{ session('error') }}",
-                    duration: 2000,
-                    close: true,
+                    text: `<div class="flex items-center gap-3">
+                              <i class="bi bi-check-circle-fill text-xl"></i>
+                              <span>{{ session('success') }}</span>
+                           </div>`,
+                    duration: 3000,
                     gravity: "top",
                     position: "right",
-                    style: {
-                        background: "linear-gradient(to right, #f87171, #ef4444)",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-                    },
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                    className: "rounded-lg shadow-md",
                     stopOnFocus: true,
+                    // close: true,
+                    escapeMarkup: false,
+                    style: {
+                        padding: "12px 20px",
+                        fontWeight: "500",
+                        minWidth: "300px"
+                    },
                 }).showToast();
             @endif
 
-            @if (session('success'))
+            @if (session('error'))
                 Toastify({
-                    text: "{{ session('success') }}",
-                    duration: 2000,
-                    close: true,
+                    text: `<div class="flex items-center gap-3">
+                              <i class="bi bi-exclamation-circle-fill text-xl"></i>
+                              <span>{{ session('error') }}</span>
+                           </div>`,
+                    duration: 2500,
                     gravity: "top",
                     position: "right",
-                    style: {
-                        background: "linear-gradient(to right, #4ade80, #22c55e)",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-                    },
+                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    className: "rounded-lg shadow-md",
                     stopOnFocus: true,
+                    // close: true,
+                    escapeMarkup: false,
+                    style: {
+                        padding: "12px 20px",
+                        fontWeight: "500",
+                        minWidth: "300px"
+                    },
                 }).showToast();
             @endif
         });
-        function validateEmail(input) {
-                const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-                const validationMessage = document.getElementById('email-validation-message');
-
-                if (input.value && !emailPattern.test(input.value)) {
-                    validationMessage.classList.remove('hidden');
-                    input.classList.add('input-error');
-                } else {
-                    validationMessage.classList.add('hidden');
-                    input.classList.remove('input-error');
-                }
-            }
     </script>
 @endpush
