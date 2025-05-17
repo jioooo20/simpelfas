@@ -47,7 +47,9 @@ Route::middleware('auth')->group(function () {
     });
     Route::middleware('role:4')->prefix('users')->group(function (): void {
         Route::get('/', [UsersController::class, 'index'])->name('users');
+        Route::post('/pelaporan', [UsersController::class, 'storePelaporan'])->name('store-pelaporan');
         Route::get('/status-laporan', [UsersController::class, 'statusLaporan'])->name('status-laporan');
+        Route::get('/lokasi-options', [UsersController::class, 'getLokasiOptions'])->name('lokasi-options');
     });
 });
 
