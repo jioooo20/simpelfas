@@ -29,19 +29,35 @@
                         />
                     </div>
 
-                    <div class="grid gap-2">
-                        <label for="lokasi" class="text-gray-700 font-medium">Lokasi Kerusakan</label>
-                        <select
-                            id="lokasi"
-                            name="lokasi"
-                            required
-                            class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="" disabled selected>Pilih lokasi kerusakan</option>
-                            <option value="Gedung A">Gedung A</option>
-                            <option value="Gedung B">Gedung B</option>
-                            <option value="Gedung C">Gedung C</option>
-                        </select>
+                    <div class="form-control w-full relative">
+                        <label for="search-lokasi" class="label">
+                            <span class="label-text text-base text-gray-700 font-semibold">Lokasi Kerusakan</span>
+                        </label>
+
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.6 3.6a7.5 7.5 0 0013.05 13.05z" />
+                                </svg>
+                            </div>
+                            <input
+                                type="text"
+                                id="search-lokasi"
+                                placeholder="Cari lokasi..."
+                                autocomplete="off"
+                                class="input input-bordered w-full pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                onfocus="showDropdown()"
+                            />
+                            <input type="hidden" id="lokasi" name="lokasi" required />
+                        </div>
+                    </div>
+
+                    {{-- dropdown sekarang di luar .form-control --}}
+                    <div id="dropdown" class="w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto hidden mt-1">
+                        <ul id="lokasi-options" class="py-1 text-sm"></ul>
+                        <div id="not-found" class="px-4 py-3 text-sm text-gray-500 italic bg-gray-50 hidden">
+                            Tidak ada lokasi yang cocok ditemukan
+                        </div>
                     </div>
 
                     <div class="grid gap-2">
@@ -102,3 +118,100 @@
         </div>
     </div>
 @endsection
+@push('skrip')
+    <script>
+        const searchInput    = document.getElementById('search-lokasi');
+        const lokasiHidden   = document.getElementById('lokasi');
+        const dropdown       = document.getElementById('dropdown');
+        const optionsList    = document.getElementById('lokasi-options');
+        const notFound       = document.getElementById('not-found');
+
+        const locations = [
+            "Gedung Sipil - lantai 1 - ruang 101 - lampu",
+            "Gedung Sipil - lantai 1 - ruang 102 - lampu",
+            "Gedung Sipil - lantai 2 - ruang 201 - lampu",
+            "Gedung Sipil - lantai 2 - ruang 202 - lampu",
+            "Gedung Sipil - lantai 3 - ruang 301 - lampu"
+        ];
+
+        let activeIndex = -1;
+        let currentOptions = [];
+
+        function showDropdown() {
+            dropdown.classList.remove('hidden');
+        }
+
+        function hideDropdown() {
+            dropdown.classList.add('hidden');
+            activeIndex = -1;
+        }
+
+        function renderOptions(filter) {
+            optionsList.innerHTML = "";
+            currentOptions = locations.filter(loc => loc.toLowerCase().includes(filter.toLowerCase()));
+            if (currentOptions.length === 0) {
+                notFound.classList.remove('hidden');
+            } else {
+                notFound.classList.add('hidden');
+                currentOptions.forEach((loc, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = loc;
+                    li.className = "px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors";
+                    li.dataset.index = index;
+                    li.onclick = () => selectOption(index);
+                    optionsList.appendChild(li);
+                });
+            }
+        }
+
+        function selectOption(index) {
+            if (index >= 0 && index < currentOptions.length) {
+                const selected = currentOptions[index];
+                searchInput.value = selected;
+                lokasiHidden.value = selected;
+                hideDropdown();
+            }
+        }
+
+        function updateActiveOption() {
+            const items = optionsList.querySelectorAll('li');
+            items.forEach((li, index) => {
+                li.classList.toggle('bg-blue-100', index === activeIndex);
+            });
+        }
+
+        searchInput.addEventListener('input', function () {
+            const filter = this.value.trim();
+            if (filter.length > 0) {
+                showDropdown();
+                renderOptions(filter);
+            } else {
+                hideDropdown();
+            }
+        });
+
+        searchInput.addEventListener('keydown', function (e) {
+            const total = currentOptions.length;
+            if (dropdown.classList.contains('hidden') || total === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeIndex = (activeIndex + 1) % total;
+                updateActiveOption();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = (activeIndex - 1 + total) % total;
+                updateActiveOption();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                selectOption(activeIndex);
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!searchInput.contains(event.target) && !dropdown.contains(event.target)) {
+                hideDropdown();
+            }
+        });
+    </script>
+@endpush
