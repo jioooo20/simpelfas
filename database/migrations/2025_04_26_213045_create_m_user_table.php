@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string("nama", 50);
             $table->string("password");
             $table->string("email");
-            $table->mediumText("profile_image")->nullable();
             $table->timestamps();
 
 

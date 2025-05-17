@@ -108,10 +108,28 @@
 
             {{-- sarpra --}}
             @if(in_array(Auth::user()->role_id, ['2']))
+            <li>
+                <a href="{{ route('sarpra') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                    <i class="fa-solid fa-chart-line w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                    <span class="sidebar-text">Dasbor</span>
+                </a>
+            </li>
             @endif
 
             {{-- teknisi --}}
             @if(in_array(Auth::user()->role_id, ['3']))
+              <li>
+                <a href="{{ route('teknisi') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                    <i class="fa-solid fa-screwdriver-wrench w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                    <span class="sidebar-text">Perbaikan Fasilitas</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                    <i class="fa-solid fa-history w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                    <span class="sidebar-text">Riwayat Perbaikan</span>
+                </a>
+            </li>
             @endif
 
             {{-- warga polinema --}}

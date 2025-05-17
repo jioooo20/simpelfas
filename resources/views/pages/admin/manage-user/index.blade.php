@@ -17,14 +17,12 @@
 
         {{-- kotak --}}
         <div class="bg-base-100 shadow-md border rounded-xl p-6">
-
             {{-- table --}}
             <div class="overflow-x-auto">
                 <livewire:user-table />
 
         </div>
     </div>
-
     @include('pages.admin.manage-user.add')
 @endsection
 
