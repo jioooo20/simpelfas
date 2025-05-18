@@ -13,7 +13,7 @@ class FasilitasSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('m_fasilitas')->insert([
+        DB::table('t_fasilitas')->insert([
             [
             'fasilitas_kode' => 'FAS001',
             'fasilitas_nama' => 'AC',

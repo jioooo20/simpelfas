@@ -28,6 +28,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('t_fasilitas');
         Schema::dropIfExists('m_ruang');
     }
 };
