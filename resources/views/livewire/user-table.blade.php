@@ -58,7 +58,7 @@
                 <i class="bi bi-search text-gray-400"></i>
             </div>
             <input wire:model.live="search" type="text" class="input input-bordered w-full pl-10"
-                placeholder="Search by name, email, or identity..." />
+                placeholder="Cari berdasarkan nama, email, atau identitas..." />
         </div>
     </div>
 
@@ -212,10 +212,10 @@
                     <h2 class="text-xl font-bold">Konfirmasi Hapus</h2>
                     <p class="text-gray-500 mt-1">Tindakan ini tidak dapat dibatalkan</p>
                 </div>
-                
+
                 <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-5 rounded">
                     <p class="text-md">
-                        Anda akan menghapus pengguna <span class="font-semibold">{{ $nama }}</span> 
+                        Anda akan menghapus pengguna <span class="font-semibold">{{ $nama }}</span>
                         dari sistem. Semua data terkait pengguna ini akan dihapus secara permanen.
                     </p>
                 </div>
@@ -225,7 +225,7 @@
                         class="btn btn-outline btn-sm">
                         <i class="bi bi-x mr-1"></i> Batal
                     </button>
-                    <button wire:click="deleteUser" 
+                    <button wire:click="deleteUser"
                         class="btn btn-error btn-sm">
                         <i class="bi bi-trash mr-1"></i> Hapus Pengguna
                     </button>
