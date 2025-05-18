@@ -8,10 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class GedungModel extends Model
 {
     use HasFactory;
-
     protected $table = 'm_gedung';
     protected $primaryKey = 'gedung_id';
-    protected $fillable = ['gedung_kode', 'gedung_nama', 'gedung_keterangan'];
+    protected $fillable = [
+        'gedung_id',
+        'gedung_kode',
+        'gedung_nama',
+        'gedung_keterangan',
+        'created_at',
+        'updated_at'
+    ];
 
     public function lantai()
     {
