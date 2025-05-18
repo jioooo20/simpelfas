@@ -57,7 +57,7 @@
     @include('layouts.sidebar')
     @include('layouts.header')
 
-    <div class="ml-64 p-2 transition-all duration-300" id="main-content">
+    <div class="ml-64 pt-2 px-2 transition-all duration-300" id="main-content">
         @yield('content')
     </div>
 
