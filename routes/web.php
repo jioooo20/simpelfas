@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SarpraController;
 use App\Http\Controllers\TeknisiController;
 use App\Http\Controllers\UsersController;
@@ -27,6 +28,10 @@ Route::middleware('auth')->group(function () {
         4 => redirect()->route('users'),
         default => route('login'),
     });
+
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 
     Route::middleware('role:1')->prefix('admin')->group(function (): void {
         Route::get('/', [AdminController::class, 'dasbor'])->name('admin');
