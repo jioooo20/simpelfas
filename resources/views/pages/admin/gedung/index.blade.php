@@ -29,7 +29,7 @@
 
             <div class="p-6">
                 <div id="content-gedung" class="tab-content block">
-                    <livewire:gedung-tdable />
+                    <livewire:gedung-table />
                 </div>
 
                 <div id="content-lantai" class="tab-content hidden">
