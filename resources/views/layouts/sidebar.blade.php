@@ -147,7 +147,7 @@
             @endif
 
             {{-- warga polinema --}}
-            @if (in_array(Auth::user()->role_id, ['4']))
+            @if (in_array(Auth::user()->role_id, ['4', '5', '6']))
                 <li>
                     <a href="{{ route('users') }}"
                         class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">

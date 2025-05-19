@@ -24,7 +24,7 @@ Route::middleware('auth')->group(function () {
         1 => redirect()->route('admin'),
         2 => redirect()->route('sarpra'),
         3 => redirect()->route('teknisi'),
-        4 => redirect()->route('users'),
+        4, 5, 6 => redirect()->route('users'),
         default => route('login'),
     });
 
@@ -53,7 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:3')->prefix('teknisi')->group(function (): void {
         Route::get('/', [TeknisiController::class, 'perbaikan'])->name('teknisi');
     });
-    Route::middleware('role:4')->prefix('users')->group(function (): void {
+    Route::middleware('role:4,5,6')->prefix('users')->group(function (): void {
         Route::get('/', [UsersController::class, 'index'])->name('users');
         Route::post('/pelaporan', [UsersController::class, 'storePelaporan'])->name('store-pelaporan');
         Route::get('/status-laporan', [UsersController::class, 'statusLaporan'])->name('status-laporan');

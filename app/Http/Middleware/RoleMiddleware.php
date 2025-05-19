@@ -14,9 +14,19 @@ class RoleMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle($request, Closure $next, $roleId)
+    public function handle($request, Closure $next, ...$roleIds)
     {
-        if (Auth::user()->role_id != $roleId) {
+        $allowedRoles = [];
+        foreach ($roleIds as $role) {
+            $roleParts = explode(',', $role);
+            foreach ($roleParts as $rolePart) {
+                if (is_numeric($rolePart)) {
+                    $allowedRoles[] = (int) $rolePart;
+                }
+            }
+        }
+
+        if (!in_array(Auth::user()->role_id, $allowedRoles)) {
             abort(403); // Unauthorized
         }
 
