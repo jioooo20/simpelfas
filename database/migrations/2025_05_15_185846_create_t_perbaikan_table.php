@@ -17,8 +17,6 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->index();
             $table->string('perbaikan_kode', 10)->unique();
             $table->string('perbaikan_deskripsi', 255);
-            $table->mediumText("perbaikan_gambar")->nullable();
-            $table->enum('perbaikan_status', ['Menunggu', 'Diproses', 'Selesai'])->default('Menunggu');
             $table->timestamps();
 
             $table->foreign('pelaporan_id')->references('pelaporan_id')->on('m_pelaporan');

@@ -4,8 +4,8 @@
     <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2 my-1">
             <img class="h-8 w-8 rounded-full"
-            src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->nama) }}&background=4338ca&color=fff"
-            alt="{{ Auth::user()->nama }}" loading="lazy">
+                src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->nama) }}&background=4338ca&color=fff"
+                alt="{{ Auth::user()->nama }}" loading="lazy">
             <span class="text-md judul sidebar-text">{{ Str::limit(Auth::user()->nama, 13) }}</span>
         </div>
         <div id="toggle-button-container" class="flex justify-end w-16">
@@ -16,107 +16,129 @@
     </div>
     <nav class="flex-1">
         <ul class="space-y-2">
-            @if(in_array(Auth::user()->role_id, ['1']))
-            <li>
-                <a href="{{ route('admin') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                    <i class="fa-solid fa-gauge group-hover:text-primary transition-transform duration-200"></i>
-                    <span class="sidebar-text">Dashboard</span>
-                </a>
-            </li>
-            <li x-data="{ open: false }">
-                <a href="#" @click="open = ! open"
-                    class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                    <i class="fa-solid fa-user group-hover:text-primary transition-transform duration-200"></i>
-                    <span class="sidebar-text">Pengelolaan User</span>
-                    <i class="fa-solid fa-chevron-down ml-auto transition-transform duration-200"
-                        :class="{ 'rotate-180': open }"></i>
-                </a>
-                <ul x-show="open" class="space-y-2 mt-2 ml-6">
-                    <li>
-                        <a href="{{ route('admin.role') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                            <i class="fa-solid fa-users-cog group-hover:text-primary transition-transform duration-200"></i>
-                            <span class="sidebar-text text-sm">Hak Akses</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('admin.user') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                            <i class="fa-solid fa-user-plus group-hover:text-primary transition-transform duration-200"></i>
-                            <span class="sidebar-text text-sm">Pengguna</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <li x-data="{ open: false }">
-                <a href="#" @click="open = ! open"
-                    class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                    <i class="fa-solid fa-folder group-hover:text-primary transition-transform duration-200"></i>
-                    <span class="sidebar-text">Manajemen</span>
-                    <i class="fa-solid fa-chevron-down ml-auto transition-transform duration-200"
-                        :class="{ 'rotate-180': open }"></i>
-                </a>
-                <ul x-show="open" class="space-y-2 mt-2 ml-6">
-                    <li>
-                        <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                            <i class="fa-solid fa-file-invoice group-hover:text-primary transition-transform duration-200"></i>
-                            <span class="sidebar-text text-sm">Prioritas Perbaikan</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                            <i class="fa-solid fa-file-invoice group-hover:text-primary transition-transform duration-200"></i>
-                            <span class="sidebar-text text-sm">Fasilitas Kampus</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                            <i class="fa-solid fa-file-invoice group-hover:text-primary transition-transform duration-200"></i>
-                            <span class="sidebar-text text-sm">Gedung</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <li x-data="{ open: false }">
-                <a href="#" @click="open = ! open"
-                    class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                    <i class="fa-solid fa-circle-exclamation group-hover:text-primary transition-transform duration-200"></i>
-                    <span class="sidebar-text">Laporan</span>
-                    <i class="fa-solid fa-chevron-down ml-auto transition-transform duration-200"
-                        :class="{ 'rotate-180': open }"></i>
-                </a>
-                <ul x-show="open" class="space-y-2 mt-2 ml-6">
-                    <li>
-                        <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                            <i class="fa-solid fa-file-contract group-hover:text-primary transition-transform duration-200"></i>
-                            <span class="sidebar-text text-sm">Laporan Kerusakan</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                            <i class="fa-solid fa-chart-simple group-hover:text-primary transition-transform duration-200"></i>
-                            <span class="sidebar-text text-sm">Laporan & Statistik Sistem</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <li>
-                <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                    <i class="fa-solid fa-calendar-days group-hover:text-primary transition-transform duration-200"></i>
-                    <span class="sidebar-text">Periode</span>
-                </a>
-            </li>
+            @if (in_array(Auth::user()->role_id, ['1']))
+                <li>
+                    <a href="{{ route('admin') }}"
+                        class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                        <i class="fa-solid fa-gauge group-hover:text-primary transition-transform duration-200"></i>
+                        <span class="sidebar-text">Dashboard</span>
+                    </a>
+                </li>
+                <li x-data="{ open: false }">
+                    <a href="#" @click="open = ! open"
+                        class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                        <i class="fa-solid fa-user group-hover:text-primary transition-transform duration-200"></i>
+                        <span class="sidebar-text">Pengelolaan User</span>
+                        <i class="fa-solid fa-chevron-down ml-auto transition-transform duration-200"
+                            :class="{ 'rotate-180': open }"></i>
+                    </a>
+                    <ul x-show="open" class="space-y-2 mt-2 ml-6">
+                        <li>
+                            <a href="{{ route('admin.role') }}"
+                                class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                                <i
+                                    class="fa-solid fa-users-cog group-hover:text-primary transition-transform duration-200"></i>
+                                <span class="sidebar-text text-sm">Hak Akses</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('admin.user') }}"
+                                class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                                <i
+                                    class="fa-solid fa-user-plus group-hover:text-primary transition-transform duration-200"></i>
+                                <span class="sidebar-text text-sm">Pengguna</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li x-data="{ open: false }">
+                    <a href="#" @click="open = ! open"
+                        class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                        <i class="fa-solid fa-folder group-hover:text-primary transition-transform duration-200"></i>
+                        <span class="sidebar-text">Manajemen</span>
+                        <i class="fa-solid fa-chevron-down ml-auto transition-transform duration-200"
+                            :class="{ 'rotate-180': open }"></i>
+                    </a>
+                    <ul x-show="open" class="space-y-2 mt-2 ml-6">
+                        <li>
+                            <a href="{{route('admin.gedung')}}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                                <i
+                                    class="fa-solid fa-file-invoice group-hover:text-primary transition-transform duration-200"></i>
+                                <span class="sidebar-text text-sm">Data Gedung</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                                <i
+                                    class="fa-solid fa-file-invoice group-hover:text-primary transition-transform duration-200"></i>
+                                <span class="sidebar-text text-sm">Fasilitas Kampus</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                        <i
+                            class="fa-solid fa-file-invoice group-hover:text-primary transition-transform duration-200"></i>
+                        <span class="sidebar-text text-sm">Prioritas Perbaikan</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                        <i
+                            class="fa-solid fa-file-contract group-hover:text-primary transition-transform duration-200"></i>
+                        <span class="sidebar-text text-sm">Laporan Kerusakan</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                        <i
+                            class="fa-solid fa-chart-simple group-hover:text-primary transition-transform duration-200"></i>
+                        <span class="sidebar-text text-sm">Laporan & Statistik Sistem</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                        <i
+                            class="fa-solid fa-calendar-days group-hover:text-primary transition-transform duration-200"></i>
+                        <span class="sidebar-text">Periode</span>
+                    </a>
+                </li>
             @endif
 
             {{-- sarpra --}}
-            @if(in_array(Auth::user()->role_id, ['2']))
+            @if (in_array(Auth::user()->role_id, ['2']))
+                <li>
+                    <a href="{{ route('sarpra') }}"
+                        class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                        <i
+                            class="fa-solid fa-chart-line w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                        <span class="sidebar-text">Dasbor</span>
+                    </a>
+                </li>
             @endif
 
             {{-- teknisi --}}
-            @if(in_array(Auth::user()->role_id, ['3']))
+            @if (in_array(Auth::user()->role_id, ['3']))
+                <li>
+                    <a href="{{ route('teknisi') }}"
+                        class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                        <i
+                            class="fa-solid fa-screwdriver-wrench w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                        <span class="sidebar-text">Perbaikan Fasilitas</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                        <i
+                            class="fa-solid fa-history w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                        <span class="sidebar-text">Riwayat Perbaikan</span>
+                    </a>
+                </li>
             @endif
 
             {{-- warga polinema --}}
             @if(in_array(Auth::user()->role_id, ['4']))
-            
             <li>
                 <a href="{{ route('users') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                     <i class="fa-solid fa-file-circle-plus w-5 text-center group-hover:text-primary transition-transform duration-200"></i>

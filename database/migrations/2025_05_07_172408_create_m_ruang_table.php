@@ -16,8 +16,6 @@ return new class extends Migration
             $table->unsignedBigInteger('lantai_id')->index();
             $table->string('ruang_kode', 10)->unique();
             $table->string('ruang_nama', 100);
-            $table->enum('ruang_tipe', ['Teori', 'Laboratorium', 'Praktikum']);
-            $table->integer('ruang_kapasitas');
             $table->string('ruang_keterangan')->nullable();
             $table->timestamps();
 
@@ -30,6 +28,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('t_fasilitas');
         Schema::dropIfExists('m_ruang');
     }
 };

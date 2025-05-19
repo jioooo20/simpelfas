@@ -1,29 +1,68 @@
 <div>
-    <!-- Session Messages -->
-    @if (session()->has('message'))
-        <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 2500)" x-show="show" class="alert bg-green-600 text-white mb-4">
-            {{ session('message') }}
-        </div>
-    @endif
+    @push('skrip')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Livewire.on('showSuccessToast', (message) => {
+                    Toastify({
+                        text: `<div class="flex items-center gap-3">
+                              <i class="bi bi-check-circle-fill text-xl"></i>
+                              <span>${message}</span>
+                           </div>`,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                        className: "rounded-lg shadow-md",
+                        stopOnFocus: true,
+                        // close: true,
+                        escapeMarkup: false,
+                        style: {
+                            padding: "12px 20px",
+                            fontWeight: "500",
+                            minWidth: "300px"
+                        },
+                        onClick: function() {}
+                    }).showToast();
+                });
 
-    @if (session()->has('error'))
-        <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 2500)" x-show="show" class="alert bg-red-500 text-white mb-4">
-            {{ session('error') }}
-        </div>
-    @endif
+                Livewire.on('showErrorToast', (message) => {
+                    Toastify({
+                        text: `<div class="flex items-center gap-3">
+                              <i class="bi bi-exclamation-circle-fill text-xl"></i>
+                              <span>${message}</span>
+                           </div>`,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                        className: "rounded-lg shadow-md",
+                        stopOnFocus: true,
+                        // close: true,
+                        escapeMarkup: false,
+                        style: {
+                            padding: "12px 20px",
+                            fontWeight: "500",
+                            minWidth: "300px"
+                        },
+                        onClick: function() {}
+                    }).showToast();
+                });
+            });
+        </script>
+    @endpush
 
-    <!-- Search Input -->
+    {{-- search --}}
     <div class="flex justify-between items-center mb-4">
         <div class="relative w-full">
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <i class="bi bi-search text-gray-400"></i>
             </div>
             <input wire:model.live="search" type="text" class="input input-bordered w-full pl-10"
-                placeholder="Search by name, email, or identity..." />
+                placeholder="Cari berdasarkan nama, email, atau identitas..." />
         </div>
     </div>
 
-    <!-- User Table -->
+    {{-- table --}}
     <div class="overflow-x-auto">
         <table class="table table-zebra w-full relative" id="user-table">
             <thead>
@@ -58,15 +97,13 @@
                             </div>
                         </td>
                         <td class="flex gap-2 justify-center">
-                            <!-- Edit button - now calls component method directly -->
                             <a href="#" wire:click.prevent="editUser({{ $user->user_id ?? $user->id }})"
-                               class="text-indigo-400 hover:text-indigo-800">
+                                class="text-indigo-400 hover:text-indigo-800">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
 
-                            <!-- Delete button - now calls component method -->
                             <a href="#" wire:click.prevent="confirmDelete({{ $user->user_id ?? $user->id }})"
-                               class="text-red-500 hover:text-red-500">
+                                class="text-red-500 hover:text-red-500">
                                 <i class="bi bi-trash"></i>
                             </a>
                         </td>
@@ -76,7 +113,6 @@
         </table>
     </div>
 
-    <!-- Pagination -->
     <div class="flex items-center justify-between mt-6">
         <div class="text-sm text-gray-500">
             Showing {{ $table->firstItem() }} to {{ $table->lastItem() }} of {{ $table->total() }} results
@@ -111,52 +147,90 @@
     </div>
 
     <!-- Edit User Modal -->
-    @if($showEditModal)
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-lg shadow-xl">
-            <h2 class="text-xl font-semibold mb-4">Edit User</h2>
+    @if ($showEditModal)
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 w-full max-w-lg shadow-xl">
+                <h2 class="text-xl font-semibold mb-4">Edit User</h2>
 
-            <form wire:submit="updateUser">
-                <div class="space-y-4">
-                    <input type="text" wire:model="nama" placeholder="Nama" class="input input-bordered w-full">
-                    {{-- @error('nama')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror --}}
+                <form wire:submit="updateUser">
+                    <div class="space-y-4">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Nama</span>
+                            </label>
+                            <input type="text" wire:model="nama" placeholder="Nama"
+                                class="input input-bordered w-full">
+                        </div>
 
-                    <input type="email" wire:model="email" placeholder="Email" class="input input-bordered w-full">
-                    {{-- @error('email') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror --}}
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Email</span>
+                            </label>
+                            <input type="email" wire:model="email" placeholder="Email"
+                                class="input input-bordered w-full">
+                        </div>
 
-                    <input type="text" wire:model="identitas" placeholder="Identitas" class="input input-bordered w-full">
-                    {{-- @error('identitas') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror --}}
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Identitas</span>
+                            </label>
+                            <input type="text" wire:model="identitas" placeholder="Identitas"
+                                class="input input-bordered w-full">
+                        </div>
 
-                    <select wire:model="role_id" class="select select-bordered w-full">
-                        <option value="">Pilih Hak Akses</option>
-                        @foreach ($roles as $role)
-                            <option value="{{ $role->id }}">{{ $role->role_nama }}</option>
-                        @endforeach
-                    </select>
-                    {{-- @error('role_id') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror --}}
-                </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Hak Akses</span>
+                            </label>
+                            <select wire:model="role_id" class="select select-bordered w-full">
+                                <option value="">Pilih Hak Akses</option>
+                                @foreach ($roles as $role)
+                                    <option value="{{ $role->id }}">{{ $role->role_nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
 
-                <div class="mt-6 flex justify-end gap-2">
-                    <button type="button" wire:click="$set('showEditModal', false)" class="btn btn-ghost">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </div>
-            </form>
+                    <div class="mt-6 flex justify-end gap-2">
+                        <button type="button" wire:click="$set('showEditModal', false)"
+                            class="btn btn-sm btn-ghost">Batal</button>
+                        <button type="submit" class="btn btn-sm btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
     @endif
 
     <!-- Delete Confirmation Modal -->
-    @if($confirmingUserDeletion)
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
-            <h2 class="text-xl font-semibold mb-4">Konfirmasi Hapus</h2>
-            <p class="mb-4">Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat dibatalkan.</p>
+    @if ($confirmingUserDeletion)
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+                <div class="text-center mb-6">
+                    <div class="flex justify-center">
+                        <i class="bi bi-exclamation-triangle-fill text-6xl text-red-500 mb-2"></i>
+                    </div>
+                    <h2 class="text-xl font-bold">Konfirmasi Hapus</h2>
+                    <p class="text-gray-500 mt-1">Tindakan ini tidak dapat dibatalkan</p>
+                </div>
 
-            <div class="flex justify-end gap-2">
-                <button wire:click="$set('confirmingUserDeletion', false)" class="btn btn-ghost">Batal</button>
-                <button wire:click="deleteUser" class="btn btn-error">Hapus</button>
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-5 rounded">
+                    <p class="text-md">
+                        Anda akan menghapus pengguna <span class="font-semibold">{{ $nama }}</span>
+                        dari sistem. Semua data terkait pengguna ini akan dihapus secara permanen.
+                    </p>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button wire:click="$set('confirmingUserDeletion', false)"
+                        class="btn btn-outline btn-sm">
+                        <i class="bi bi-x mr-1"></i> Batal
+                    </button>
+                    <button wire:click="deleteUser"
+                        class="btn btn-error btn-sm">
+                        <i class="bi bi-trash mr-1"></i> Hapus Pengguna
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
     @endif
 </div>

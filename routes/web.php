@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SarpraController;
+use App\Http\Controllers\TeknisiController;
 use App\Http\Controllers\UsersController;
+use App\Livewire\ManageRole;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -22,7 +25,7 @@ Route::middleware('auth')->group(function () {
         2 => redirect()->route('sarpra'),
         3 => redirect()->route('teknisi'),
         4 => redirect()->route('users'),
-        default => abort(403, 'Unauthorized action.'),
+        default => route('login'),
     });
 
     Route::middleware('role:1')->prefix('admin')->group(function (): void {
@@ -30,29 +33,23 @@ Route::middleware('auth')->group(function () {
         Route::prefix('role')->group(function (): void {
             Route::get('/', [AdminController::class, 'role'])->name('admin.role');
             Route::post('/add', [AdminController::class, 'role_add'])->name('admin.role-add');
-            Route::get('/{id}/edit', [AdminController::class, 'role_edit_delete_modal'])->name('admin.role-edit');
-            Route::put('/{id}/update', [AdminController::class, 'role_update'])->name('admin.role-update');
-            Route::get('/{id}/delete', [AdminController::class, 'role_edit_delete_modal'])->name('admin.role-delete');
-            Route::delete('/{id}/deleted', [AdminController::class, 'role_deleted'])->name('admin.role-deleted');
         });
         Route::prefix('user')->group(function (): void {
             Route::get('/', [AdminController::class, 'user'])->name('admin.user');
             Route::post('/add', [AdminController::class, 'user_add'])->name('admin.user-add');
-            // Route::get('/{id}/edit', [AdminController::class, 'user_edit_delete_modal'])->name('admin.user-edit');
-            // Route::put('/{id}/update', [AdminController::class, 'user_update'])->name('admin.user-update');
-            // Route::get('/{id}/delete', [AdminController::class, 'user_edit_delete_modal'])->name('admin.user-delete');
-            // Route::delete('/{id}/deleted', [AdminController::class, 'user_deleted'])->name('admin.user-deleted');
         });
     });
     Route::middleware('role:2')->prefix('sarpra')->group(function (): void {
-        // Route::get('/', [AdminController::class, 'dasbor'])->name('admin');
+        Route::get('/', [SarpraController::class, 'dasbor'])->name('sarpra');
     });
     Route::middleware('role:3')->prefix('teknisi')->group(function (): void {
-        // Route::get('/', [AdminController::class, 'dasbor'])->name('admin');
+        Route::get('/', [TeknisiController::class, 'perbaikan'])->name('teknisi');
     });
     Route::middleware('role:4')->prefix('users')->group(function (): void {
         Route::get('/', [UsersController::class, 'index'])->name('users');
+        Route::post('/pelaporan', [UsersController::class, 'storePelaporan'])->name('store-pelaporan');
         Route::get('/status-laporan', [UsersController::class, 'statusLaporan'])->name('status-laporan');
+        Route::get('/lokasi-options', [UsersController::class, 'getLokasiOptions'])->name('lokasi-options');
         Route::get('/feedback',[UsersController::class, 'UmpanBalik'])->name('users.feedback');
         Route::get('/feedback-create',[UsersController::class, 'UmpanBalik_Create'])->name('feedback-create');
         Route::post('/feedback-store', [UsersController::class, 'store'])->name('feedback-store');

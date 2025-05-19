@@ -1,96 +1,134 @@
 @extends('layouts.main')
-@section('judul', 'Kelola Pengguna')
+@section('judul', 'Umpan Balik')
 @section('content')
-    <div class="container mx-auto px-4 py-4">
-        <!-- Header section -->
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">Umpan Balik</h1>
+    <div class="container mx-auto px-4 py-6">
+        <!-- Header section with consistent spacing -->
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Umpan Balik</h1>
         </div>
 
-            {{-- @foreach ($completedReports as $report)
-                    <div class="flex flex-col md:flex-row bg-white rounded-lg shadow p-4 justify-between items-start relative mb-4">
-                        <div class="flex flex-col md:flex-row gap-4">
-                            <img src="{{ asset('storage/'.$report->photo) }}" alt="Foto kerusakan"
-                                class="w-32 h-32 object-cover rounded shadow">
-                            <div>
-                                <h3 class="font-bold text-lg uppercase text-gray-800">{{ $report->title }}</h3>
-                                <p class="text-sm text-gray-600">{{ $report->location }}</p>
-                                <p class="text-sm text-gray-500">Ditangani pada: {{ $report->completed_at->format('d M Y') }}</p>
-                                
-                                @if($report->description)
-                                <div class="mt-2 p-3 bg-gray-50 rounded">
-                                    <h4 class="font-semibold text-sm mb-1">Deskripsi Kerusakan:</h4>
-                                    <p class="text-sm text-gray-700">{{ $report->description }}</p>
-                                </div>
-                                @endif
-                                
-                                <p class="text-sm mt-2">
-                                    <span class="font-semibold">Status:</span> 
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded">{{ $report->status }}</span>
-                                </p>
-                                
-                                @if($report->handling_team)
-                                <p class="text-sm mt-1">
-                                    <span class="font-semibold">Tim Penanganan:</span> {{ $report->handling_team }}
-                                </p>
-                                @endif
-                                
-                                @if($report->duration)
-                                <p class="text-sm mt-1">
-                                    <span class="font-semibold">Durasi Penanganan:</span> {{ $report->duration }} hari kerja
-                                </p>
-                                @endif
-                                
-                                @if($report->repair_details)
-                                <p class="text-sm mt-1">
-                                    <span class="font-semibold">Detail Perbaikan:</span> {{ $report->repair_details }}
-                                </p>
-                                @endif
+        <!-- Feedback items container -->
+        <div class="space-y-6">
+            <!-- Feedback item card with better structure -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <!-- Card header and content area -->
+                <div class="p-6">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <!-- Image with proper sizing constraints -->
+                        <div class="w-full md:w-48 h-48 flex-shrink-0 relative">
+                            <img src="{{ asset('storage/kucing.jpg') }}" alt="Foto kerusakan"
+                                class="w-full h-full object-cover rounded-md shadow">
+                            <!-- Status Badge -->
+                            <div
+                                class="absolute top-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
+                                SELESAI
                             </div>
                         </div>
-                        <div class="absolute bottom-4 right-4">
-                            <a href="{{ route('feedback.create', $report->id) }}"
-                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 text-sm rounded shadow transition duration-200">
-                                Beri Penilaian
-                            </a>
+
+                        <!-- Content with better spacing and hierarchy -->
+                        <div class="flex-1">
+                            <div class="mb-4">
+                                <h3 class="font-bold text-xl text-gray-800">LAMPU LOBY MATI</h3>
+                                <p class="text-gray-600 flex items-center gap-2"><i class="bi bi-geo-alt"></i>Gd. AN Lt. 2
+                                </p>
+                                <p class="text-gray-500 text-sm mt-1 flex items-center gap-2"><i
+                                        class="bi bi-calendar2-minus"></i>Ditangani pada: 15 Mei 2025</p>
+
+                                <h4 class="font-medium text-gray-700 mt-10 mb-2">Deskripsi Kerusakan:</h4>
+                                <p class="text-gray-600">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quam,
+                                    placeat. Enim laudantium eos asperiores suscipit.</p>
+                            </div>
+                            <div class="flex justify-end">
+                                <a href="{{ route('feedback-create') }}"
+                                    class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md font-medium text-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                                    Beri Penilaian
+                                </a>
+                            </div>
                         </div>
                     </div>
-                @endforeach 
-            --}}
+                </div>
 
-        {{-- START --}}
-        <div class="flex flex-col gap-4 w-full">        
-            <div class="flex flex-col md:flex-row bg-white rounded-lg shadow p-4 justify-between items-start relative mb-4">
-                <div class="flex flex-col md:flex-row gap-4">
-                    <img src="/placeholder-damage.jpg" alt="Foto kerusakan"
-                        class="w-42 h-42 object-cover rounded shadow">
-                            <div>
-                                <h3 class="font-bold text-lg uppercase text-gray-800">LAMPU LOBY MATI</h3>
-                                <p class="text-sm text-gray-600">Gd. AN Lt. 2</p>
-                                <p class="text-sm text-gray-500">Ditangani pada: 15 Mei 2025</p>
-                                
-                                <div class="mt-2 p-3 bg-gray-50 rounded">
-                                    <h4 class="font-semibold text-sm mb-1">Deskripsi Kerusakan:</h4>
-                                    <p class="text-sm text-gray-700">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quam, placeat. Enim laudantium eos asperiores suscipit.</p>
-                                </div>
-                                
-                                <p class="text-sm mt-2">
-                                    <span class="font-semibold">Status:</span> 
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded">Selesai diperbaiki</span>
-                                </p>
-                                <p class="text-sm mt-1">
-                                    <span class="font-semibold">Durasi Penanganan:</span> 7 hari kerja
-                                </p>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <!-- Card header and content area -->
+                <div class="p-6">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <!-- Image with proper sizing constraints -->
+                        <div class="w-full md:w-48 h-48 flex-shrink-0 relative">
+                            <img src="{{ asset('storage/kucing.jpg') }}" alt="Foto kerusakan"
+                                class="w-full h-full object-cover rounded-md shadow">
+                            <!-- Status Badge -->
+                            <div
+                                class="absolute top-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
+                                SELESAI
                             </div>
+                        </div>
+
+                        <!-- Content with better spacing and hierarchy -->
+                        <div class="flex-1">
+                            <div class="mb-4">
+                                <h3 class="font-bold text-xl text-gray-800">LAMPU LOBY MATI</h3>
+                                <p class="text-gray-600 flex items-center gap-2"><i class="bi bi-geo-alt"></i>Gd. AN Lt. 2
+                                </p>
+                                <p class="text-gray-500 text-sm mt-1 flex items-center gap-2"><i
+                                        class="bi bi-calendar2-minus"></i>Ditangani pada: 15 Mei 2025</p>
+
+                                <h4 class="font-medium text-gray-700 mt-10 mb-2">Deskripsi Kerusakan:</h4>
+                                <p class="text-gray-600">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quam,
+                                    placeat. Enim laudantium eos asperiores suscipit.</p>
+                            </div>
+                            <div class="flex justify-end">
+                                <a href="{{ route('feedback-create') }}"
+                                    class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md font-medium text-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                                    Beri Penilaian
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="absolute bottom-4 right-4">
-                    <a href="{{ route('feedback-create') }}"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 text-sm rounded shadow transition duration-200">
-                        Beri Penilaian
-                    </a>
+
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <!-- Card header and content area -->
+                <div class="p-6">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <!-- Image with proper sizing constraints -->
+                        <div class="w-full md:w-48 h-48 flex-shrink-0 relative">
+                            <img src="{{ asset('storage/kucing.jpg') }}" alt="Foto kerusakan"
+                                class="w-full h-full object-cover rounded-md shadow">
+                            <!-- Status Badge -->
+                            <div
+                                class="absolute top-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
+                                SELESAI
+                            </div>
+                        </div>
+
+                        <!-- Content with better spacing and hierarchy -->
+                        <div class="flex-1">
+                            <div class="mb-4">
+                                <h3 class="font-bold text-xl text-gray-800">LAMPU LOBY MATI</h3>
+                                <p class="text-gray-600 flex items-center gap-2"><i class="bi bi-geo-alt"></i>Gd. AN Lt. 2
+                                </p>
+                                <p class="text-gray-500 text-sm mt-1 flex items-center gap-2"><i
+                                        class="bi bi-calendar2-minus"></i>Ditangani pada: 15 Mei 2025</p>
+
+                                <h4 class="font-medium text-gray-700 mt-10 mb-2">Deskripsi Kerusakan:</h4>
+                                <p class="text-gray-600">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quam,
+                                    placeat. Enim laudantium eos asperiores suscipit.</p>
+                            </div>
+                            <div class="flex justify-end">
+                                <a href="{{ route('feedback-create') }}"
+                                    class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md font-medium text-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                                    Beri Penilaian
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </div>
-        {{-- END --}}
     </div>
 @endsection
