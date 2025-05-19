@@ -117,4 +117,8 @@ class AdminController extends Controller
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    public function gedung(){
+        return view('pages.admin.gedung.index');
+    }
 }

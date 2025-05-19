@@ -70,7 +70,7 @@
                     </a>
                     <ul x-show="open" class="space-y-2 mt-2 ml-6">
                         <li>
-                            <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                            <a href="{{route('admin.gedung')}}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                                 <i
                                     class="fa-solid fa-file-invoice group-hover:text-primary transition-transform duration-200"></i>
                                 <span class="sidebar-text text-sm">Data Gedung</span>

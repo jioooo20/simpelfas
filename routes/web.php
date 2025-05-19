@@ -6,7 +6,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SarpraController;
 use App\Http\Controllers\TeknisiController;
 use App\Http\Controllers\UsersController;
-use App\Livewire\ManageRole;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +41,10 @@ Route::middleware('auth')->group(function () {
         Route::prefix('user')->group(function (): void {
             Route::get('/', [AdminController::class, 'user'])->name('admin.user');
             Route::post('/add', [AdminController::class, 'user_add'])->name('admin.user-add');
+        });
+
+        Route::prefix('gedung')->group(function (): void {
+            Route::get('/', [AdminController::class, 'gedung'])->name('admin.gedung');
         });
     });
     Route::middleware('role:2')->prefix('sarpra')->group(function (): void {
