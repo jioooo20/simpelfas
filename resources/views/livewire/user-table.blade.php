@@ -115,13 +115,9 @@
 
     <div class="flex items-center justify-between mt-6">
         <div class="text-sm text-gray-500">
-            Showing {{ $table->firstItem() }} to {{ $table->lastItem() }} of {{ $table->total() }} results
+             Menampilkan {{ $table->firstItem() }} - {{ $table->lastItem() }} dari {{ $table->total() }} hasil
         </div>
         <div class="join">
-            <a href="{{ $table->previousPageUrl() }}">
-                <button class="join-item btn btn-sm" {{ $table->onFirstPage() ? 'disabled' : '' }}>«</button>
-            </a>
-
             @php
                 $startPage = max($table->currentPage() - 1, 1);
                 $endPage = min($startPage + 2, $table->lastPage());
@@ -138,11 +134,6 @@
                     </button>
                 </a>
             @endfor
-
-            <a href="{{ $table->nextPageUrl() }}">
-                <button class="join-item btn btn-sm"
-                    {{ $table->currentPage() == $table->lastPage() ? 'disabled' : '' }}>»</button>
-            </a>
         </div>
     </div>
 
