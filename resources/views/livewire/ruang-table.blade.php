@@ -6,7 +6,7 @@
                 <i class="bi bi-search text-gray-400"></i>
             </div>
             <input wire:model.live="search" type="text" class="input input-bordered w-full pl-10"
-                placeholder="Cari kode, nama, atau keterangan" />
+                placeholder="Cari kode, nama, atau deskripsi" />
         </div>
         <div class="flex gap-3 items-center">
             <div class="relative">
@@ -41,7 +41,7 @@
                     <th>Lantai</th>
                     <th>Kode</th>
                     <th>Nama Ruangan</th>
-                    <th>Keterangan</th>
+                    <th>Deskripsi</th>
                     <th class="flex gap-2 justify-center">Aksi</th>
                 </tr>
             </thead>
@@ -162,9 +162,9 @@
 
                         <div class="form-control">
                             <label class="label">
-                                <span class="label-text">Keterangan</span>
+                                <span class="label-text">Deskripsi</span>
                             </label>
-                            <textarea wire:model="ruang_keterangan" placeholder="Masukkan keterangan ruangan"
+                            <textarea wire:model="ruang_keterangan" placeholder="Masukkan deskripsi ruangan"
                                 class="textarea textarea-bordered w-full"></textarea>
                             @error('ruang_keterangan') <span class="text-red-500 text-sm mt-1">{{ $message }}</span> @enderror
                         </div>

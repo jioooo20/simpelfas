@@ -1,11 +1,7 @@
 @extends('layouts.main')
-@section('judul', 'Gedung')
+@section('judul', 'Pengelolaan Tata Ruang Gedung')
 @section('content')
     <div class="container mx-auto px-4 py-4">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <h1 class="text-3xl font-bold text-base-content text-center md:text-left">Pengelolaan Tata Ruang Gedung</h1>
-        </div>
-
         <div class="bg-base-100 shadow-md border rounded-xl mb-3">
             <div class="flex border-b">
                 <button id="tab-gedung"
@@ -33,7 +29,7 @@
 
             <div class="p-6">
                 <div id="content-gedung" class="tab-content block">
-                    <livewire:gedung-table />
+                    <livewire:gedung-tdable />
                 </div>
 
                 <div id="content-lantai" class="tab-content hidden">

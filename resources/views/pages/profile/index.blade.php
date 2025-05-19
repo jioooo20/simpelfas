@@ -1,5 +1,5 @@
 @extends('layouts.main')
-
+@section('judul', 'Profil')
 @section('content')
 <div class="container mx-auto px-4 py-4">
     <h1 class="text-3xl font-bold mb-8">Edit Profil</h1>
@@ -14,9 +14,9 @@
         <img id="avatarPreview" src="https://ui-avatars.com/api/?name={{ urlencode($user->nama) }}&background=4338ca&color=fff" class="h-24 w-24 rounded-full object-cover border mb-3" alt="{{ $user->nama }}">
     @endif
 
-    <input 
-        type="file" 
-        name="profile_image" 
+    <input
+        type="file"
+        name="profile_image"
         accept="image/*"
         class="mt-2 text-sm file:bg-gray-200 file:hover:bg-gray-400 file:border file:border-gray-300 file:text-gray-700 file:rounded file:px-6 file:py-2 file:cursor-pointer"
     >
@@ -61,7 +61,7 @@
                     <input type="password" name="password" id="password"
                         class="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-primary"
                         autocomplete="new-password">
-                    <span class="text-xs text-gray-500">Kosongkan jika tidak ingin mengubah password</span> 
+                    <span class="text-xs text-gray-500">Kosongkan jika tidak ingin mengubah password</span>
                     @error('password')
                         <span class="text-red-500 text-xs">{{ $message }}</span>
                     @enderror

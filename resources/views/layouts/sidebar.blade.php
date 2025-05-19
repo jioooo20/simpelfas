@@ -3,19 +3,7 @@
     class="transition-all duration-300 bg-base-100 text-base-content w-64 h-screen p-4 flex flex-col fixed top-0">
     <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2 my-1">
-             {{-- link profile --}}
-            <a href="{{ route('profile') }}" class="flex items-center gap-2">
-                @if(Auth::user()->profile_image)
-                    <img src="{{ asset('storage/' . Auth::user()->profile_image) }}"
-                        alt="{{ Auth::user()->nama }}"
-                        class="h-10 w-10 rounded-full border-4 border-primary shadow object-cover">
-                @else
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->nama) }}&background=4338ca&color=fff"
-                        alt="{{ Auth::user()->nama }}"
-                        class="h-10 w-10 rounded-full border-4 border-primary shadow">
-                @endif
-                <span class="sidebar-text font-semibold text-lg">{{ Auth::user()->nama }}</span>
-            </a>
+            <span class="text-2xl judul ml-2 text-content-accent">Simpelfas</span>
         </div>
         <div id="toggle-button-container" class="flex justify-end w-16">
             <button onclick="toggleSidebar()" class="text-base-content hover:text-primary">
@@ -70,7 +58,8 @@
                     </a>
                     <ul x-show="open" class="space-y-2 mt-2 ml-6">
                         <li>
-                            <a href="{{route('admin.gedung')}}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                            <a href="{{ route('admin.gedung') }}"
+                                class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                                 <i
                                     class="fa-solid fa-file-invoice group-hover:text-primary transition-transform duration-200"></i>
                                 <span class="sidebar-text text-sm">Data Gedung</span>

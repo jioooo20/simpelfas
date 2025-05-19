@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('judul', 'Kelola Pengguna')
+@section('judul', 'Pengelolaan Pengguna')
 @section('content')
     <div class="container mx-auto px-4 py-4">
         <div class="flex flex-col md:flex-row justify-between items-center mb-6">
