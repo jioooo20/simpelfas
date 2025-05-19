@@ -52,7 +52,10 @@ Route::middleware('auth')->group(function () {
     });
     Route::middleware('role:4')->prefix('users')->group(function (): void {
         Route::get('/', [UsersController::class, 'index'])->name('users');
+        Route::get('/status-laporan', [UsersController::class, 'statusLaporan'])->name('status-laporan');
         Route::get('/feedback',[UsersController::class, 'UmpanBalik'])->name('users.feedback');
+        Route::get('/feedback-create',[UsersController::class, 'UmpanBalik_Create'])->name('feedback-create');
+        Route::post('/feedback-store', [UsersController::class, 'store'])->name('feedback-store');
         
     });
 });

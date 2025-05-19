@@ -116,20 +116,15 @@
 
             {{-- warga polinema --}}
             @if(in_array(Auth::user()->role_id, ['4']))
+            
             <li>
                 <a href="{{ route('users') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                    <i class="fa-solid fa-gauge group-hover:text-primary transition-transform duration-200"></i>
-                    <span class="sidebar-text">Dashboard</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                     <i class="fa-solid fa-file-circle-plus w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
                     <span class="sidebar-text">Buat Laporan</span>
                 </a>
             </li>
             <li>
-                <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                <a href="{{ route('status-laporan') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                     <i class="fa-solid fa-clipboard-check w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
                     <span class="sidebar-text">Status Laporan</span>
                 </a>
