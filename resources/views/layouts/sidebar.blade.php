@@ -1,15 +1,17 @@
 {{-- sidebar --}}
 <div id="sidebar"
-    class="transition-all duration-300 bg-base-100 text-base-content w-64 h-screen p-4 flex flex-col fixed top-0">
+    class="transition-all duration-300 bg-gradient-to-b from-base-100 to-base-200 text-base-content w-64 h-screen p-4 flex flex-col fixed top-0 left-0">
+    {{--  rounded-tr-xl rounded-br-xl ring-1 ring-inset ring-gray-200 shadow-inner shadow-black/10 ini garis vertikal --}}
     <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2 my-1">
             <span class="text-2xl judul ml-2 text-content-accent">Simpelfas</span>
         </div>
-        <div id="toggle-button-container" class="flex justify-end w-16">
+        {{-- matiin dl, lg g mood --}}
+        {{-- <div id="toggle-button-container" class="flex justify-end w-16">
             <button onclick="toggleSidebar()" class="text-base-content hover:text-primary">
                 <i class="fa-solid fa-bars p-2.5"></i>
             </button>
-        </div>
+        </div> --}}
     </div>
     <nav class="flex-1">
         <ul class="space-y-2">
@@ -17,14 +19,14 @@
                 <li>
                     <a href="{{ route('admin') }}"
                         class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <i class="fa-solid fa-gauge group-hover:text-primary transition-transform duration-200"></i>
+                        <i class="fa-solid fa-gauge w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                         <span class="sidebar-text">Dashboard</span>
                     </a>
                 </li>
                 <li x-data="{ open: false }">
                     <a href="#" @click="open = ! open"
                         class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <i class="fa-solid fa-user group-hover:text-primary transition-transform duration-200"></i>
+                        <i class="fa-solid fa-user w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                         <span class="sidebar-text">Pengelolaan User</span>
                         <i class="fa-solid fa-chevron-down ml-auto transition-transform duration-200"
                             :class="{ 'rotate-180': open }"></i>
@@ -33,16 +35,14 @@
                         <li>
                             <a href="{{ route('admin.role') }}"
                                 class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                                <i
-                                    class="fa-solid fa-users-cog group-hover:text-primary transition-transform duration-200"></i>
+                                <i class="fa-solid fa-users-cog w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                                 <span class="sidebar-text text-sm">Hak Akses</span>
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('admin.user') }}"
                                 class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                                <i
-                                    class="fa-solid fa-user-plus group-hover:text-primary transition-transform duration-200"></i>
+                                <i class="fa-solid fa-user-plus w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                                 <span class="sidebar-text text-sm">Pengguna</span>
                             </a>
                         </li>
@@ -51,7 +51,7 @@
                 <li x-data="{ open: false }">
                     <a href="#" @click="open = ! open"
                         class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <i class="fa-solid fa-folder group-hover:text-primary transition-transform duration-200"></i>
+                        <i class="fa-solid fa-folder w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                         <span class="sidebar-text">Manajemen</span>
                         <i class="fa-solid fa-chevron-down ml-auto transition-transform duration-200"
                             :class="{ 'rotate-180': open }"></i>
@@ -60,15 +60,13 @@
                         <li>
                             <a href="{{ route('admin.gedung') }}"
                                 class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                                <i
-                                    class="fa-solid fa-file-invoice group-hover:text-primary transition-transform duration-200"></i>
+                                <i class="fa-solid fa-file-invoice w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                                 <span class="sidebar-text text-sm">Data Gedung</span>
                             </a>
                         </li>
                         <li>
                             <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                                <i
-                                    class="fa-solid fa-file-invoice group-hover:text-primary transition-transform duration-200"></i>
+                                <i class="fa-solid fa-file-invoice w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                                 <span class="sidebar-text text-sm">Fasilitas Kampus</span>
                             </a>
                         </li>
@@ -76,29 +74,25 @@
                 </li>
                 <li>
                     <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <i
-                            class="fa-solid fa-file-invoice group-hover:text-primary transition-transform duration-200"></i>
+                        <i class="fa-solid fa-file-invoice w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                         <span class="sidebar-text text-sm">Prioritas Perbaikan</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <i
-                            class="fa-solid fa-file-contract group-hover:text-primary transition-transform duration-200"></i>
+                        <i class="fa-solid fa-file-contract w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                         <span class="sidebar-text text-sm">Laporan Kerusakan</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <i
-                            class="fa-solid fa-chart-simple group-hover:text-primary transition-transform duration-200"></i>
+                        <i class="fa-solid fa-chart-simple w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                         <span class="sidebar-text text-sm">Laporan & Statistik Sistem</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <i
-                            class="fa-solid fa-calendar-days group-hover:text-primary transition-transform duration-200"></i>
+                        <i class="fa-solid fa-calendar-days w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                         <span class="sidebar-text">Periode</span>
                     </a>
                 </li>
@@ -109,8 +103,14 @@
                 <li>
                     <a href="{{ route('sarpra') }}"
                         class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <i
-                            class="fa-solid fa-chart-line w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="w-6 h-6 text-center text-gray-500 group-hover:text-primary transition-colors duration-200"
+                            viewBox="0 0 24 24" fill="currentColor">
+                          <rect x="3"  y="3"  width="8" height="8" rx="1"/>
+                          <rect x="13" y="3"  width="8" height="8" rx="1"/>
+                          <rect x="3"  y="13" width="8" height="8" rx="1"/>
+                          <rect x="13" y="13" width="8" height="8" rx="1"/>
+                        </svg>
                         <span class="sidebar-text">Dasbor</span>
                     </a>
                 </li>
@@ -121,15 +121,13 @@
                 <li>
                     <a href="{{ route('teknisi') }}"
                         class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <i
-                            class="fa-solid fa-screwdriver-wrench w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                        <i class="fa-solid fa-screwdriver-wrench w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                         <span class="sidebar-text">Perbaikan Fasilitas</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <i
-                            class="fa-solid fa-history w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                        <i class="fa-solid fa-history w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                         <span class="sidebar-text">Riwayat Perbaikan</span>
                     </a>
                 </li>
@@ -140,23 +138,20 @@
                 <li>
                     <a href="{{ route('users') }}"
                         class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <i
-                            class="fa-solid fa-file-circle-plus w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                        <i class="fa-solid fa-file-circle-plus w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                         <span class="sidebar-text">Buat Laporan</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('status-laporan') }}"
                         class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <i
-                            class="fa-solid fa-clipboard-check w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                        <i class="fa-solid fa-clipboard-check w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                         <span class="sidebar-text">Status Laporan</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <i
-                            class="fa-solid fa-comments w-5 text-center group-hover:text-primary transition-transform duration-200"></i>
+                        <i class="fa-solid fa-comments w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                         <span class="sidebar-text">Umpan Balik</span>
                     </a>
                 </li>
@@ -166,7 +161,7 @@
                 <a href="{{ route('keluar') }}"
                     class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 text-red-500 group"
                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="fa-solid fa-sign-out-alt group-hover:scale-110 transition-transform duration-200"></i>
+                    <i class="fa-solid fa-sign-out-alt w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
                     <span class="sidebar-text">Logout</span>
                 </a>
                 <form id="logout-form" action="{{ route('keluar') }}" method="POST" class="hidden">
