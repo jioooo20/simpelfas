@@ -14,28 +14,26 @@ class StorePelaporanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nama' => ['required', 'string', 'max:255'],
             'lokasi' => ['required', 'string', 'max:255'],
             'deskripsi' => ['required', 'string'],
-            'foto' => ['required', 'file', 'mimetypes:image/jpeg,image/png', 'max:10240'],
+            'foto' => ['nullable', 'array', 'max:3'], // max 3 files
+            'foto.*' => ['file', 'mimetypes:image/jpeg,image/png', 'max:10240'], // per file
         ];
     }
 
     public function messages(): array
     {
         return [
-            'nama.required' => 'Nama wajib diisi.',
-            'nama.string' => 'Nama harus berupa teks.',
-            'nama.max' => 'Nama maksimal 255 karakter.',
             'lokasi.required' => 'Lokasi wajib diisi.',
             'lokasi.string' => 'Lokasi harus berupa teks.',
             'lokasi.max' => 'Lokasi maksimal 255 karakter.',
             'deskripsi.required' => 'Deskripsi wajib diisi.',
             'deskripsi.string' => 'Deskripsi harus berupa teks.',
-            'foto.required' => 'Foto wajib diunggah.',
-            'foto.file' => 'Foto harus berupa file.',
-            'foto.mimetypes' => 'Foto harus berformat JPEG atau PNG.',
-            'foto.max' => 'Ukuran foto maksimal 10MB.',
+            'foto.array' => 'Foto harus berupa array gambar.',
+            'foto.max' => 'Maksimal 3 foto yang dapat diunggah.',
+            'foto.*.file' => 'Setiap foto harus berupa file.',
+            'foto.*.mimetypes' => 'Setiap foto harus berformat JPEG atau PNG.',
+            'foto.*.max' => 'Ukuran setiap foto maksimal 10MB.',
         ];
     }
 }

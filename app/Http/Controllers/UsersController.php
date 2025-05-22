@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PelaporanModel;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -32,15 +33,20 @@ class UsersController extends Controller
         return view('pages.users.status-laporan.index');
     }
 
-    public function storePelaporan(StorePelaporanRequest $request, PelaporanRepository $repo)
+    public function laporanDetail()
+    {
+        return view('pages.users.status-laporan.laporan-detail-laporan');
+    }
+
+    public function storePelaporan(StorePelaporanRequest $request, PelaporanRepository $repo): JsonResponse
     {
         try {
-            $gambarPath = $this->validateImage($request);
+            $gambarPaths = $this->validateImage($request);
 
             $repo->StorePelaporan([
                 'fasilitas_id' => $request->input('lokasi'),
                 'deskripsi' => $request->input('deskripsi'),
-                'gambar' => $gambarPath,
+                'gambar' => $gambarPaths, // array of paths
             ]);
 
             return response()->json([
@@ -67,31 +73,51 @@ class UsersController extends Controller
         return response()->json($lokasiList);
     }
 
-    protected function validateImage(Request $request): ?string
+    public function getLaporanData(): JsonResponse
     {
+        $formatted = $this->pelaporanRepo->getFormattedLaporanData();
+        return response()->json($formatted);
+    }
+
+    public function getLaporanDetail($id)
+    {
+        $laporan = PelaporanModel::with(['fasilitas', 'statusPelaporan' => function ($q) {
+            $q->latest('created_at');
+        }])->findOrFail($id);
+
+        $latestStatus = $laporan->statusPelaporan->first();
+
+        return view('pages.users.status-laporan.laporan-detail-modal', [
+            'laporan' => $laporan,
+            'status' => $latestStatus ? $latestStatus->status_pelaporan : 'Belum Ada Status',
+        ]);
+    }
+
+    protected function validateImage(Request $request): ?array
+    {
+        $gambarPaths = [];
+
         if ($request->hasFile('foto')) {
-            $request->validate([
-                'foto' => 'file|mimetypes:image/jpeg,image/png|max:10240',
-            ]);
-
             try {
-                $file = $request->file('foto');
+                foreach ($request->file('foto') as $file) {
+                    $imageInfo = getimagesize($file);
+                    if ($imageInfo === false) {
+                        throw ValidationException::withMessages(['foto' => 'Salah satu file bukan gambar yang valid.']);
+                    }
 
-                $imageInfo = getimagesize($file);
-                if ($imageInfo === false) {
-                    throw ValidationException::withMessages(['foto' => 'File yang diupload bukan gambar yang valid.']);
+                    $width = $imageInfo[0];
+                    $height = $imageInfo[1];
+
+                    if ($width > 5000 || $height > 5000) {
+                        throw ValidationException::withMessages(['foto' => 'Resolusi salah satu gambar melebihi 5000x5000 piksel.']);
+                    }
+
+                    $filename = uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('pelaporan/menunggu', $filename, 'public');
+                    $gambarPaths[] = $path;
                 }
 
-                $width = $imageInfo[0];
-                $height = $imageInfo[1];
-
-                if ($width > 5000 || $height > 5000) {
-                    throw ValidationException::withMessages(['foto' => 'Resolusi gambar maksimal 5000x5000 piksel.']);
-                }
-
-                $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-
-                return $file->storeAs('pelaporan', $filename, 'public');
+                return $gambarPaths;
 
             } catch (Exception $e) {
                 Log::error($e);
@@ -101,4 +127,5 @@ class UsersController extends Controller
 
         return null;
     }
+
 }
