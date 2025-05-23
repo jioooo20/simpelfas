@@ -24,24 +24,8 @@
                     </tr>
                     <tr class="bg-base-200 border-b">
                         <th class="text-left font-semibold text-base-content px-4 py-3">Laporan</th>
-                        <td class="px-4 py-3" x-data="{ expanded: false }">
-                            <span x-show="!expanded">
-                                {{ Str::limit('Lampu jalan mati di depan gedung rektorat. Kondisi ini sudah berlangsung selama 3 hari dan menyebabkan area tersebut sangat gelap pada malam hari. Beberapa mahasiswa telah melaporkan kesulitan berjalan di area tersebut karena kurangnya penerangan. Dibutuhkan penggantian lampu segera untuk menghindari potensi kecelakaan atau masalah keamanan lainnya.', 100) }}
-                            </span>
-                                                <span x-show="expanded" x-cloak>
-                                Lampu jalan mati di depan gedung rektorat. Kondisi ini sudah berlangsung selama 3 hari dan
-                                menyebabkan area tersebut sangat gelap pada malam hari. Beberapa mahasiswa telah melaporkan
-                                kesulitan berjalan di area tersebut karena kurangnya penerangan. Dibutuhkan penggantian lampu
-                                segera untuk menghindari potensi kecelakaan atau masalah keamanan lainnya.
-                            </span>
-                            <br>
-                            <button @click="expanded = !expanded" class="text-sm text-blue-600 hover:underline mt-1">
-                                <span x-show="!expanded">Lihat Selengkapnya</span>
-                                <span x-show="expanded">Lihat Lebih Sedikit</span>
-                            </button>
-                        </td>
+                        <td class="px-4 py-3">Lampu jalan mati di depan gedung rektorat.</td>
                     </tr>
-
                     <tr class="bg-white border-b">
                         <th class="text-left font-semibold text-base-content px-4 py-3">Tanggal</th>
                         <td class="px-4 py-3">23 Mei 2025</td>
@@ -49,23 +33,18 @@
                     <tr class="bg-base-200 border-b">
                         <th class="text-left font-semibold text-base-content px-4 py-3">Status</th>
                         <td class="px-4 py-3">
-                            <span
-                                class="inline-flex items-center justify-center gap-1 w-28 h-7 px-2 rounded-full text-sm font-medium bg-amber-100 text-amber-800 border border-amber-200">
+                            <span class="inline-flex items-center justify-center gap-1 w-28 h-7 px-2 rounded-full text-sm font-medium bg-amber-100 text-amber-800 border border-amber-200">
                                 <i class="bi bi-hourglass"></i>
                                 <span class="text-center">Menunggu</span>
                             </span>
                         </td>
                     </tr>
                     <tr class="bg-white">
-                        <th class="text-left font-semibold text-base-content px-4 py-3 align-middle rounded-bl-xl">
-                            Gambar Laporan
-                        </th>
+                        <th class="text-left font-semibold text-base-content px-4 py-3 align-middle rounded-bl-xl">Gambar (Menunggu)</th>
                         <td class="px-4 py-3 align-middle">
                             <div class="flex space-x-3 overflow-x-auto py-1" style="max-width: 100%;">
                                 @for ($i = 1; $i <= 3; $i++)
-                                    <div
-                                        class="flex items-center justify-center bg-gray-100 border border-gray-300 rounded shadow-sm"
-                                        style="height: 100px; width: 100px; min-width: 100px;">
+                                    <div class="flex items-center justify-center bg-gray-100 border border-gray-300 rounded shadow-sm" style="height: 100px; width: 100px; min-width: 100px;">
                                         <i class="bi bi-image text-gray-400 text-3xl"></i>
                                     </div>
                                 @endfor
@@ -73,15 +52,11 @@
                         </td>
                     </tr>
                     <tr class="bg-white">
-                        <th class="text-left font-semibold text-base-content px-4 py-3 align-middle rounded-bl-xl">
-                            Gambar Proses Perbaikan
-                        </th>
+                        <th class="text-left font-semibold text-base-content px-4 py-3 align-middle rounded-bl-xl">Gambar (Diperbaiki)</th>
                         <td class="px-4 py-3 align-middle">
                             <div class="flex space-x-3 overflow-x-auto py-1" style="max-width: 100%;">
                                 @for ($i = 1; $i <= 3; $i++)
-                                    <div
-                                        class="flex items-center justify-center bg-gray-100 border border-gray-300 rounded shadow-sm"
-                                        style="height: 100px; width: 100px; min-width: 100px;">
+                                    <div class="flex items-center justify-center bg-gray-100 border border-gray-300 rounded shadow-sm" style="height: 100px; width: 100px; min-width: 100px;">
                                         <i class="bi bi-image text-gray-400 text-3xl"></i>
                                     </div>
                                 @endfor
@@ -89,15 +64,11 @@
                         </td>
                     </tr>
                     <tr class="bg-white">
-                        <th class="text-left font-semibold text-base-content px-4 py-3 align-middle rounded-bl-xl">
-                            Gambar Perbaikan Selesai
-                        </th>
+                        <th class="text-left font-semibold text-base-content px-4 py-3 align-middle rounded-bl-xl">Gambar (Selesai)</th>
                         <td class="px-4 py-3 align-middle">
                             <div class="flex space-x-3 overflow-x-auto py-1" style="max-width: 100%;">
                                 @for ($i = 1; $i <= 3; $i++)
-                                    <div
-                                        class="flex items-center justify-center bg-gray-100 border border-gray-300 rounded shadow-sm"
-                                        style="height: 100px; width: 100px; min-width: 100px;">
+                                    <div class="flex items-center justify-center bg-gray-100 border border-gray-300 rounded shadow-sm" style="height: 100px; width: 100px; min-width: 100px;">
                                         <i class="bi bi-image text-gray-400 text-3xl"></i>
                                     </div>
                                 @endfor

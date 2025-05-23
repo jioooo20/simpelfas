@@ -133,15 +133,16 @@
                     </div> <!-- End of Skala Kerusakan -->
 
                     <!-- Deskripsi Kerusakan -->
-                    <div class="grid gap-2"> <!-- Deskripsi Kerusakan -->
-                        <label for="deskripsi" class="label-text text-base text-gray-700 font-semibold">Deskripsi
-                            Kerusakan</label>
+                    <div class="grid gap-2">
+                        <label for="deskripsi" class="label-text text-base text-gray-700 font-semibold">Deskripsi Kerusakan</label>
                         <textarea
                             id="deskripsi"
                             name="deskripsi"
+                            maxlength="225"
                             placeholder="Contoh: AC tidak menyala, mengeluarkan suara berisik"
                             class="w-full min-h-[120px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         ></textarea>
+                        <div class="text-sm text-gray-500 text-right"><span id="deskripsi-count">0</span> dari 225</div>
                     </div> <!-- End of Deskripsi Kerusakan -->
 
                     <!-- Upload Foto Kerusakan -->
@@ -238,6 +239,7 @@
 
         let locations = [];
         let activeIndex = -1;
+        let lastToastTime = 0;
         let currentOptions = [];
         let uploadedFiles = [];
 
@@ -414,6 +416,11 @@
                 return false;
             }
 
+            if (deskripsi.length > 225) {
+                showToast("Deskripsi tidak boleh lebih dari 225 karakter.", "red");
+                return false;
+            }
+
             return true;
         }
 
@@ -433,9 +440,13 @@
         // -----------------------------
 
         function showToast(message, color = 'blue', cb = null) {
+            const now = Date.now();
+            if (now - lastToastTime < 1000) return;
+            lastToastTime = now;
+
             Toastify({
                 text: message,
-                duration: 3000,
+                duration: 1500,
                 gravity: "top",
                 position: "right",
                 backgroundColor: color,
@@ -455,6 +466,25 @@
         function hideLoading(button, originalText) {
             button.innerHTML = originalText;
         }
+
+        // -----------------------------
+        // UI: Deskripsi character count
+        // -----------------------------
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const deskripsiInput = document.getElementById("deskripsi");
+            const deskripsiCount = document.getElementById("deskripsi-count");
+
+            deskripsiInput.addEventListener("input", function () {
+                const currentLength = deskripsiInput.value.length;
+                deskripsiCount.textContent = currentLength;
+
+                if (currentLength > 225) {
+                    deskripsiInput.value = deskripsiInput.value.substring(0, 225); // potong jika terlalu panjang
+                    deskripsiCount.textContent = 225;
+                }
+            });
+        });
 
         // -----------------------------
         // UI: Toggle radio button

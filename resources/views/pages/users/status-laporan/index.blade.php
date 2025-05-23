@@ -82,11 +82,6 @@
                             </td>
 
                             <td class="text-center">
-                                {{--                                <a href="#"--}}
-                                {{--                                   @click.prevent="openModalById(laporan.id)"--}}
-                                {{--                                   class="btn btn-sm btn-outline btn-primary flex items-center gap-1 justify-center whitespace-nowrap">--}}
-                                {{--                                    <i class="bi bi-eye"></i> Detail--}}
-                                {{--                                </a>--}}
                                 <a href="#"
                                    @click.prevent="redirectToDetail(laporan.id)"
                                    class="btn btn-sm btn-outline btn-primary flex items-center gap-1 justify-center whitespace-nowrap">
@@ -124,23 +119,24 @@
             </div> <!-- End of Table -->
 
             <!-- Pagination Section -->
-            <div class="mt-4 flex items-center justify-between flex-wrap gap-2" x-show="!loading"
-                 x-cloak>
+            <div class="mt-4 flex items-center justify-between flex-wrap gap-2" x-show="!loading" x-cloak>
                 <p class="text-sm text-gray-500"
                    x-text="`Menampilkan ${(page - 1) * perPage + 1} – ${Math.min(page * perPage, filteredLaporan().length)} dari ${filteredLaporan().length} hasil`"></p>
                 <div class="join">
-                    <button class="join-item btn btn-sm" :disabled="page === 1" @click="page--">«</button>
-
-                    <template x-for="n in visiblePages()" :key="n">
+                    <template x-for="n in visiblePages()" :key="generateKey(n)">
                         <button
-                            class="join-item btn btn-sm"
-                            :class="{ 'btn-active': page === n }"
-                            @click="page = n"
-                            x-text="n"
+                            :class="[
+                                'join-item',
+                                typeof n === 'number'
+                                    ? 'btn btn-sm' + (page === n ? ' btn-active' : '')
+                                    : 'px-3 text-gray-400 bg-transparent border-none cursor-default hover:bg-transparent select-none'
+                            ]"
+                            x-show="typeof n === 'number' || n === 'left-ellipsis' || n === 'right-ellipsis'"
+                            @click="typeof n === 'number' ? page = n : handleEllipsisClick(n === 'left-ellipsis' ? 'left' : 'right')"
+                            x-text="typeof n === 'number' ? n : '...'"
+                            :disabled="typeof n !== 'number'"
                         ></button>
                     </template>
-
-                    <button class="join-item btn btn-sm" :disabled="page === totalPages" @click="page++">»</button>
                 </div> <!-- End of Pagination Buttons -->
             </div> <!-- End of Pagination Section -->
         </div> <!-- End of Table Container -->
@@ -161,13 +157,23 @@
                 search: '',
                 filter: '',
                 page: 1,
-                perPage: 4,
+                perPage: 5,
                 loading: true,
                 laporan: [],
                 laporanCache: {},
+                ellipsisClickedAt: null,
 
                 init() {
-                    this.loading = true;
+                    // this.loading = true;
+                    // const dummyData = Array.from({length: 20}, (_, i) => ({
+                    //     id: i + 1,
+                    //     judul: `Laporan ${i + 1}`,
+                    //     tanggal: '2025-05-23',
+                    //     status: i % 2 === 0 ? 'Selesai' : 'Diproses',
+                    // }));
+                    //
+                    // this.laporan = dummyData;
+                    // this.loading = false;
                     fetch('/users/laporan-data')
                         .then(response => response.json())
                         .then(data => {
@@ -204,22 +210,49 @@
                 },
                 visiblePages() {
                     const total = this.totalPages();
-                    if (total <= 5) return [...Array(total).keys()].map(i => i + 1);
-
                     const current = this.page;
-                    const pages = [];
 
-                    if (current > 2) pages.push(1);
-                    if (current > 3) pages.push('...');
-
-                    for (let i = current - 1; i <= current + 1; i++) {
-                        if (i > 1 && i < total) pages.push(i);
+                    if (total <= 7) {
+                        return Array.from({length: total}, (_, i) => i + 1);
                     }
 
-                    if (current < total - 2) pages.push('...');
-                    if (current < total - 1) pages.push(total);
+                    const pages = [];
+
+                    // Always show first page
+                    pages.push(1);
+
+                    // Show left ellipsis if needed
+                    if (current > 4) {
+                        pages.push('left-ellipsis');
+                    }
+
+                    // Middle pages
+                    const startPage = Math.max(2, current - 1);
+                    const endPage = Math.min(total - 1, current + 1);
+                    for (let i = startPage; i <= endPage; i++) {
+                        pages.push(i);
+                    }
+
+                    // Show right ellipsis if needed
+                    if (current < total - 3) {
+                        pages.push('right-ellipsis');
+                    }
+
+                    // Always show last page
+                    pages.push(total);
 
                     return pages;
+                },
+                handleEllipsisClick(position) {
+                    const total = this.totalPages();
+                    if (position === 'left') {
+                        this.page = Math.floor((1 + this.page) / 2);
+                    } else if (position === 'right') {
+                        this.page = Math.floor((this.page + total) / 2);
+                    }
+                },
+                generateKey(n) {
+                    return typeof n === 'number' ? `page-${n}` : `ellipsis-${n}`;
                 },
                 badgeStyle(status) {
                     return {

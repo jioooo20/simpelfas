@@ -46,7 +46,7 @@ class UsersController extends Controller
             $repo->StorePelaporan([
                 'fasilitas_id' => $request->input('lokasi'),
                 'deskripsi' => $request->input('deskripsi'),
-                'gambar' => $gambarPaths, // array of paths
+                'gambar' => $gambarPaths,
             ]);
 
             return response()->json([
