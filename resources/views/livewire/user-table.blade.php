@@ -134,6 +134,11 @@
                     </button>
                 </a>
             @endfor
+
+            <a href="{{ $table->nextPageUrl() }}">
+                <button class="join-item btn btn-sm"
+                    {{ $table->currentPage() == $table->lastPage() ? 'disabled' : '' }}>»</button>
+            </a>
         </div>
     </div>
 

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->index();
             $table->unsignedBigInteger('fasilitas_id')->index();
             $table->string('pelaporan_kode', 10)->unique();
-            $table->string('pelaporan_deskripsi', 255);
+            $table->text('pelaporan_deskripsi');
             $table->mediumText("pelaporan_gambar")->nullable();
             $table->timestamps();
 

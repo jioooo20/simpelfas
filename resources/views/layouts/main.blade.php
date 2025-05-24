@@ -51,6 +51,7 @@
             font-family: 'Montserrat', sans-serif;
         }
     </style>
+    @stack('css')
 </head>
 
 <body class="bg-base-100">
