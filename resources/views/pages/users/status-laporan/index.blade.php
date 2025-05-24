@@ -59,17 +59,21 @@
                     </tr>
                     </thead>
                     <tbody>
+
+                    <!-- Data laporan -->
                     <template x-for="(laporan, index) in paginatedLaporan()" :key="laporan.id">
                         <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-base-200'">
                             <td class="text-center" x-text="index + 1 + (page - 1) * perPage"></td>
 
                             <!-- Batasi panjang teks judul -->
                             <td class="truncate whitespace-nowrap overflow-hidden max-w-xs" :title="laporan.judul"
-                                x-text="laporan.judul.length > 50 ? laporan.judul.slice(0, 50) + '…' : laporan.judul">
+                                x-text="laporan.judul.length > 100 ? laporan.judul.slice(0, 100) + '…' : laporan.judul">
                             </td>
 
+                            <!-- Tanggal -->
                             <td class="text-center" x-text="laporan.tanggal"></td>
 
+                            <!-- Status -->
                             <td class="text-center">
                                 <template x-if="laporan.status">
                                 <span :class="badgeStyle(laporan.status)"
@@ -81,6 +85,7 @@
                                 </template>
                             </td>
 
+                            <!-- Aksi -->
                             <td class="text-center">
                                 <a href="#"
                                    @click.prevent="redirectToDetail(laporan.id)"
@@ -89,7 +94,7 @@
                                 </a>
                             </td>
                         </tr>
-                    </template>
+                    </template> <!-- End of Data Laporan -->
 
                     <!-- Jika hasil pencarian tidak ditemukan -->
                     <tr x-show="(search || filter) && paginatedLaporan().length === 0 && laporan.length > 0"
@@ -140,16 +145,15 @@
                 </div> <!-- End of Pagination Buttons -->
             </div> <!-- End of Pagination Section -->
         </div> <!-- End of Table Container -->
-
     </div> <!-- End of Main Content -->
 @endsection
-@section('css')
+@push('css')
     <style>
         [x-cloak] {
             display: none !important;
         }
     </style>
-@endsection
+@endpush
 @push('skrip')
     <script>
         function laporanTable() {
@@ -157,23 +161,13 @@
                 search: '',
                 filter: '',
                 page: 1,
-                perPage: 5,
+                perPage: 4,
                 loading: true,
                 laporan: [],
                 laporanCache: {},
                 ellipsisClickedAt: null,
 
                 init() {
-                    // this.loading = true;
-                    // const dummyData = Array.from({length: 20}, (_, i) => ({
-                    //     id: i + 1,
-                    //     judul: `Laporan ${i + 1}`,
-                    //     tanggal: '2025-05-23',
-                    //     status: i % 2 === 0 ? 'Selesai' : 'Diproses',
-                    // }));
-                    //
-                    // this.laporan = dummyData;
-                    // this.loading = false;
                     fetch('/users/laporan-data')
                         .then(response => response.json())
                         .then(data => {

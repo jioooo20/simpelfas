@@ -29,7 +29,6 @@ class PelaporanRepository
         return $pelaporan;
     }
 
-
     public function getFormattedLaporanData()
     {
         $laporan = PelaporanModel::with(['fasilitas', 'statusPelaporan' => function ($query) {
@@ -49,4 +48,27 @@ class PelaporanRepository
         });
     }
 
+    public function getLaporanDetailById($id): PelaporanModel
+    {
+        $laporan = PelaporanModel::with([
+            'fasilitas.ruang.lantai.gedung',
+            'fasilitas.barang',
+            'statusPelaporan' => function ($q) {
+                $q->latest('created_at');
+            }
+        ])->findOrFail($id);
+
+        // Buat label fasilitas
+        $fasilitas = $laporan->fasilitas;
+        $label = '-';
+        if ($fasilitas && $fasilitas->ruang && $fasilitas->ruang->lantai && $fasilitas->ruang->lantai->gedung && $fasilitas->barang) {
+            $label = $fasilitas->ruang->lantai->gedung->gedung_nama . ' - ' .
+                $fasilitas->ruang->lantai->lantai_nama . ' - ' .
+                $fasilitas->ruang->ruang_nama . ' - ' .
+                $fasilitas->barang->barang_nama;
+        }
+        $laporan->fasilitas_label = $label;
+
+        return $laporan;
+    }
 }

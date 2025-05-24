@@ -134,15 +134,17 @@
 
                     <!-- Deskripsi Kerusakan -->
                     <div class="grid gap-2">
-                        <label for="deskripsi" class="label-text text-base text-gray-700 font-semibold">Deskripsi Kerusakan</label>
+                        <label for="deskripsi" class="label-text text-base text-gray-700 font-semibold">Deskripsi
+                            Kerusakan</label>
                         <textarea
                             id="deskripsi"
                             name="deskripsi"
-                            maxlength="225"
+                            maxlength="1000"
                             placeholder="Contoh: AC tidak menyala, mengeluarkan suara berisik"
                             class="w-full min-h-[120px] border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         ></textarea>
-                        <div class="text-sm text-gray-500 text-right"><span id="deskripsi-count">0</span> dari 225</div>
+                        <div class="text-sm text-gray-500 text-right"><span id="deskripsi-count">0</span> dari 1000
+                        </div>
                     </div> <!-- End of Deskripsi Kerusakan -->
 
                     <!-- Upload Foto Kerusakan -->
@@ -198,7 +200,7 @@
 
     <!-- Modal Zoom Foto -->
     <div id="zoomModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <img id="zoomedImage" src="" class="max-w-full max-h-full rounded-lg shadow-lg" />
+        <img id="zoomedImage" src="" class="max-w-full max-h-full rounded-lg shadow-lg"/>
     </div> <!-- End of Modal Zoom Foto -->
 @endsection
 @push('skrip')
@@ -402,7 +404,7 @@
             const skalaChecked = document.querySelector('input[name="skala-kerusakan"]:checked');
 
             if (!lokasi) {
-                showToast("Lokasi harus dipilih.", "red");
+                showToast("Fasilitas harus dipilih.", "red");
                 return false;
             }
 
@@ -416,8 +418,8 @@
                 return false;
             }
 
-            if (deskripsi.length > 225) {
-                showToast("Deskripsi tidak boleh lebih dari 225 karakter.", "red");
+            if (deskripsi.length > 1000) {
+                showToast("Deskripsi tidak boleh lebih dari 1000 karakter.", "red");
                 return false;
             }
 
@@ -479,9 +481,9 @@
                 const currentLength = deskripsiInput.value.length;
                 deskripsiCount.textContent = currentLength;
 
-                if (currentLength > 225) {
-                    deskripsiInput.value = deskripsiInput.value.substring(0, 225); // potong jika terlalu panjang
-                    deskripsiCount.textContent = 225;
+                if (currentLength > 1000) {
+                    deskripsiInput.value = deskripsiInput.value.substring(0, 1000);
+                    deskripsiCount.textContent = 1000;
                 }
             });
         });
@@ -526,7 +528,7 @@
                     const firstSkala = document.querySelector('input[name="skala-kerusakan"]');
 
                     if (!lokasi.value.trim()) {
-                        showToast("Lokasi harus dipilih.", "red");
+                        showToast("Fasilitas harus dipilih.", "red");
                         document.querySelector('#search-lokasi').focus();
                         return;
                     }
@@ -648,7 +650,7 @@
 
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                            div.innerHTML = `
+                    div.innerHTML = `
                         <img src="${e.target.result}" class="w-full h-full object-contain bg-white" />
                         <button type="button" class="absolute top-1 right-1 text-red-500 text-sm bg-white rounded-full p-1" title="Hapus">&times;</button>
                     `;

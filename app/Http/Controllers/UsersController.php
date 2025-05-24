@@ -81,10 +81,7 @@ class UsersController extends Controller
 
     public function getLaporanDetail($id)
     {
-        $laporan = PelaporanModel::with(['fasilitas', 'statusPelaporan' => function ($q) {
-            $q->latest('created_at');
-        }])->findOrFail($id);
-
+        $laporan = $this->pelaporanRepo->getLaporanDetailById($id);
         $latestStatus = $laporan->statusPelaporan->first();
 
         return view('pages.users.status-laporan.laporan-detail-modal', [

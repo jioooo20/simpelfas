@@ -15,9 +15,9 @@ class StorePelaporanRequest extends FormRequest
     {
         return [
             'lokasi' => ['required', 'string', 'max:255'],
-            'deskripsi' => ['required', 'string'],
-            'foto' => ['nullable', 'array', 'max:3'], // max 3 files
-            'foto.*' => ['file', 'mimetypes:image/jpeg,image/png', 'max:10240'], // per file
+            'deskripsi' => ['required', 'string', 'max:1000'],
+            'foto' => ['nullable', 'array', 'max:3'],
+            'foto.*' => ['file', 'mimetypes:image/jpeg,image/png', 'max:10240'],
         ];
     }
 
@@ -29,6 +29,7 @@ class StorePelaporanRequest extends FormRequest
             'lokasi.max' => 'Lokasi maksimal 255 karakter.',
             'deskripsi.required' => 'Deskripsi wajib diisi.',
             'deskripsi.string' => 'Deskripsi harus berupa teks.',
+            'deskripsi.max' => 'Deskripsi maksimal 1000 karakter.',
             'foto.array' => 'Foto harus berupa array gambar.',
             'foto.max' => 'Maksimal 3 foto yang dapat diunggah.',
             'foto.*.file' => 'Setiap foto harus berupa file.',
