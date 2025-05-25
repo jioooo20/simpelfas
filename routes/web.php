@@ -34,10 +34,6 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:1')->prefix('admin')->group(function (): void {
         Route::get('/', [AdminController::class, 'dasbor'])->name('admin');
-        Route::prefix('role')->group(function (): void {
-            Route::get('/', [AdminController::class, 'role'])->name('admin.role');
-            Route::post('/add', [AdminController::class, 'role_add'])->name('admin.role-add');
-        });
         Route::prefix('user')->group(function (): void {
             Route::get('/', [AdminController::class, 'user'])->name('admin.user');
             Route::post('/add', [AdminController::class, 'user_add'])->name('admin.user-add');
@@ -46,9 +42,14 @@ Route::middleware('auth')->group(function () {
         Route::prefix('gedung')->group(function (): void {
             Route::get('/', [AdminController::class, 'gedung'])->name('admin.gedung');
         });
+
+        Route::prefix('fasilitas')->group(function (): void {
+            Route::get('/', [AdminController::class, 'fasilitas'])->name('admin.fasilitas');
+        });
     });
     Route::middleware('role:2')->prefix('sarpra')->group(function (): void {
         Route::get('/', [SarpraController::class, 'dasbor'])->name('sarpra');
+        Route::get('/laporan-kerusakan-fasilitas', [SarpraController::class, 'laporan_kerusakan_fasilitas'])->name('sarpra.laporan-kerusakan-fasilitas');
     });
     Route::middleware('role:3')->prefix('teknisi')->group(function (): void {
         Route::get('/', [TeknisiController::class, 'perbaikan'])->name('teknisi');

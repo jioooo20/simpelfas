@@ -14,54 +14,6 @@ class AdminController extends Controller
         return view('pages.admin.dasbor.index');
     }
 
-    public function role()
-    {
-        $table = RoleModel::with('user')
-            ->select('m_role.*')
-            ->selectRaw('COUNT(m_user.user_id) as jumlah_user')
-            ->leftJoin('m_user', 'm_role.role_id', '=', 'm_user.role_id')
-            ->groupBy('m_role.role_id')
-            ->paginate(10);
-
-        return view('pages.admin.manage-role.index', compact('table'));
-    }
-
-    public function role_add(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'role_kode' => 'required|max:10',
-                'role_nama' => 'required|max:50',
-                'role_deskripsi' => 'required|max:255',
-            ]);
-
-            if ($validator->fails()) {
-                return redirect()->route('admin.role')
-                    ->withInput()
-                    ->with('error', $validator->errors()->first());
-            }
-
-            $existingRole = RoleModel::where('role_kode', $request->role_kode)->first();
-            if ($existingRole) {
-                return redirect()->route('admin.role')
-                    ->withInput()
-                    ->with('error', 'Gagal menambahkan role. Kode sudah digunakan!!');
-            }
-
-            RoleModel::create([
-                'role_kode' => $request->role_kode,
-                'role_nama' => $request->role_nama,
-                'role_deskripsi' => $request->role_deskripsi,
-            ]);
-
-            return redirect()->route('admin.role')
-                ->with('success', 'Role berhasil ditambahkan');
-        } catch (\Exception $e) {
-            return redirect()->route('admin.role')
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        }
-    }
 
     public function user()
     {
@@ -118,7 +70,12 @@ class AdminController extends Controller
         }
     }
 
-    public function gedung(){
+    public function gedung()
+    {
         return view('pages.admin.gedung.index');
+    }
+    public function fasilitas()
+    {
+        return view('pages.admin.fasilitas.index');
     }
 }
