@@ -16,7 +16,6 @@ return new class extends Migration
             $table->unsignedBigInteger('ruang_id')->index();
             $table->unsignedBigInteger('barang_id')->index();
             $table->string('fasilitas_kode', 10)->unique();
-            $table->string('fasilitas_nama', 100);
             $table->enum('fasilitas_status', ['Baik', 'Dalam Perbaikan', 'Rusak Ringan', 'Rusak Berat'])->default('Baik');
             $table->timestamps();
 
