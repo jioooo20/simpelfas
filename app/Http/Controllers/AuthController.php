@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -15,7 +16,11 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect('/');
         }
-        return view('auth.login');
+        $response = response()->view('auth.login');
+        $response->header('Cache-Control', 'no-store, no-cache, must-revalidate');
+        Log::info('CSRF token saat login:', [csrf_token()]);
+
+        return $response;
     }
     public function postlogin(Request $request)
     {
@@ -36,6 +41,7 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
+        Log::info('Session sebelum logout:', session()->all());
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/login');
