@@ -5,7 +5,7 @@
     <div class="container mx-auto px-4 py-4">
 
         <!-- Main Card -->
-        <div class="overflow-hidden border border-gray-200 shadow-md rounded-xl bg-white">
+        <div class="hidden md:block overflow-hidden border border-gray-200 shadow-md rounded-xl bg-white">
             <!-- Form -->
             <form id="pelaporanForm" enctype="multipart/form-data" class="px-6 pb-3 space-y-4">
                 @csrf
@@ -57,9 +57,9 @@
                                 <input id="skala-ringan" type="radio" name="skala-kerusakan" value="Ringan"
                                        class="peer sr-only"/>
                                 <div class="flex flex-col items-center p-4 rounded-lg border-2
-                                transition-all duration-500 ease-in-out transform
-                                peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:scale-105
-                                border-gray-200 hover:border-gray-300 hover:bg-gray-50">
+                                    transition-all duration-500 ease-in-out transform
+                                    peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:scale-105
+                                    border-gray-200 hover:border-gray-300 hover:bg-gray-50">
                                     <div
                                         class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2 transition-all duration-500 ease-in-out">
                                         <span class="text-green-600 text-xl">1</span>
@@ -132,6 +132,92 @@
                         </div>
                     </div> <!-- End of Skala Kerusakan -->
 
+                    <!-- Frekuensi Penggunaan -->
+                    <div class="space-y-3">
+                        <label class="label-text text-base text-gray-700 font-semibold">Frekuensi Penggunaan</label>
+                        <div id="radio-group" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                            <!-- Jarang -->
+                            <label class="relative cursor-pointer">
+                                <input id="frekuensi-jarang" type="radio" name="frekuensi-penggunaan" value="Jarang"
+                                       class="peer sr-only"/>
+                                <div class="flex flex-col items-center p-4 rounded-lg border-2
+                                    transition-all duration-500 ease-in-out transform
+                                    peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:scale-105
+                                    border-gray-200 hover:border-blue-300 hover:bg-blue-25">
+                                    <div
+                                        class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2 transition-all duration-500 ease-in-out">
+                                        <span class="text-blue-600 text-xl">1</span>
+                                    </div>
+                                    <span class="font-medium text-gray-800">Jarang</span>
+                                    <span class="text-xs text-gray-500 text-center mt-1">
+                                      Digunakan sesekali saja
+                                    </span>
+                                    <svg
+                                        class="absolute top-2 right-2 h-5 w-5 text-blue-500 opacity-0 scale-90 peer-checked:opacity-100 peer-checked:scale-100 transition-all duration-300 ease-in-out transform"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                            </label>
+
+                            <!-- Sedang -->
+                            <label class="relative cursor-pointer">
+                                <input id="frekuensi-sedang" type="radio" name="frekuensi-penggunaan" value="Sedang"
+                                       class="peer sr-only"/>
+                                <div class="flex flex-col items-center p-4 rounded-lg border-2
+                                    transition-all duration-500 ease-in-out transform
+                                    peer-checked:border-purple-500 peer-checked:bg-purple-50 peer-checked:scale-105
+                                    border-gray-200 hover:border-purple-300 hover:bg-purple-25">
+                                    <div
+                                        class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-2 transition-all duration-500 ease-in-out">
+                                        <span class="text-purple-600 text-xl">2</span>
+                                    </div>
+                                    <span class="font-medium text-gray-800">Sedang</span>
+                                    <span class="text-xs text-gray-500 text-center mt-1">
+                                      Dipakai secara reguler
+                                    </span>
+                                    <svg
+                                        class="absolute top-2 right-2 h-5 w-5 text-purple-500 opacity-0 scale-90 peer-checked:opacity-100 peer-checked:scale-100 transition-all duration-300 ease-in-out transform"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                            </label> <!-- End of Sedang -->
+
+                            <!-- Sering -->
+                            <label class="relative cursor-pointer">
+                                <input id="frekuensi-sering" type="radio" name="frekuensi-penggunaan" value="Sering"
+                                       class="peer sr-only"/>
+                                <div class="flex flex-col items-center p-4 rounded-lg border-2
+                                    transition-all duration-500 ease-in-out transform
+                                    peer-checked:border-orange-500 peer-checked:bg-orange-50 peer-checked:scale-105
+                                    border-gray-200 hover:border-orange-300 hover:bg-orange-25">
+                                    <div
+                                        class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2 transition-all duration-500 ease-in-out">
+                                        <span class="text-orange-600 text-xl">3</span>
+                                    </div>
+                                    <span class="font-medium text-gray-800">Sering</span>
+                                    <span class="text-xs text-gray-500 text-center mt-1">
+                                      Digunakan setiap hari atau intensif
+                                    </span>
+                                    <svg
+                                        class="absolute top-2 right-2 h-5 w-5 text-orange-500 opacity-0 scale-90 peer-checked:opacity-100 peer-checked:scale-100 transition-all duration-300 ease-in-out transform"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                            </label> <!-- End of Sering -->
+
+                        </div>
+                    </div> <!-- End of Frekuensi Penggunaan -->
+
                     <!-- Deskripsi Kerusakan -->
                     <div class="grid gap-2">
                         <label for="deskripsi" class="label-text text-base text-gray-700 font-semibold">Deskripsi
@@ -197,6 +283,7 @@
             </form> <!-- End of Form -->
         </div> <!-- End of Card Body -->
     </div> <!-- End of Main Card -->
+
 
     <!-- Modal Zoom Foto -->
     <div id="zoomModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
@@ -402,6 +489,7 @@
 
         function validateForm({lokasi, deskripsi}) {
             const skalaChecked = document.querySelector('input[name="skala-kerusakan"]:checked');
+            const frekuensiChecked = document.querySelector('input[name="frekuensi-penggunaan"]:checked');
 
             if (!lokasi) {
                 showToast("Fasilitas harus dipilih.", "red");
@@ -410,6 +498,11 @@
 
             if (!skalaChecked) {
                 showToast("Skala kerusakan harus dipilih.", "red");
+                return false;
+            }
+
+            if (!frekuensiChecked) {
+                showToast("Frekuensi penggunaan harus dipilih.", "red");
                 return false;
             }
 
@@ -494,6 +587,7 @@
 
         document.addEventListener("DOMContentLoaded", function () {
             enableToggleRadio("skala-kerusakan");
+            enableToggleRadio("frekuensi-penggunaan");
         });
 
         function enableToggleRadio(groupName) {
@@ -526,6 +620,8 @@
                     const deskripsi = form.querySelector('#deskripsi');
                     const skalaChecked = document.querySelector('input[name="skala-kerusakan"]:checked');
                     const firstSkala = document.querySelector('input[name="skala-kerusakan"]');
+                    const frekuensiChecked = document.querySelector('input[name="frekuensi-penggunaan"]:checked');
+                    const firstFrekuensi = document.querySelector('input[name="frekuensi-penggunaan"]');
 
                     if (!lokasi.value.trim()) {
                         showToast("Fasilitas harus dipilih.", "red");
@@ -535,6 +631,11 @@
                     if (!skalaChecked) {
                         showToast("Skala kerusakan harus dipilih.", "red");
                         if (firstSkala) firstSkala.focus();
+                        return;
+                    }
+                    if (!frekuensiChecked) {
+                        showToast("Frekuensi penggunaan harus dipilih.", "red");
+                        if (firstFrekuensi) firstFrekuensi.focus();
                         return;
                     }
                     if (!deskripsi.value.trim()) {

@@ -41,6 +41,7 @@ class PelaporanRepository
             $latestStatus = $item->statusPelaporan->first();
             return [
                 'id' => $item->pelaporan_id,
+                'kode' => $item->pelaporan_kode,
                 'judul' => $item->pelaporan_deskripsi ?? '-',
                 'tanggal' => $item->created_at->format('d M Y'),
                 'status' => $latestStatus ? $latestStatus->status_pelaporan : 'Belum Ada Status',
