@@ -11,18 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('m_pelaporan', function (Blueprint $table) {
-            $table->id('pelaporan_id');
+        Schema::create('t_perbaikan_petugas', function (Blueprint $table) {
+            $table->id('perbaikan_petugas_id');
+            $table->unsignedBigInteger('perbaikan_id')->index();
             $table->unsignedBigInteger('user_id')->index();
-            $table->unsignedBigInteger('fasilitas_id')->index();
-            $table->string('pelaporan_kode', 10)->unique();
-            $table->text('pelaporan_deskripsi');
-            $table->mediumText("pelaporan_gambar")->nullable();
             $table->timestamps();
 
+            $table->foreign('perbaikan_id')->references('perbaikan_id')->on('t_perbaikan');
             $table->foreign('user_id')->references('user_id')->on('m_user');
-            $table->foreign('fasilitas_id')->references('fasilitas_id')->on('t_fasilitas');
-
         });
     }
 
@@ -31,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('m_pelaporan');
+        Schema::dropIfExists('t_perbaikan_petugas');
     }
 };

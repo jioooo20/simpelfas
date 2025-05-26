@@ -2,10 +2,10 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SarpraController;
 use App\Http\Controllers\TeknisiController;
 use App\Http\Controllers\UsersController;
-use App\Livewire\ManageRole;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -24,28 +24,37 @@ Route::middleware('auth')->group(function () {
         1 => redirect()->route('admin'),
         2 => redirect()->route('sarpra'),
         3 => redirect()->route('teknisi'),
-        4 => redirect()->route('users'),
+        4, 5, 6 => redirect()->route('users'),
         default => route('login'),
     });
 
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+
     Route::middleware('role:1')->prefix('admin')->group(function (): void {
         Route::get('/', [AdminController::class, 'dasbor'])->name('admin');
-        Route::prefix('role')->group(function (): void {
-            Route::get('/', [AdminController::class, 'role'])->name('admin.role');
-            Route::post('/add', [AdminController::class, 'role_add'])->name('admin.role-add');
-        });
         Route::prefix('user')->group(function (): void {
             Route::get('/', [AdminController::class, 'user'])->name('admin.user');
             Route::post('/add', [AdminController::class, 'user_add'])->name('admin.user-add');
         });
+
+        Route::prefix('gedung')->group(function (): void {
+            Route::get('/', [AdminController::class, 'gedung'])->name('admin.gedung');
+        });
+
+        Route::prefix('fasilitas')->group(function (): void {
+            Route::get('/', [AdminController::class, 'fasilitas'])->name('admin.fasilitas');
+        });
     });
     Route::middleware('role:2')->prefix('sarpra')->group(function (): void {
         Route::get('/', [SarpraController::class, 'dasbor'])->name('sarpra');
+        Route::get('/laporan-kerusakan-fasilitas', [SarpraController::class, 'laporan_kerusakan_fasilitas'])->name('sarpra.laporan-kerusakan-fasilitas');
     });
     Route::middleware('role:3')->prefix('teknisi')->group(function (): void {
         Route::get('/', [TeknisiController::class, 'perbaikan'])->name('teknisi');
     });
-    Route::middleware('role:4')->prefix('users')->group(function (): void {
+    Route::middleware('role:4,5,6')->prefix('users')->group(function (): void {
         Route::get('/', [UsersController::class, 'index'])->name('users');
         Route::post('/pelaporan', [UsersController::class, 'storePelaporan'])->name('store-pelaporan');
         Route::get('/status-laporan', [UsersController::class, 'statusLaporan'])->name('status-laporan');
@@ -53,7 +62,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/feedback',[UsersController::class, 'UmpanBalik'])->name('users.feedback');
         Route::get('/feedback-create',[UsersController::class, 'UmpanBalik_Create'])->name('feedback-create');
         Route::post('/feedback-store', [UsersController::class, 'store'])->name('feedback-store');
-        
+        Route::get('/laporan-data', [UsersController::class, 'getLaporanData'])->name('laporan-data');
+        Route::get('/laporan-detail/{id}', [UsersController::class, 'getLaporanDetail'])->name('laporan-detail');
     });
 });
 

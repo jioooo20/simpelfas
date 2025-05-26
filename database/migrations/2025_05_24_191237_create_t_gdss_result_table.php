@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('t_perbaikan', function (Blueprint $table) {
-            $table->id('perbaikan_id');
+        Schema::create('t_gdss_result', function (Blueprint $table) {
+            $table->id('gdss__id');
+            $table->string('gdss_kode', 30)->unique(); //format angka dtk-mnt-jam-day-bln-thn
             $table->unsignedBigInteger('pelaporan_id')->index();
-            $table->string('perbaikan_kode', 10)->unique();
-            $table->string('perbaikan_deskripsi', 255);
+            $table->integer('nilai_skor');
+            $table->integer('rank');
             $table->timestamps();
 
-            $table->foreign('pelaporan_id')->references('pelaporan_id')->on('m_pelaporan');
+            $table->foreign('pelaporan_id')->references('pelaporan_id')->on('m_pelaporan')->onDelete('cascade');
         });
     }
 
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('t_perbaikan');
+        Schema::dropIfExists('t_gdss_result');
     }
 };

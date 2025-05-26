@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id("user_id");
             $table->unsignedBigInteger("role_id")->index();//indexing untuk fk
             $table->string("identitas", 32)->unique();//uniq agar tidak ada yg sama
+           $table->string('profile_image')->nullable();
             $table->string("nama", 50);
             $table->string("password");
             $table->string("email");
