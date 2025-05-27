@@ -91,16 +91,38 @@ class UsersController extends Controller
         return response()->json($formatted);
     }
 
+//    public function getLaporanDetail($id)
+//    {
+//        $laporan = $this->pelaporanRepo->getLaporanDetailById($id);
+//        $latestStatus = $laporan->statusPelaporan->first();
+//
+//        return view('pages.users.status-laporan.laporan-detail-modal', [
+//            'laporan' => $laporan,
+//            'status' => $latestStatus ? $latestStatus->status_pelaporan : 'Belum Ada Status',
+//        ]);
+//    }
+
     public function getLaporanDetail($id)
     {
         $laporan = $this->pelaporanRepo->getLaporanDetailById($id);
         $latestStatus = $laporan->statusPelaporan->first();
 
+        // Anggap gambar-gambar ini disimpan sebagai JSON di DB
+        $gambar = [
+            'Gambar Laporan' => json_decode($laporan->pelaporan_gambar ?? '[]'),
+            'Gambar Perbaikan' => json_decode($laporan->gambar_perbaikan ?? '[]'),
+            'Gambar Selesai' => json_decode($laporan->gambar_selesai ?? '[]'),
+        ];
+
+//        dd($gambar);
+
         return view('pages.users.status-laporan.laporan-detail-modal', [
             'laporan' => $laporan,
             'status' => $latestStatus ? $latestStatus->status_pelaporan : 'Belum Ada Status',
+            'gambar' => $gambar,
         ]);
     }
+
 
     protected function validateImage(Request $request): ?array
     {
