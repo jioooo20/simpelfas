@@ -53,6 +53,14 @@ Route::middleware('auth')->group(function () {
     });
     Route::middleware('role:3')->prefix('teknisi')->group(function (): void {
         Route::get('/', [TeknisiController::class, 'perbaikan'])->name('teknisi');
+        Route::group(['prefix' => 'perbaikan'], function (): void {
+            Route::get('/detail', [TeknisiController::class, 'show'])->name('detail-perbaikan');
+            Route::post('/update', [TeknisiController::class, 'update'])->name('update-perbaikan');
+        });
+        Route::group(['prefix' => 'riwayat-perbaikan'], function (): void {
+            Route::get('/', [TeknisiController::class, 'riwayat'])->name('riwayat-perbaikan');
+            Route::get('/detail', [TeknisiController::class, 'riwayatShow'])->name('riwayat-perbaikan-detail');
+        });
     });
     Route::middleware('role:4,5,6')->prefix('users')->group(function (): void {
         Route::get('/', [UsersController::class, 'index'])->name('users');

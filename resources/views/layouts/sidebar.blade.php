@@ -154,7 +154,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                    <a href="{{ route('riwayat-perbaikan') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                         <div class="w-6 text-center">
                             <i
                                 class="fa-solid fa-history group-hover:text-primary transition-transform duration-200"></i>
