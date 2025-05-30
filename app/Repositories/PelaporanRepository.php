@@ -2,7 +2,9 @@
 
 namespace App\Repositories;
 
+use App\Models\KriteriaModel;
 use App\Models\PelaporanModel;
+use App\Models\SkorAltModel;
 use App\Models\StatusPelaporanModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -27,6 +29,43 @@ class PelaporanRepository
         ]);
 
         return $pelaporan;
+    }
+
+    public function simpanSkorAlternatif(int $pelaporanId, string $skala, string $frekuensi): void
+    {
+        $skalaBobot = [
+            'Ringan' => 1,
+            'Sedang' => 2,
+            'Berat'  => 3,
+        ];
+
+        $frekuensiBobot = [
+            'Jarang' => 1,
+            'Sedang' => 2,
+            'Sering' => 3,
+        ];
+
+        $kodeMap = [
+            'skala' => 'C2',
+            'frekuensi' => 'C3',
+        ];
+
+        $kriteriaSkala = KriteriaModel::where('kriteria_kode', $kodeMap['skala'])->first();
+        $kriteriaFrekuensi = KriteriaModel::where('kriteria_kode', $kodeMap['frekuensi'])->first();
+
+        SkorAltModel::create([
+            'pelaporan_id' => $pelaporanId,
+            'kriteria_id' => $kriteriaSkala->kriteria_id,
+            'nilai_skor' => $skalaBobot[$skala],
+            'skor_alt_kode' => 'SKR-' . strtoupper(Str::random(6)),
+        ]);
+
+        SkorAltModel::create([
+            'pelaporan_id' => $pelaporanId,
+            'kriteria_id' => $kriteriaFrekuensi->kriteria_id,
+            'nilai_skor' => $frekuensiBobot[$frekuensi],
+            'skor_alt_kode' => 'SKR-' . strtoupper(Str::random(6)),
+        ]);
     }
 
     public function getFormattedLaporanData()

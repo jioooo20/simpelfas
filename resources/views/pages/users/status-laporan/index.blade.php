@@ -225,7 +225,7 @@
                         .filter(item => {
                             const searchText = this.search.toLowerCase();
                             const searchWords = searchText.split(' ').filter(Boolean);
-                            const searchTarget = `${item.judul} ${item.tanggal} ${item.status} ${item.index + 1}`.toLowerCase();
+                            const searchTarget = `${item.kode} ${item.judul} ${item.tanggal} ${item.status} ${item.index + 1}`.toLowerCase();
                             const matchSearch = searchWords.every(word => searchTarget.includes(word));
                             const matchFilter = this.filter === '' || item.status === this.filter;
                             return matchSearch && matchFilter;
@@ -237,7 +237,6 @@
 
                     return result;
                 },
-
                 totalPages() {
                     return Math.ceil(this.filteredLaporan().length / this.perPage);
                 },
@@ -280,6 +279,9 @@
 
                     return pages;
                 },
+                generateKey(n) {
+                    return typeof n === 'number' ? `page-${n}` : `ellipsis-${n}`;
+                },
                 handleEllipsisClick(position) {
                     const total = this.totalPages();
                     if (position === 'left') {
@@ -287,9 +289,6 @@
                     } else if (position === 'right') {
                         this.page = Math.floor((this.page + total) / 2);
                     }
-                },
-                generateKey(n) {
-                    return typeof n === 'number' ? `page-${n}` : `ellipsis-${n}`;
                 },
                 badgeStyle(status) {
                     return {

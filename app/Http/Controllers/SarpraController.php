@@ -10,4 +10,20 @@ class SarpraController extends Controller
     {
         return view('pages.sarpra.dasbor.index');
     }
+
+    public function statistikFasilitas() {
+        return view('pages.sarpra.analisis-laporan.statistik-fasilitas.index');
+    }
+
+    public function frekuensiPerbaikan() {
+        return view('pages.sarpra.analisis-laporan.frekuensi-perbaikan.index');
+    }
+
+    public function kepuasanPengguna() {
+        return view('pages.sarpra.analisis-laporan.kepuasan-pengguna.index');
+    }
+
+    public function perencanaanPemeliharaan() {
+        return view('pages.sarpra.analisis-laporan.perencanaan-pemeliharaan.index');
+    }
 }

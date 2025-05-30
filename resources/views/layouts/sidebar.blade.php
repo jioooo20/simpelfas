@@ -105,43 +105,89 @@
                 </li>
             @endif
 
-            {{-- sarpra --}}
-            @if (in_array(Auth::user()->role_id, ['2']))
-                <li>
-                    <a href="{{ route('sarpra') }}"
-                        class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                            class="w-6 h-6 text-center text-gray-500 group-hover:text-primary transition-colors duration-200"
-                            viewBox="0 0 24 24" fill="currentColor">
-                            <rect x="3" y="3" width="8" height="8" rx="1" />
-                            <rect x="13" y="3" width="8" height="8" rx="1" />
-                            <rect x="3" y="13" width="8" height="8" rx="1" />
-                            <rect x="13" y="13" width="8" height="8" rx="1" />
-                        </svg>
-                        <span class="sidebar-text">Dasbor</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('sarpra.laporan-kerusakan-fasilitas') }}"
-                        class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
-                        <div class="w-6 text-center">
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="h-6 group-hover:text-primary transition-transform duration-200"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-                                <path d="M13 2v7h7" />
-                                <path d="M9 13h6" />
-                                <path d="M9 17h6" />
-                                <path d="M9 9h1" />
-                            </svg>
-                        </div>
-                        <span class="sidebar-text text-md">Laporan Kerusakan Fasilitas</span>
-                    </a>
-                </li>
-            @endif
+                {{-- sarpra --}}
+                @if (in_array(Auth::user()->role_id, ['2']))
+                    <li>
+                        <a href="{{ route('sarpra') }}"
+                           class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                            <i class="bi bi-grid-fill text-gray-500 group-hover:text-primary text-lg w-6 text-center"></i>
+                            <span class="sidebar-text text-[0.925rem]">Dasbor</span>
+                        </a>
+                    </li>
 
-            {{-- teknisi --}}
+                    <li>
+                        <a href="#"
+                           class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                            <i class="bi bi-file-earmark-text text-gray-500 group-hover:text-primary text-lg w-6 text-center"></i>
+                            <span class="sidebar-text text-[0.925rem]">Laporan Kerusakan Fasilitas</span>
+                        </a>
+                    </li>
+
+                    {{-- Submenu: Analisis dan Laporan (Expandable) --}}
+                    @php
+                        $isSubmenuOpen = request()->routeIs('statistik-fasilitas', 'frekuensi-perbaikan', 'kepuasan-pengguna', 'perencanaan-pemeliharaan');
+                    @endphp
+
+                    <li x-data="{ open: {{ $isSubmenuOpen ? 'true' : 'false' }} }" x-init="open = {{ $isSubmenuOpen ? 'true' : 'false' }}">
+                        <a href="#" @click.prevent="open = !open"
+                           class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                            <i class="bi bi-bar-chart-fill text-gray-500 group-hover:text-primary text-lg w-6 text-center"></i>
+                            <span class="sidebar-text text-[0.925rem]">Analisis & Laporan</span>
+                            <i class="bi bi-chevron-down ml-auto transform transition-transform duration-300"
+                               :class="{ 'rotate-0': open, '-rotate-90': !open }"></i>
+                        </a>
+
+                        <ul x-show="open"
+                            x-cloak
+                            x-transition:enter="transition-all ease-out duration-300"
+                            x-transition:enter-start="opacity-0 max-h-0"
+                            x-transition:enter-end="opacity-100 max-h-96"
+                            x-transition:leave="transition-all ease-in duration-300"
+                            x-transition:leave-start="opacity-100 max-h-96"
+                            x-transition:leave-end="opacity-0 max-h-0"
+                            class="space-y-2 mt-2 ml-6 overflow-hidden">
+
+                            <li>
+                                <a href="{{ route('statistik-fasilitas') }}"
+                                   class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group
+                                    {{ request()->routeIs('statistik-fasilitas') ? 'bg-gray-200 text-gray-800 font-semibold' : '' }}">
+                                    <i class="bi bi-graph-up text-gray-500 group-hover:text-primary text-lg w-6 text-center"></i>
+                                    <span class="sidebar-text text-[0.925rem]">Statistik Fasilitas</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('frekuensi-perbaikan') }}"
+                                   class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group
+                                    {{ request()->routeIs('frekuensi-perbaikan') ? 'bg-gray-200 text-gray-800 font-semibold' : '' }}">
+                                    <i class="bi bi-arrow-repeat text-gray-500 group-hover:text-primary text-lg w-6 text-center"></i>
+                                    <span class="sidebar-text text-[0.925rem]">Frekuensi Perbaikan</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('kepuasan-pengguna') }}"
+                                   class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group
+                                    {{ request()->routeIs('kepuasan-pengguna') ? 'bg-gray-200 text-gray-800 font-semibold' : '' }}">
+                                    <i class="bi bi-emoji-smile text-gray-500 group-hover:text-primary text-lg w-6 text-center"></i>
+                                    <span class="sidebar-text text-[0.925rem]">Kepuasan Pengguna</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('perencanaan-pemeliharaan') }}"
+                                   class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group
+                                    {{ request()->routeIs('perencanaan-pemeliharaan') ? 'bg-gray-200 text-gray-800 font-semibold' : '' }}">
+                                    <i class="bi bi-tools text-gray-500 group-hover:text-primary text-lg w-6 text-center"></i>
+                                    <span class="sidebar-text text-[0.925rem]">Perencanaan Pemeliharaan</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                @endif
+
+                {{-- teknisi --}}
             @if (in_array(Auth::user()->role_id, ['3']))
                 <li>
                     <a href="{{ route('teknisi') }}"
@@ -210,6 +256,13 @@
         </ul>
     </nav>
 </div>
+
+@push('css')
+    <style>
+        [x-cloak] { display: none !important; }
+
+    </style>
+@endpush
 
 @push('skrip')
     <script>
