@@ -451,10 +451,15 @@
             const submitBtn = form.querySelector('button[type="submit"]');
             const formData = new FormData(form);
 
+            const skala = document.querySelector('input[name="skala-kerusakan"]:checked')?.value;
+            const frekuensi = document.querySelector('input[name="frekuensi-penggunaan"]:checked')?.value;
+
             const values = {
                 lokasi: form.querySelector('#lokasi').value.trim(),
                 deskripsi: form.querySelector('#deskripsi').value.trim(),
-                foto: uploadedFiles
+                foto: uploadedFiles,
+                skala,
+                frekuensi
             };
 
             if (!validateForm(values)) return;
@@ -466,6 +471,9 @@
             uploadedFiles.forEach((file, index) => {
                 formData.append(`foto[${index}]`, file);
             });
+
+            formData.append('skala', skala);
+            formData.append('frekuensi', frekuensi);
 
             try {
                 const res = await fetch('{{ route('store-pelaporan') }}', {

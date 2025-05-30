@@ -16,6 +16,8 @@ class StorePelaporanRequest extends FormRequest
         return [
             'lokasi' => ['required', 'string', 'max:255'],
             'deskripsi' => ['required', 'string', 'max:1000'],
+            'skala' => ['required', 'in:Ringan,Sedang,Berat'],
+            'frekuensi' => ['required', 'in:Jarang,Sedang,Sering'],
             'foto' => ['nullable', 'array', 'max:3'],
             'foto.*' => ['file', 'mimetypes:image/jpeg,image/png', 'max:10240'],
         ];
