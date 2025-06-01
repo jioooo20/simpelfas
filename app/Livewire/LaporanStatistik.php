@@ -18,27 +18,28 @@ class LaporanStatistik extends Component
     }
 
     public function render()
-    {
-        $table = PelaporanModel::query()
-                ->with(['fasilitas', 'user', 'statusPelaporan'])
-                ->when($this->search, function ($query) {
-                    $query->whereHas('user', function ($q) {
-                        $q->where('nama', 'like', '%' . $this->search . '%');
-                    })
-                    ->orWhere('judul_laporan', 'like', '%' . $this->search . '%')
-                    ->orWhere('deskripsi_laporan', 'like', '%' . $this->search . '%')
-                    ->orWhereHas('fasilitas', function ($q) {
-                        $q->where('nama', 'like', '%' . $this->search . '%');
-                    });
+{
+    $table = PelaporanModel::query()
+            ->with([
+                'fasilitas.barang',
+                'user',
+                'statusPelaporan' => function($query) {
+                    $query->latest()->limit(1);
+                }
+            ])
+            ->when($this->search, function ($query) {
+                $query->whereHas('user', function ($q) {
+                    $q->where('nama', 'like', '%' . $this->search . '%');
                 })
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
+                ->orWhere('judul_laporan', 'like', '%' . $this->search . '%')
+                ->orWhere('deskripsi_laporan', 'like', '%' . $this->search . '%')
+                ->orWhereHas('fasilitas.barang', function ($q) {
+                    $q->where('nama', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-            return view('livewire.laporan-statistik', [
-                'table' => $table,
-                'fasilitas' => FasilitasModel::all(),
-                'users' => UserModel::all(),
-                'status' => StatusPelaporanModel::all(),
-            ]);
-    }   
+    return view('livewire.laporan-statistik', compact('table'));
+}
 }

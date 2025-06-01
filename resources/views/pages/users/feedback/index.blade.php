@@ -2,133 +2,61 @@
 @section('judul', 'Umpan Balik')
 @section('content')
     <div class="container mx-auto px-4 py-6">
-        <!-- Header section with consistent spacing -->
         <div class="flex items-center justify-between mb-8">
             <h1 class="text-2xl font-bold text-gray-800">Umpan Balik</h1>
         </div>
 
-        <!-- Feedback items container -->
         <div class="space-y-6">
-            <!-- Feedback item card with better structure -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <!-- Card header and content area -->
-                <div class="p-6">
-                    <div class="flex flex-col md:flex-row gap-6">
-                        <!-- Image with proper sizing constraints -->
-                        <div class="w-full md:w-48 h-48 flex-shrink-0 relative">
-                            <img src="{{ asset('storage/kucing.jpg') }}" alt="Foto kerusakan"
-                                class="w-full h-full object-cover rounded-md shadow">
-                            <!-- Status Badge -->
-                            <div
-                                class="absolute top-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
-                                SELESAI
-                            </div>
-                        </div>
+            @forelse ($perbaikans as $perbaikan)
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <!-- Gambar -->
+                            <div class="w-full md:w-48 h-48 flex-shrink-0 relative">
+                                <img src="{{ asset('storage/' . $perbaikan->pelaporan_gambar) }}" alt="Foto kerusakan"
+                                    class="w-full h-full object-cover rounded-md shadow">
 
-                        <!-- Content with better spacing and hierarchy -->
-                        <div class="flex-1">
-                            <div class="mb-4">
-                                <h3 class="font-bold text-xl text-gray-800">LAMPU LOBY MATI</h3>
-                                <p class="text-gray-600 flex items-center gap-2"><i class="bi bi-geo-alt"></i>Gd. AN Lt. 2
-                                </p>
-                                <p class="text-gray-500 text-sm mt-1 flex items-center gap-2"><i
-                                        class="bi bi-calendar2-minus"></i>Ditangani pada: 15 Mei 2025</p>
-
-                                <h4 class="font-medium text-gray-700 mt-10 mb-2">Deskripsi Kerusakan:</h4>
-                                <p class="text-gray-600">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quam,
-                                    placeat. Enim laudantium eos asperiores suscipit.</p>
+                                <!-- Status badge -->
+                                @php
+                                    $statusTerakhir = $perbaikan->statusPelaporan->last(); // ambil status terakhir
+                                    $status = $statusTerakhir ? $statusTerakhir->status : 'MENUNGGU';
+                                @endphp
+                                <div class="absolute top-2 left-2 
+                                    {{ $status == 'SELESAI' ? 'bg-green-600' : 'bg-yellow-500' }} 
+                                    text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
+                                    {{ strtoupper($status) }}
+                                </div>
                             </div>
-                            <div class="flex justify-end">
-                                <a href="{{ route('feedback-create') }}"
-                                    class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md font-medium text-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
-                                    Beri Penilaian
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-            </div>
-            
-            <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <!-- Card header and content area -->
-                <div class="p-6">
-                    <div class="flex flex-col md:flex-row gap-6">
-                        <!-- Image with proper sizing constraints -->
-                        <div class="w-full md:w-48 h-48 flex-shrink-0 relative">
-                            <img src="{{ asset('storage/kucing.jpg') }}" alt="Foto kerusakan"
-                                class="w-full h-full object-cover rounded-md shadow">
-                            <!-- Status Badge -->
-                            <div
-                                class="absolute top-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
-                                SELESAI
-                            </div>
-                        </div>
+                            <!-- Konten -->
+                            <div class="flex-1">
+                                <div class="mb-4">
+                                    <h3 class="font-bold text-xl text-gray-800">
+                                        Kode: {{ strtoupper($perbaikan->pelaporan_kode) }}
+                                    </h3>
+                                    <p class="text-gray-600 flex items-center gap-2">
+                                        <i class="bi bi-building"></i>
+                                        Fasilitas: {{ $perbaikan->fasilitas->fasilitas_nama ?? '-' }}
+                                    </p>
 
-                        <!-- Content with better spacing and hierarchy -->
-                        <div class="flex-1">
-                            <div class="mb-4">
-                                <h3 class="font-bold text-xl text-gray-800">LAMPU LOBY MATI</h3>
-                                <p class="text-gray-600 flex items-center gap-2"><i class="bi bi-geo-alt"></i>Gd. AN Lt. 2
-                                </p>
-                                <p class="text-gray-500 text-sm mt-1 flex items-center gap-2"><i
-                                        class="bi bi-calendar2-minus"></i>Ditangani pada: 15 Mei 2025</p>
+                                    <h4 class="font-medium text-gray-700 mt-6 mb-2">Deskripsi Kerusakan:</h4>
+                                    <p class="text-gray-600">{{ $perbaikan->pelaporan_deskripsi }}</p>
+                                </div>
 
-                                <h4 class="font-medium text-gray-700 mt-10 mb-2">Deskripsi Kerusakan:</h4>
-                                <p class="text-gray-600">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quam,
-                                    placeat. Enim laudantium eos asperiores suscipit.</p>
-                            </div>
-                            <div class="flex justify-end">
-                                <a href="{{ route('feedback-create') }}"
-                                    class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md font-medium text-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
-                                    Beri Penilaian
-                                </a>
+                                <!-- Tombol Penilaian -->
+                                <div class="flex justify-end">
+                                    <a href="{{ route('feedback-create', ['perbaikan_id' => $perbaikan->pelaporan_id]) }}"
+                                        class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md font-medium text-sm transition duration-150 ease-in-out">
+                                        Beri Penilaian
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-            </div>
-            
-            <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <!-- Card header and content area -->
-                <div class="p-6">
-                    <div class="flex flex-col md:flex-row gap-6">
-                        <!-- Image with proper sizing constraints -->
-                        <div class="w-full md:w-48 h-48 flex-shrink-0 relative">
-                            <img src="{{ asset('storage/kucing.jpg') }}" alt="Foto kerusakan"
-                                class="w-full h-full object-cover rounded-md shadow">
-                            <!-- Status Badge -->
-                            <div
-                                class="absolute top-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
-                                SELESAI
-                            </div>
-                        </div>
-
-                        <!-- Content with better spacing and hierarchy -->
-                        <div class="flex-1">
-                            <div class="mb-4">
-                                <h3 class="font-bold text-xl text-gray-800">LAMPU LOBY MATI</h3>
-                                <p class="text-gray-600 flex items-center gap-2"><i class="bi bi-geo-alt"></i>Gd. AN Lt. 2
-                                </p>
-                                <p class="text-gray-500 text-sm mt-1 flex items-center gap-2"><i
-                                        class="bi bi-calendar2-minus"></i>Ditangani pada: 15 Mei 2025</p>
-
-                                <h4 class="font-medium text-gray-700 mt-10 mb-2">Deskripsi Kerusakan:</h4>
-                                <p class="text-gray-600">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quam,
-                                    placeat. Enim laudantium eos asperiores suscipit.</p>
-                            </div>
-                            <div class="flex justify-end">
-                                <a href="{{ route('feedback-create') }}"
-                                    class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md font-medium text-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
-                                    Beri Penilaian
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+            @empty
+                <p class="text-gray-500 text-center">Belum ada pelaporan.</p>
+            @endforelse
         </div>
     </div>
 @endsection

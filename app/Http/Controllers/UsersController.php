@@ -13,6 +13,7 @@ use App\Repositories\PelaporanRepository;
 use App\Http\Requests\StorePelaporanRequest;
 use App\Models\SkorAltModel;
 use App\Models\KriteriaModel;
+use Illuminate\Support\Facades\Auth;
 
 class UsersController extends Controller
 {
@@ -35,7 +36,11 @@ class UsersController extends Controller
         return view('pages.users.status-laporan.index');
     }
     public function UmpanBalik() {
-        return view ('pages.users.feedback.index');
+        $userId = auth()->id(); // ambil id user yang sedang login
+        $perbaikans = PelaporanModel::with('fasilitas', 'statusPelaporan') // eager load relasi
+                    ->where('user_id', $userId)
+                    ->get();
+        return view('pages.users.feedback.index', compact('perbaikans'));
     }
 
     public function UmpanBalik_Create() {

@@ -28,14 +28,16 @@
                 <!-- Rating -->
                 <div class="mb-6">
                     <label class="block text-gray-700 font-medium mb-3">Rating Kepuasan</label>
-                    <div class="flex items-center gap-1">
-                        @for ($i = 1; $i <= 5; $i++)
-                            <label class="cursor-pointer transform hover:scale-110 transition">
-                                <input type="radio" name="rating" value="{{ $i }}" class="hidden peer"
-                                    {{ $i == 3 ? 'checked' : '' }}>
-                                <span class="text-3xl peer-checked:text-yellow-500 text-gray-300">★</span>
-                            </label>
-                        @endfor
+                    <div x-data="{ rating: 0 }" class="flex flex-col items-start space-y-2">
+                        <div class='flex space-x-1'>
+                            @for ($i = 1; $i <= 5; $i++)
+                                <label class="cursor-pointer transform hover:scale-110 transition">
+                                    <input type="radio" name="rating" value="{{ $i }}" class="hidden"
+                                        x-model="rating">
+                                    <span class="text-3xl":class="rating >= {{ $i }} ? 'text-yellow-500' : 'text-gray-300'">★</span>
+                                </label>
+                            @endfor
+                        </div>
                         <span class="ml-2 text-gray-600 text-sm">(1 = Buruk, 5 = Sangat Puas)</span>
                     </div>
                     @error('rating')
@@ -118,7 +120,7 @@
     <div class="mb-6">
         <label class="block text-gray-700 font-medium mb-3">Komentar</label>
         --}}
-            </div>
         </div>
+    </div>
     </div>
 @endsection

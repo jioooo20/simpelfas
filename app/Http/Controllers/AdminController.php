@@ -6,6 +6,9 @@ use App\Models\RoleModel;
 use App\Models\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Models\PelaporanModel;
+use App\Models\StatusPelaporanModel;
+use App\Models\FasilitasModel;
 
 class AdminController extends Controller
 {
@@ -20,6 +23,14 @@ class AdminController extends Controller
         $table = UserModel::with('role');
         $roles = RoleModel::all();
         return view('pages.admin.manage-user.index', compact('table', 'roles'));
+    }
+
+    public function laporan_statistik (){
+        $table = PelaporanModel::with('fasilitas','user', 'statusPelaporan')->paginate(10);
+        $fasilitas = FasilitasModel::all();
+        $user = UserModel::all();
+        $status = StatusPelaporanModel::all();
+        return view('pages.admin.laporan-statistik.index', compact('table', 'fasilitas', 'user','status'));
     }
 
     public function user_add(Request $request)
@@ -78,4 +89,13 @@ class AdminController extends Controller
     {
         return view('pages.admin.fasilitas.index');
     }
+
+    // public function laporan_statistik() {
+    //     $laporan = [
+    //         ['judul' => 'Perbaikan AC', 'status' => 'Selesai', 'tanggal' => '2025-05-01'],
+    //         ['judul' => 'Kerusakan Internet', 'status' => 'Diproses', 'tanggal' => '2025-05-20'],
+    //     ];
+
+    //     return view('pages.admin.laporan-statistik.index', compact('laporan'));
+    // }
 }
