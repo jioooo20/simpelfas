@@ -13,8 +13,14 @@
                         <div class="flex flex-col md:flex-row gap-6">
                             <!-- Gambar -->
                             <div class="w-full md:w-48 h-48 flex-shrink-0 relative">
-                                <img src="{{ asset('storage/' . $items->pelaporan_gambar) }}" alt="Foto kerusakan"
-                                    class="w-full h-full object-cover rounded-md shadow">
+
+                                @php
+                                    $gambarList = json_decode($items->pelaporan_gambar, true);
+                                    $gambarUtama = $gambarList[0] ?? null;
+                                @endphp
+                                <img src="{{ $gambarUtama ? asset('storage/' . $gambarUtama) : asset('images/no-image.png') }}"
+                                    alt="{{ $items->fasilitas->nama ?? 'Foto kerusakan' }}"
+                                    class="w-24 h-24 object-cover rounded-md shadow">
 
                                 <!-- Status badge -->
                                 @php

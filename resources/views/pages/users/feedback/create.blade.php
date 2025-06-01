@@ -25,12 +25,17 @@
             <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h3 class="font-semibold text-lg mb-3 text-gray-700">Laporan yang Ditangani</h3>
                 <div class="flex flex-col md:flex-row gap-4 items-start">
-                    <img src="{{ $laporan->pelaporan_gambar ? asset('storage/' . $laporan->pelaporan_gambar) : asset('images/no-image.png') }}"
+                    
+                    @php
+                        $gambarList = json_decode($laporan->pelaporan_gambar, true);
+                        $gambarUtama = $gambarList[0] ?? null;
+                    @endphp
+                    <img src="{{ $gambarUtama ? asset('storage/' . $gambarUtama) : asset('images/no-image.png') }}"
                         alt="{{ $laporan->fasilitas->nama ?? 'Foto kerusakan' }}"
                         class="w-24 h-24 object-cover rounded-md shadow">
 
                     <div class="grid grid-cols-1 gap-2">
-                        <p><span class="font-medium">Judul:</span> {{ $laporan->fasilitas->nama ?? '-' }}</p>
+                        <p><span class="font-medium">Perbaikan:</span> {{ $laporan->fasilitas->barang->barang_nama ?? '-' }}</p>
                         
                         <p class="mt-5"><span class="font-medium">Tanggal Lapor:</span> {{ \Carbon\Carbon::parse($laporan->pelaporan_tanggal)->format('d M Y') }}</p>
                         <p><span class="font-medium">Ditangani pada:</span> {{ \Carbon\Carbon::parse($laporan->tanggal_ditangani)->format('d M Y') ?? '-' }}</p>

@@ -14,6 +14,7 @@ use App\Http\Requests\StorePelaporanRequest;
 use App\Models\SkorAltModel;
 use App\Models\KriteriaModel;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class UsersController extends Controller
 {
@@ -54,15 +55,38 @@ class UsersController extends Controller
     }
 
     public function UmpanBalik_Create($perbaikan_id) {
-        $laporan = PelaporanModel::with('fasilitas')->findOrFail($perbaikan_id);
+        $laporan = PelaporanModel::with('fasilitas.barang')->findOrFail($perbaikan_id);
         $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
-        $laporan['fasilitas_label'] = $fasilitasOptions[$laporan->fasilitas_id]['label'] ?? null;
+        $laporan->fasilitas_label = $fasilitasOptions[$laporan->fasilitas_id]['label'] ?? null;
+
         return view('pages.users.feedback.create')->with('laporan', $laporan);
     }
 
-    public function store() {
-        
-    }
+   public function store(Request $request)
+{
+    $validated = $request->validate([
+        'pelaporan_id' => 'required|exists:m_pelaporan,pelaporan_id',
+        'feedback_text' => 'nullable|string|max:1000',
+        'rating' => 'nullable|integer|min:1|max:5',
+    ]);
+
+    DB::table('m_feedback')->insert([
+        'pelaporan_id' => $validated['pelaporan_id'],
+        'feedback_text' => $validated['feedback_text'] ?? null,
+        'rating' => $validated['rating'] ?? null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    // Update tanggal ditangani di pelaporan jika belum ada
+    DB::table('m_pelaporan')
+        ->where('pelaporan_id', $validated['pelaporan_id'])
+        ->whereNull('tanggal_ditangani')
+        ->update(['tanggal_ditangani' => now()]);
+
+    return redirect()->route('users.feedback')->with('success', 'Feedback berhasil disimpan!');
+}
+
 
 
     public function laporanDetail()
