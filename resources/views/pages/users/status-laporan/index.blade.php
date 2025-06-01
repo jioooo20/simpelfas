@@ -25,15 +25,31 @@
                     </label>
                     <ul x-show="showDropdown" @click.away="showDropdown = false"
                         class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-2">
-                        <li><a href="#"
-                               @click.prevent="filter = 'Menunggu'; page = 1; showDropdown = false">Menunggu</a></li>
-                        <li><a href="#"
-                               @click.prevent="filter = 'Diproses'; page = 1; showDropdown = false">Diproses</a></li>
-                        <li><a href="#" @click.prevent="filter = 'Selesai'; page = 1; showDropdown = false">Selesai</a>
+                        <li>
+                            <a href="#"
+                               :class="filter === 'Menunggu' ? 'bg-gray-200 text-gray-600' : 'hover:bg-gray-100'"
+                               @click.prevent="filter = 'Menunggu'; page = 1; showDropdown = false">Menunggu</a>
                         </li>
-                        <li><a href="#" @click.prevent="filter = 'Ditolak'; page = 1; showDropdown = false">Ditolak</a>
+                        <li>
+                            <a href="#"
+                               :class="filter === 'Diproses' ? 'bg-gray-200 text-gray-600' : 'hover:bg-gray-100'"
+                               @click.prevent="filter = 'Diproses'; page = 1; showDropdown = false">Diproses</a>
                         </li>
-                        <li><a href="#" @click.prevent="filter = ''; page = 1; showDropdown = false">Semua</a></li>
+                        <li>
+                            <a href="#"
+                               :class="filter === 'Selesai' ? 'bg-gray-200 text-gray-600' : 'hover:bg-gray-100'"
+                               @click.prevent="filter = 'Selesai'; page = 1; showDropdown = false">Selesai</a>
+                        </li>
+                        <li>
+                            <a href="#"
+                               :class="filter === 'Ditolak' ? 'bg-gray-200 text-gray-600' : 'hover:bg-gray-100'"
+                               @click.prevent="filter = 'Ditolak'; page = 1; showDropdown = false">Ditolak</a>
+                        </li>
+                        <li>
+                            <a href="#"
+                               :class="filter === '' ? 'bg-gray-200 text-gray-600' : 'hover:bg-gray-100'"
+                               @click.prevent="filter = ''; page = 1; showDropdown = false">Semua</a>
+                        </li>
                     </ul>
                 </div> <!-- End of Filter Dropdown -->
             </div> <!-- End of Search and Filter Section -->
@@ -52,6 +68,7 @@
                     <thead class="bg-base-200 text-base-content">
                     <tr class="text-center">
                         <th class="w-[4rem]">No</th>
+                        <th class="w-[15%] text-left">Kode Laporan</th>
                         <th class="w-[40%] text-left">Laporan</th>
                         <th class="w-[20%]">Tanggal</th>
                         <th class="w-[20%]">Status</th>
@@ -63,7 +80,11 @@
                     <!-- Data laporan -->
                     <template x-for="(laporan, index) in paginatedLaporan()" :key="laporan.id">
                         <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-base-200'">
+                            <!-- Nomor -->
                             <td class="text-center" x-text="index + 1 + (page - 1) * perPage"></td>
+
+                            <!-- Kode Laporan -->
+                            <td class="text-left" x-text="laporan.kode"></td>
 
                             <!-- Batasi panjang teks judul -->
                             <td class="truncate whitespace-nowrap overflow-hidden max-w-xs" :title="laporan.judul"
@@ -125,9 +146,20 @@
 
             <!-- Pagination Section -->
             <div class="mt-4 flex items-center justify-between flex-wrap gap-2" x-show="!loading" x-cloak>
-                <p class="text-sm text-gray-500"
-                   x-text="`Menampilkan ${(page - 1) * perPage + 1} – ${Math.min(page * perPage, filteredLaporan().length)} dari ${filteredLaporan().length} hasil`"></p>
-                <div class="join">
+                <!-- Show pagination info only if there are results -->
+                <template x-if="filteredLaporan().length > 0">
+                    <p class="text-sm text-gray-500"
+                       x-text="`Menampilkan ${(page - 1) * perPage + 1} – ${Math.min(page * perPage, filteredLaporan().length)} dari ${filteredLaporan().length} hasil`">
+                    </p>
+                </template>
+
+                <!-- Empty State -->
+                <template x-if="filteredLaporan().length === 0">
+                    <p></p>
+                </template>
+
+                <!-- Pagination Buttons -->
+                <div class="join" x-show="filteredLaporan().length > 0">
                     <template x-for="n in visiblePages()" :key="generateKey(n)">
                         <button
                             :class="[
@@ -151,6 +183,11 @@
     <style>
         [x-cloak] {
             display: none !important;
+        }
+
+        .dropdown-content a:active {
+            background-color: #d1d5db !important;
+            color: #374151 !important;
         }
     </style>
 @endpush
@@ -183,17 +220,22 @@
                     window.location.href = `/users/laporan-detail/${id}`;
                 },
                 filteredLaporan() {
-                    return this.laporan
-                        .map((item, index) => ({...item, index}))
+                    const result = this.laporan
+                        .map((item, index) => ({ ...item, index }))
                         .filter(item => {
                             const searchText = this.search.toLowerCase();
                             const searchWords = searchText.split(' ').filter(Boolean);
-                            const searchTarget = `${item.judul} ${item.tanggal} ${item.status} ${item.index + 1}`.toLowerCase();
+                            const searchTarget = `${item.kode} ${item.judul} ${item.tanggal} ${item.status} ${item.index + 1}`.toLowerCase();
                             const matchSearch = searchWords.every(word => searchTarget.includes(word));
                             const matchFilter = this.filter === '' || item.status === this.filter;
-
                             return matchSearch && matchFilter;
                         });
+
+                    if (result.length === 0 || (this.page - 1) * this.perPage >= result.length) {
+                        this.page = 1;
+                    }
+
+                    return result;
                 },
                 totalPages() {
                     return Math.ceil(this.filteredLaporan().length / this.perPage);
@@ -237,6 +279,9 @@
 
                     return pages;
                 },
+                generateKey(n) {
+                    return typeof n === 'number' ? `page-${n}` : `ellipsis-${n}`;
+                },
                 handleEllipsisClick(position) {
                     const total = this.totalPages();
                     if (position === 'left') {
@@ -244,9 +289,6 @@
                     } else if (position === 'right') {
                         this.page = Math.floor((this.page + total) / 2);
                     }
-                },
-                generateKey(n) {
-                    return typeof n === 'number' ? `page-${n}` : `ellipsis-${n}`;
                 },
                 badgeStyle(status) {
                     return {

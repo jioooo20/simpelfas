@@ -13,7 +13,7 @@ class KriteriaSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('kriteria')->insert([
+        DB::table('m_kriteria')->insert([
             [
                 'kriteria_kode' => 'C1',
                 'kriteria_nama' => 'Banyak_Laporan',
@@ -45,7 +45,7 @@ class KriteriaSeeder extends Seeder
                 'updated_at' => now()
             ],
             [
-                'kriteria_kode' => 'C2',
+                'kriteria_kode' => 'C4',
                 'kriteria_nama' => 'Biaya_Perbaikan',
                 'kriteria_jenis' => 'Cost',
                 'w1_mhs' => 0.05,

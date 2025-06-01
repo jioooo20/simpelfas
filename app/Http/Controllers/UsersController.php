@@ -11,6 +11,8 @@ use Illuminate\Validation\ValidationException;
 use App\Repositories\FasilitasRepository;
 use App\Repositories\PelaporanRepository;
 use App\Http\Requests\StorePelaporanRequest;
+use App\Models\SkorAltModel;
+use App\Models\KriteriaModel;
 
 class UsersController extends Controller
 {
@@ -38,27 +40,118 @@ class UsersController extends Controller
         return view('pages.users.status-laporan.laporan-detail-laporan');
     }
 
-    public function storePelaporan(StorePelaporanRequest $request, PelaporanRepository $repo): JsonResponse
+//    public function storePelaporan(StorePelaporanRequest $request, PelaporanRepository $repo): JsonResponse
+//    {
+//        try {
+//            $gambarPaths = $this->validateImage($request);
+//
+//            $repo->StorePelaporan([
+//                'fasilitas_id' => $request->input('lokasi'),
+//                'deskripsi' => $request->input('deskripsi'),
+//                'gambar' => $gambarPaths,
+//            ]);
+//
+//            return response()->json([
+//                'success' => true,
+//                'message' => 'Laporan berhasil dikirim.'
+//            ]);
+//        } catch (ValidationException $e) {
+//            return response()->json([
+//                'success' => false,
+//                'errors' => $e->validator->errors()
+//            ], 422);
+//        } catch (\Exception $e) {
+//            Log::error('Gagal menyimpan pelaporan: ' . $e->getMessage());
+//            return response()->json([
+//                'success' => false,
+//                'message' => 'Terjadi kesalahan. Silakan coba lagi nanti.'
+//            ], 500);
+//        }
+//    }
+
+//    public function storePelaporan(StorePelaporanRequest $request, PelaporanRepository $repo): JsonResponse
+//    {
+//        try {
+//            $gambarPaths = $this->validateImage($request);
+//
+//            $pelaporan = $repo->StorePelaporan([
+//                'fasilitas_id' => $request->input('lokasi'),
+//                'deskripsi' => $request->input('deskripsi'),
+//                'gambar' => $gambarPaths,
+//            ]);
+//
+//            // Nilai bobot konversi
+//            $skalaBobot = [
+//                'Ringan' => 1,
+//                'Sedang' => 2,
+//                'Berat'  => 3,
+//            ];
+//
+//
+//            $frekuensiBobot = [
+//                'Jarang' => 1,
+//                'Sedang' => 2,
+//                'Sering' => 3,
+//            ];
+//
+//            // Ambil ID kriteria dari DB
+//            $kriteriaSkala = \App\Models\KriteriaModel::where('kriteria_kode', 'skala')->first();
+//            $kriteriaFrekuensi = \App\Models\KriteriaModel::where('kriteria_kode', 'frekuensi')->first();
+//
+//            // Simpan skor alternatif
+//            \App\Models\SkorAltModel::create([
+//                'pelaporan_id' => $pelaporan->pelaporan_id,
+//                'kriteria_id' => $kriteriaSkala->kriteria_id,
+//                'nilai_skor' => $skalaBobot[$request->input('skala')],
+//            ]);
+//
+//            \App\Models\SkorAltModel::create([
+//                'pelaporan_id' => $pelaporan->pelaporan_id,
+//                'kriteria_id' => $kriteriaFrekuensi->kriteria_id,
+//                'nilai_skor' => $frekuensiBobot[$request->input('frekuensi')],
+//            ]);
+//
+//            return response()->json([
+//                'success' => true,
+//                'message' => 'Laporan berhasil dikirim.'
+//            ]);
+//
+//        } catch (ValidationException $e) {
+//            return response()->json([
+//                'success' => false,
+//                'errors' => $e->validator->errors()
+//            ], 422);
+//        } catch (\Exception $e) {
+//            Log::error('Gagal menyimpan pelaporan: ' . $e->getMessage());
+//            return response()->json([
+//                'success' => false,
+//                'message' => 'Terjadi kesalahan. Silakan coba lagi nanti.'
+//            ], 500);
+//        }
+//    }
+
+    public function storePelaporan(StorePelaporanRequest $request): JsonResponse
     {
         try {
             $gambarPaths = $this->validateImage($request);
-
-            $repo->StorePelaporan([
-                'fasilitas_id' => $request->input('lokasi'),
-                'deskripsi' => $request->input('deskripsi'),
-                'gambar' => $gambarPaths,
-            ]);
+            $pelaporan = $this->createPelaporan($request, $gambarPaths);
+            $this->pelaporanRepo->simpanSkorAlternatif(
+                $pelaporan->pelaporan_id,
+                $request->input('skala'),
+                $request->input('frekuensi')
+            );
 
             return response()->json([
                 'success' => true,
                 'message' => 'Laporan berhasil dikirim.'
             ]);
+
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'errors' => $e->validator->errors()
             ], 422);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Gagal menyimpan pelaporan: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
@@ -67,26 +160,12 @@ class UsersController extends Controller
         }
     }
 
-    public function getLokasiOptions(): JsonResponse
+    private function createPelaporan($request, $gambarPaths)
     {
-        $lokasiList = $this->fasilitasRepo->getLokasiOptions();
-        return response()->json($lokasiList);
-    }
-
-    public function getLaporanData(): JsonResponse
-    {
-        $formatted = $this->pelaporanRepo->getFormattedLaporanData();
-        return response()->json($formatted);
-    }
-
-    public function getLaporanDetail($id)
-    {
-        $laporan = $this->pelaporanRepo->getLaporanDetailById($id);
-        $latestStatus = $laporan->statusPelaporan->first();
-
-        return view('pages.users.status-laporan.laporan-detail-modal', [
-            'laporan' => $laporan,
-            'status' => $latestStatus ? $latestStatus->status_pelaporan : 'Belum Ada Status',
+        return $this->pelaporanRepo->StorePelaporan([
+            'fasilitas_id' => $request->input('lokasi'),
+            'deskripsi' => $request->input('deskripsi'),
+            'gambar' => $gambarPaths,
         ]);
     }
 
@@ -123,6 +202,37 @@ class UsersController extends Controller
         }
 
         return null;
+    }
+
+    public function getLokasiOptions(): JsonResponse
+    {
+        $lokasiList = $this->fasilitasRepo->getLokasiOptions();
+        return response()->json($lokasiList);
+    }
+
+    public function getLaporanData(): JsonResponse
+    {
+        $formatted = $this->pelaporanRepo->getFormattedLaporanData();
+        return response()->json($formatted);
+    }
+
+    public function getLaporanDetail($id)
+    {
+        $laporan = $this->pelaporanRepo->getLaporanDetailById($id);
+        $latestStatus = $laporan->statusPelaporan->first();
+
+        // Anggap gambar-gambar ini disimpan sebagai JSON di DB
+        $gambar = [
+            'Gambar Laporan' => json_decode($laporan->pelaporan_gambar ?? '[]'),
+            'Gambar Perbaikan' => json_decode($laporan->gambar_perbaikan ?? '[]'),
+            'Gambar Selesai' => json_decode($laporan->gambar_selesai ?? '[]'),
+        ];
+
+        return view('pages.users.status-laporan.laporan-detail-modal', [
+            'laporan' => $laporan,
+            'status' => $latestStatus ? $latestStatus->status_pelaporan : 'Belum Ada Status',
+            'gambar' => $gambar,
+        ]);
     }
 
 }
