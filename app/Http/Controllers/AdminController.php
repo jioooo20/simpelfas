@@ -28,61 +28,73 @@ class AdminController extends Controller
     }
 
     public function laporan_statistik(Request $request)
-{
-    $start = $request->input('start_date') ?? Carbon::now()->startOfMonth();
-    $end = $request->input('end_date') ?? Carbon::now()->endOfMonth();
+    {
+        $start = $request->input('start_date') ?? Carbon::now()->startOfMonth();
+        $end = $request->input('end_date') ?? Carbon::now()->endOfMonth();
 
-    $table = PelaporanModel::with(['fasilitas','fasilitas.barang', 'user', 'statusPelaporan'])
-        ->whereBetween('created_at', [$start, $end])
-        ->paginate(10);
+        $table = PelaporanModel::with(['fasilitas', 'fasilitas.barang', 'user', 'statusPelaporan'])
+            ->whereBetween('created_at', [$start, $end])
+            ->paginate(10);
 
-    $totalLaporan = PelaporanModel::whereBetween('created_at', [$start, $end])->count();
+        $totalLaporan = PelaporanModel::whereBetween('created_at', [$start, $end])->count();
 
-    $selesai = StatusPelaporanModel::where('status_pelaporan', 'selesai')
-        ->whereHas('pelaporan', function ($q) use ($start, $end) {
-            $q->whereBetween('created_at', [$start, $end]);
-        })->count();
+        $selesai = StatusPelaporanModel::where('status_pelaporan', 'selesai')
+            ->whereHas('pelaporan', function ($q) use ($start, $end) {
+                $q->whereBetween('created_at', [$start, $end]);
+            })->count();
 
-    $proses = StatusPelaporanModel::where('status_pelaporan', 'dalam_proses')
-        ->whereHas('pelaporan', function ($q) use ($start, $end) {
-            $q->whereBetween('created_at', [$start, $end]);
-        })->count();
+        $proses = StatusPelaporanModel::where('status_pelaporan', 'dalam_proses')
+            ->whereHas('pelaporan', function ($q) use ($start, $end) {
+                $q->whereBetween('created_at', [$start, $end]);
+            })->count();
 
-    $ditolak = StatusPelaporanModel::where('status_pelaporan', 'ditolak')
-        ->whereHas('pelaporan', function ($q) use ($start, $end) {
-            $q->whereBetween('created_at', [$start, $end]);
-        })->count();
+        $ditolak = StatusPelaporanModel::where('status_pelaporan', 'ditolak')
+            ->whereHas('pelaporan', function ($q) use ($start, $end) {
+                $q->whereBetween('created_at', [$start, $end]);
+            })->count();
 
-    $fasilitas = FasilitasModel::all();
-    $user = UserModel::all();
-    $status = StatusPelaporanModel::all();
-    // Grafik Tren Laporan (jumlah laporan per bulan)
-    $laporanPerBulan = PelaporanModel::select(
-        DB::raw("DATE_FORMAT(created_at, '%Y-%m') as bulan"),
-        DB::raw("COUNT(*) as jumlah")
-    )
-    ->groupBy('bulan')
-    ->orderBy('bulan')
-    ->get();
+        $fasilitas = FasilitasModel::all();
+        $user = UserModel::all();
+        $status = StatusPelaporanModel::all();
+        // Grafik Tren Laporan (jumlah laporan per bulan)
+        $laporanPerBulan = PelaporanModel::select(
+            DB::raw("DATE_FORMAT(created_at, '%Y-%m') as bulan"),
+            DB::raw("COUNT(*) as jumlah")
+        )
+            ->groupBy('bulan')
+            ->orderBy('bulan')
+            ->get();
 
-    // $rataRating = UserModel::whereHas('pelaporan', function ($q) use ($start, $end) {
-    //     $q->whereBetween('created_at', [$start, $end]);
-    // })->avg('rating');
+        // $rataRating = UserModel::whereHas('pelaporan', function ($q) use ($start, $end) {
+        //     $q->whereBetween('created_at', [$start, $end]);
+        // })->avg('rating');
 
-    $kerusakanPerBarang = PelaporanModel::with('fasilitas.barang')
-    ->get()
-    ->groupBy(function ($item) {
-        return $item->fasilitas->barang->nama ?? 'Tidak Diketahui';
-    })
-    ->map(function ($group) {
-        return $group->count();
-    });
+        $kerusakanPerBarang = PelaporanModel::with('fasilitas.barang')
+            ->get()
+            ->groupBy(function ($item) {
+                return $item->fasilitas->barang->nama ?? 'Tidak Diketahui';
+            })
+            ->map(function ($group) {
+                return $group->count();
+            });
 
 
-    return view('pages.admin.laporan-statistik.index', compact(
-        'table', 'totalLaporan', 'selesai', 'proses', 'ditolak', 'start', 'end', 'table', 'fasilitas', 'user', 'status', 'laporanPerBulan', 'kerusakanPerBarang'
-    ));
-}
+        return view('pages.admin.laporan-statistik.index', compact(
+            'table',
+            'totalLaporan',
+            'selesai',
+            'proses',
+            'ditolak',
+            'start',
+            'end',
+            'table',
+            'fasilitas',
+            'user',
+            'status',
+            'laporanPerBulan',
+            'kerusakanPerBarang'
+        ));
+    }
 
     public function user_add(Request $request)
     {

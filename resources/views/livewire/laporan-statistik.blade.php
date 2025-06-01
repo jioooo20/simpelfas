@@ -66,8 +66,10 @@
         <thead>
             <tr>
                 <th>Pelapor</th>
-                <th>Judul Laporan</th>
-                <th>Fasilitas</th>
+                <th>Fasilitas yang Rusak</th>
+                <th>Skala Kerusakan</th>
+                <th>Frekuensi Penggunaan</th>
+                <th>Tanggal Dilaporkan</th>
                 <th>Status</th>
             </tr>
         </thead>
@@ -88,8 +90,10 @@
     @endphp
     <tr>
         <td>{{ $laporan->user->nama ?? '-' }}</td>
-        <td>{{ $laporan->judul_laporan ?? '-' }}</td>
         <td>{{ $laporan->fasilitas->barang->nama ?? '-' }}</td>
+        <td>{{ $laporan->skala_kerusakan ?? '-' }}</td>
+        <td>{{ $laporan->frekuensi_penggunaan ?? '-' }}</td>
+        <td>{{ $laporan->created_at->format('d M Y') ?? '-' }}</td>
         <td>
             <div class="badge {{ $statusClass }}">
                 {{ ucfirst(str_replace('_', ' ', $status)) }}
