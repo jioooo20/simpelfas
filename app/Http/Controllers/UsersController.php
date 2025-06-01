@@ -35,16 +35,29 @@ class UsersController extends Controller
     {
         return view('pages.users.status-laporan.index');
     }
-    public function UmpanBalik() {
-        $userId = auth()->id(); // ambil id user yang sedang login
-        $perbaikans = PelaporanModel::with('fasilitas', 'statusPelaporan') // eager load relasi
-                    ->where('user_id', $userId)
-                    ->get();
-        return view('pages.users.feedback.index', compact('perbaikans'));
+    public function UmpanBalik()
+    {
+        $userId = auth()->id();
+
+        $perbaikan = PelaporanModel::with(['fasilitas', 'statusPelaporan' => function ($query) {
+            $query->orderBy('created_at');
+        }])->where('user_id', $userId)->get();
+
+        $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
+        
+        $perbaikan->transform(function ($item) use ($fasilitasOptions) {
+            $item['fasilitas_label'] = $fasilitasOptions[$item->fasilitas_id]['label'] ?? null;
+            return $item;
+        });
+
+        return view('pages.users.feedback.index', compact('perbaikan'));
     }
 
-    public function UmpanBalik_Create() {
-        return view ('pages.users.feedback.create');
+    public function UmpanBalik_Create($perbaikan_id) {
+        $laporan = PelaporanModel::with('fasilitas')->findOrFail($perbaikan_id);
+        $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
+        $laporan['fasilitas_label'] = $fasilitasOptions[$laporan->fasilitas_id]['label'] ?? null;
+        return view('pages.users.feedback.create')->with('laporan', $laporan);
     }
 
     public function store() {

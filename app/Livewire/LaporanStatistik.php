@@ -8,6 +8,7 @@ use App\Models\PelaporanModel;
 use App\Models\FasilitasModel;
 use App\Models\UserModel;
 use App\Models\StatusPelaporanModel;
+use Illuminate\Support\Facades\DB;
 
 class LaporanStatistik extends Component
 {
@@ -16,6 +17,7 @@ class LaporanStatistik extends Component
     public function updatingSearch(){
         $this->resetPage();
     }
+
 
     public function render()
 {
@@ -40,6 +42,6 @@ class LaporanStatistik extends Component
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-    return view('livewire.laporan-statistik', compact('table'));
+    return view('livewire.laporan-statistik', compact('table' ));
 }
 }
