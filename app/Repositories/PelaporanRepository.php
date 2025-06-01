@@ -114,4 +114,15 @@ class PelaporanRepository
 
         return $laporan;
     }
+
+    public function getSkorKriteriaByPelaporanId($pelaporanId)
+    {
+        return SkorAltModel::with('kriteria')
+            ->where('pelaporan_id', $pelaporanId)
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->kriteria->kriteria_nama => $item->nilai_skor];
+            });
+    }
+
 }

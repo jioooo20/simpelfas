@@ -70,12 +70,38 @@ class UsersController extends Controller
         }
     }
 
-    private function createPelaporan($request, $gambarPaths)
+    public function getLokasiOptions(): JsonResponse
     {
-        return $this->pelaporanRepo->StorePelaporan([
-            'fasilitas_id' => $request->input('lokasi'),
-            'deskripsi' => $request->input('deskripsi'),
-            'gambar' => $gambarPaths,
+        $lokasiList = $this->fasilitasRepo->getLokasiOptions();
+        return response()->json($lokasiList);
+    }
+
+    public function getLaporanData(): JsonResponse
+    {
+        $formatted = $this->pelaporanRepo->getFormattedLaporanData();
+        return response()->json($formatted);
+    }
+
+    public function getLaporanDetail($id)
+    {
+        $laporan = $this->pelaporanRepo->getLaporanDetailById($id);
+        $latestStatus = $laporan->statusPelaporan->first();
+
+        $skor = $this->pelaporanRepo->getSkorKriteriaByPelaporanId($laporan->pelaporan_id);
+
+        $gambar = [
+            'Gambar Laporan' => json_decode($laporan->pelaporan_gambar ?? '[]'),
+            'Gambar Perbaikan' => json_decode($laporan->gambar_perbaikan ?? '[]'),
+            'Gambar Selesai' => json_decode($laporan->gambar_selesai ?? '[]'),
+        ];
+
+        return view('pages.users.status-laporan.laporan-detail-modal', [
+            'laporan' => $laporan,
+            'status' => $latestStatus ? $latestStatus->status_pelaporan : 'Belum Ada Status',
+            'gambar' => $gambar,
+            'skor' => $skor,
+            'frekuensiLabels' => $this->getFrekuensiLabels(),
+            'skalaLabels' => $this->getSkalaLabels(),
         ]);
     }
 
@@ -114,35 +140,31 @@ class UsersController extends Controller
         return null;
     }
 
-    public function getLokasiOptions(): JsonResponse
+    private function createPelaporan($request, $gambarPaths)
     {
-        $lokasiList = $this->fasilitasRepo->getLokasiOptions();
-        return response()->json($lokasiList);
-    }
-
-    public function getLaporanData(): JsonResponse
-    {
-        $formatted = $this->pelaporanRepo->getFormattedLaporanData();
-        return response()->json($formatted);
-    }
-
-    public function getLaporanDetail($id)
-    {
-        $laporan = $this->pelaporanRepo->getLaporanDetailById($id);
-        $latestStatus = $laporan->statusPelaporan->first();
-
-        // Anggap gambar-gambar ini disimpan sebagai JSON di DB
-        $gambar = [
-            'Gambar Laporan' => json_decode($laporan->pelaporan_gambar ?? '[]'),
-            'Gambar Perbaikan' => json_decode($laporan->gambar_perbaikan ?? '[]'),
-            'Gambar Selesai' => json_decode($laporan->gambar_selesai ?? '[]'),
-        ];
-
-        return view('pages.users.status-laporan.laporan-detail-modal', [
-            'laporan' => $laporan,
-            'status' => $latestStatus ? $latestStatus->status_pelaporan : 'Belum Ada Status',
-            'gambar' => $gambar,
+        return $this->pelaporanRepo->StorePelaporan([
+            'fasilitas_id' => $request->input('lokasi'),
+            'deskripsi' => $request->input('deskripsi'),
+            'gambar' => $gambarPaths,
         ]);
+    }
+
+    private function getFrekuensiLabels(): array
+    {
+        return [
+            1 => 'Jarang',
+            2 => 'Sedang',
+            3 => 'Sering',
+        ];
+    }
+
+    private function getSkalaLabels(): array
+    {
+        return [
+            1 => 'Ringan',
+            2 => 'Sedang',
+            3 => 'Berat',
+        ];
     }
 
 }

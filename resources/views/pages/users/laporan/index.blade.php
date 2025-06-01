@@ -530,6 +530,21 @@
         function handleResponse(res, data, form) {
             if (res.ok) {
                 form.reset();
+                uploadedFiles = [];
+                previewGrid.innerHTML = '';
+                const fotoCounter = document.getElementById('foto-counter');
+                if (fotoCounter) {
+                    fotoCounter.textContent = "(Opsional, tapi sangat disarankan untuk mempercepat proses perbaikan)";
+                }
+                const dataTransfer = new DataTransfer();
+                fotoInput.files = dataTransfer.files;
+                fotoInput.disabled = false;
+                uploadArea.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                // Render ulang preview (kosong + tombol tambah jika perlu)
+                renderPreview();
+
+                // Tampilkan toast dan reload halaman
                 showToast(data.message || "Laporan berhasil dikirim.", "green", () => location.reload());
             } else if (data.errors) {
                 for (const key in data.errors) showToast(`${key}: ${data.errors[key][0]}`, "red");
