@@ -542,28 +542,44 @@
         // Utilitas: Toast & Loading
         // -----------------------------
 
-        function showToast(message, color = 'blue', cb = null) {
+        function showToast(message, color = "green", onClick = null) {
             const now = Date.now();
-            if (now - lastToastTime < 1000) return;
+            if (now - lastToastTime < 2000) return;
             lastToastTime = now;
 
+            const icon = color === "green"
+                ? '<i class="bi bi-check-circle-fill text-xl"></i>'
+                : '<i class="bi bi-exclamation-circle-fill text-xl"></i>';
+
+            const background = color === "green"
+                ? "linear-gradient(to right, #00b09b, #96c93d)"
+                : "linear-gradient(to right, #ff5f6d, #ffc371)";
+
             Toastify({
-                text: message,
-                duration: 1500,
+                text: `<div class="flex items-center gap-3">${icon}<span>${message}</span></div>`,
+                duration: 3000,
                 gravity: "top",
                 position: "right",
-                backgroundColor: color,
-                callback: cb
+                backgroundColor: background,
+                className: "rounded-lg shadow-md",
+                stopOnFocus: true,
+                escapeMarkup: false,
+                style: {
+                    padding: "12px 20px",
+                    fontWeight: "500",
+                    minWidth: "300px"
+                },
+                onClick: onClick || function () {}
             }).showToast();
         }
 
         function showLoading(button) {
             button.innerHTML = `
-        <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
-        </svg> Mengirim...
-    `;
+                <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
+                </svg> Mengirim...
+            `;
         }
 
         function hideLoading(button, originalText) {
@@ -618,11 +634,25 @@
         // -----------------------------
         // UX: Handle Enter key submit
         // -----------------------------
-
         document.querySelectorAll('#search-lokasi, #deskripsi, #foto').forEach(field => {
             field.addEventListener('keydown', function (e) {
+                const isSearchLokasi = field.id === 'search-lokasi';
+                const dropdownIsVisible = !dropdown.classList.contains('hidden');
+
                 if (e.key === 'Enter') {
+                    // Special handling for search-lokasi input
+                    if (isSearchLokasi) {
+                        e.preventDefault();
+                        if (dropdownIsVisible) {
+                            selectOption(activeIndex); // hanya pilih lokasi
+                        }
+                        // Jika dropdown tidak terlihat, jangan submit atau lakukan apapun
+                        return; // Hindari submit saat masih di search-lokasi
+                    }
+
+                    // Handle form submission for other fields
                     e.preventDefault();
+
                     const form = document.getElementById('pelaporanForm');
                     const lokasi = form.querySelector('#lokasi');
                     const deskripsi = form.querySelector('#deskripsi');
@@ -652,7 +682,8 @@
                         return;
                     }
 
-                    form.dispatchEvent(new Event('submit', {cancelable: true, bubbles: true}));
+                    // Submit form
+                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
                 }
             });
         });

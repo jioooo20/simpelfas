@@ -12,7 +12,8 @@ class FasilitasRepository
             $label = $item->ruang->lantai->gedung->gedung_nama . ' - ' .
                 $item->ruang->lantai->lantai_nama . ' - ' .
                 $item->ruang->ruang_nama . ' - ' .
-                $item->barang->barang_nama;
+                $item->barang->barang_nama . ' - ' .
+                $item->barang->barang_kode;
 
             $search = strtolower(
                 str_replace(['-', '  '], [' ', ' '],

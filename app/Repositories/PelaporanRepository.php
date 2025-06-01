@@ -101,7 +101,10 @@ class PelaporanRepository
         // Buat label fasilitas
         $fasilitas = $laporan->fasilitas;
         $label = '-';
-        if ($fasilitas && $fasilitas->ruang && $fasilitas->ruang->lantai && $fasilitas->ruang->lantai->gedung && $fasilitas->barang) {
+        if ($fasilitas && $fasilitas->ruang
+            && $fasilitas->ruang->lantai
+            && $fasilitas->ruang->lantai->gedung
+            && $fasilitas->barang) {
             $label = $fasilitas->ruang->lantai->gedung->gedung_nama . ' - ' .
                 $fasilitas->ruang->lantai->lantai_nama . ' - ' .
                 $fasilitas->ruang->ruang_nama . ' - ' .
