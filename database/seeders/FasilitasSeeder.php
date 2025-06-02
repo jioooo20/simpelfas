@@ -15,7 +15,7 @@ class FasilitasSeeder extends Seeder
     {
         DB::table('t_fasilitas')->insert([
             [
-            'fasilitas_kode' => 'FAS001',
+            'fasilitas_kode' => 'RT01MD001',
             'ruang_id' => 1,
             'barang_id' => 1,
             'fasilitas_status' => 'Baik',
@@ -23,7 +23,7 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS002',
+            'fasilitas_kode' => 'RT01PRYKTR001',
             'ruang_id' => 1,
             'barang_id' => 2,
             'fasilitas_status' => 'Baik',
@@ -31,7 +31,7 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS003',
+            'fasilitas_kode' => 'RT02KRS001',
             'ruang_id' => 2,
             'barang_id' => 3,
             'fasilitas_status' => 'Baik',
@@ -39,7 +39,7 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS004',
+            'fasilitas_kode' => 'RT01AC1PK001',
             'ruang_id' => 1,
             'barang_id' => 5,
             'fasilitas_status' => 'Baik',
@@ -47,7 +47,7 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS005',
+            'fasilitas_kode' => 'RT02AC1PK001',
             'ruang_id' => 2,
             'barang_id' => 5,
             'fasilitas_status' => 'Baik',
@@ -55,7 +55,7 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS006',
+            'fasilitas_kode' => 'RT03AC1PK001',
             'ruang_id' => 3,
             'barang_id' => 5,
             'fasilitas_status' => 'Baik',
@@ -63,23 +63,7 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS007',
-            'ruang_id' => 1,
-            'barang_id' => 6,
-            'fasilitas_status' => 'Dalam Perbaikan',
-            'created_at' => now(),
-            'updated_at' => now(),
-            ],
-            [
-            'fasilitas_kode' => 'FAS008',
-            'ruang_id' => 1,
-            'barang_id' => 6,
-            'fasilitas_status' => 'Rusak',
-            'created_at' => now(),
-            'updated_at' => now(),
-            ],
-            [
-            'fasilitas_kode' => 'FAS009',
+            'fasilitas_kode' => 'RT01PC001',
             'ruang_id' => 1,
             'barang_id' => 6,
             'fasilitas_status' => 'Baik',
@@ -87,7 +71,7 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS010',
+            'fasilitas_kode' => 'RT01PC002',
             'ruang_id' => 1,
             'barang_id' => 6,
             'fasilitas_status' => 'Baik',
@@ -95,16 +79,31 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS011',
+            'fasilitas_kode' => 'RT01PC003',
             'ruang_id' => 1,
             'barang_id' => 6,
             'fasilitas_status' => 'Baik',
             'created_at' => now(),
             'updated_at' => now(),
             ],
-            // Additional 5 with ruang_id 2
             [
-            'fasilitas_kode' => 'FAS012',
+            'fasilitas_kode' => 'RT01PC004',
+            'ruang_id' => 1,
+            'barang_id' => 6,
+            'fasilitas_status' => 'Baik',
+            'created_at' => now(),
+            'updated_at' => now(),
+            ],
+            [
+            'fasilitas_kode' => 'RT01PC005',
+            'ruang_id' => 1,
+            'barang_id' => 6,
+            'fasilitas_status' => 'Baik',
+            'created_at' => now(),
+            'updated_at' => now(),
+            ],
+            [
+            'fasilitas_kode' => 'RT02PC001',
             'ruang_id' => 2,
             'barang_id' => 6,
             'fasilitas_status' => 'Baik',
@@ -112,15 +111,7 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS013',
-            'ruang_id' => 2,
-            'barang_id' => 6,
-            'fasilitas_status' => 'Dalam Perbaikan',
-            'created_at' => now(),
-            'updated_at' => now(),
-            ],
-            [
-            'fasilitas_kode' => 'FAS014',
+            'fasilitas_kode' => 'RT02PC002',
             'ruang_id' => 2,
             'barang_id' => 6,
             'fasilitas_status' => 'Baik',
@@ -128,7 +119,7 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS015',
+            'fasilitas_kode' => 'RT02PC003',
             'ruang_id' => 2,
             'barang_id' => 6,
             'fasilitas_status' => 'Baik',
@@ -136,16 +127,23 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS016',
+            'fasilitas_kode' => 'RT02PC004',
             'ruang_id' => 2,
             'barang_id' => 6,
             'fasilitas_status' => 'Baik',
             'created_at' => now(),
             'updated_at' => now(),
             ],
-            // Additional 5 with ruang_id 3
             [
-            'fasilitas_kode' => 'FAS017',
+            'fasilitas_kode' => 'RT02PC005',
+            'ruang_id' => 2,
+            'barang_id' => 6,
+            'fasilitas_status' => 'Baik',
+            'created_at' => now(),
+            'updated_at' => now(),
+            ],
+            [
+            'fasilitas_kode' => 'RT03PC001',
             'ruang_id' => 3,
             'barang_id' => 6,
             'fasilitas_status' => 'Baik',
@@ -153,7 +151,7 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS018',
+            'fasilitas_kode' => 'RT03PC002',
             'ruang_id' => 3,
             'barang_id' => 6,
             'fasilitas_status' => 'Baik',
@@ -161,7 +159,7 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS019',
+            'fasilitas_kode' => 'RT03PC003',
             'ruang_id' => 3,
             'barang_id' => 6,
             'fasilitas_status' => 'Baik',
@@ -169,7 +167,7 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS020',
+            'fasilitas_kode' => 'RT03PC004',
             'ruang_id' => 3,
             'barang_id' => 6,
             'fasilitas_status' => 'Baik',
@@ -177,7 +175,7 @@ class FasilitasSeeder extends Seeder
             'updated_at' => now(),
             ],
             [
-            'fasilitas_kode' => 'FAS021',
+            'fasilitas_kode' => 'RT03PC005',
             'ruang_id' => 3,
             'barang_id' => 6,
             'fasilitas_status' => 'Baik',
