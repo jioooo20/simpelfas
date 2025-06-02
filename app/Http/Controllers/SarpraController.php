@@ -26,4 +26,12 @@ class SarpraController extends Controller
     public function perencanaanPemeliharaan() {
         return view('pages.sarpra.analisis-laporan.perencanaan-pemeliharaan.index');
     }
+    public function laporan_kerusakan_fasilitas()
+    {
+        return view('pages.sarpra.laporan-kerusakan-fasilitas.index');
+    }
+    public function rekomendasi_prioritas_perbaikan()
+    {
+        return view('pages.sarpra.rekomendasi-prioritas-perbaikan.index');
+    }
 }
