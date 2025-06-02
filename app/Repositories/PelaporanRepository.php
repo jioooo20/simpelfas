@@ -36,7 +36,7 @@ class PelaporanRepository
         $skalaBobot = [
             'Ringan' => 1,
             'Sedang' => 2,
-            'Berat'  => 3,
+            'Berat' => 3,
         ];
 
         $frekuensiBobot = [
@@ -70,18 +70,34 @@ class PelaporanRepository
 
     public function getFormattedLaporanData()
     {
-        $laporan = PelaporanModel::with(['fasilitas', 'statusPelaporan' => function ($query) {
-            $query->latest('created_at');
-        }])
+        $laporan = PelaporanModel::with([
+            'fasilitas.ruang.lantai.gedung',
+            'fasilitas.barang',
+            'statusPelaporan' => function ($query) {
+                $query->latest('created_at');
+            }
+        ])
             ->orderBy('created_at', 'desc')
             ->get();
 
         return $laporan->map(function ($item) {
             $latestStatus = $item->statusPelaporan->first();
+
+            // Ambil data fasilitas jika tersedia
+            $fasilitas = $item->fasilitas;
+            if ($fasilitas && $fasilitas->ruang && $fasilitas->ruang->lantai && $fasilitas->ruang->lantai->gedung && $fasilitas->barang) {
+                $fasilitasLabel =
+                    $fasilitas->ruang->ruang_nama . ' - ' .
+                    $fasilitas->barang->barang_nama . ' - ' .
+                    $fasilitas->barang->barang_kode;
+            } else {
+                $fasilitasLabel = 'Informasi Fasilitas Tidak Lengkap';
+            }
+
             return [
                 'id' => $item->pelaporan_id,
                 'kode' => $item->pelaporan_kode,
-                'judul' => $item->pelaporan_deskripsi ?? '-',
+                'fasilitas' => $fasilitasLabel,
                 'tanggal' => $item->created_at->format('d M Y'),
                 'status' => $latestStatus ? $latestStatus->status_pelaporan : 'Belum Ada Status',
             ];
@@ -108,7 +124,8 @@ class PelaporanRepository
             $label = $fasilitas->ruang->lantai->gedung->gedung_nama . ' - ' .
                 $fasilitas->ruang->lantai->lantai_nama . ' - ' .
                 $fasilitas->ruang->ruang_nama . ' - ' .
-                $fasilitas->barang->barang_nama;
+                $fasilitas->barang->barang_nama . ' - ' .
+                $fasilitas->barang->barang_kode;
         }
         $laporan->fasilitas_label = $label;
 

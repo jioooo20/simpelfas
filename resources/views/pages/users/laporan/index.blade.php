@@ -17,7 +17,9 @@
                     <!-- Lokasi Kerusakan -->
                     <div class="form-control w-full relative"> <!-- Lokasi Kerusakan -->
                         <label for="search-lokasi" class="label">
-                            <span class="label-text text-base text-gray-700 font-semibold">Kerusakan Fasilitas</span>
+                            <span class="label-text text-base text-gray-700 font-semibold">
+                                Kerusakan Fasilitas <span class="text-red-500 text-sm" title="Wajib diisi">*</span>
+                            </span>
                         </label>
 
                         <div class="relative">
@@ -50,7 +52,8 @@
 
                     <!-- Skala Kerusakan -->
                     <div class="space-y-3">
-                        <label class="label-text text-base text-gray-700 font-semibold">Skala Kerusakan</label>
+                        <label class="label-text text-base text-gray-700 font-semibold">Skala Kerusakan
+                            <span class="text-red-500 text-sm" title="Wajib diisi">*</span></label>
                         <div id="radio-group" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <!-- Ringan -->
                             <label class="relative cursor-pointer">
@@ -134,7 +137,8 @@
 
                     <!-- Frekuensi Penggunaan -->
                     <div class="space-y-3">
-                        <label class="label-text text-base text-gray-700 font-semibold">Frekuensi Penggunaan</label>
+                        <label class="label-text text-base text-gray-700 font-semibold">Frekuensi Penggunaan
+                            <span class="text-red-500 text-sm" title="Wajib diisi">*</span></label>
                         <div id="radio-group" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
                             <!-- Jarang -->
@@ -221,7 +225,8 @@
                     <!-- Deskripsi Kerusakan -->
                     <div class="grid gap-2">
                         <label for="deskripsi" class="label-text text-base text-gray-700 font-semibold">Deskripsi
-                            Kerusakan</label>
+                            Kerusakan <span class="text-red-500 text-sm" title="Wajib diisi">*</span>
+                        </label>
                         <textarea
                             id="deskripsi"
                             name="deskripsi"
@@ -584,7 +589,8 @@
                     fontWeight: "500",
                     minWidth: "300px"
                 },
-                onClick: onClick || function () {}
+                onClick: onClick || function () {
+                }
             }).showToast();
         }
 
@@ -698,7 +704,7 @@
                     }
 
                     // Submit form
-                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                    form.dispatchEvent(new Event('submit', {cancelable: true, bubbles: true}));
                 }
             });
         });

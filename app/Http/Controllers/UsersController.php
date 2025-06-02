@@ -11,8 +11,6 @@ use Illuminate\Validation\ValidationException;
 use App\Repositories\FasilitasRepository;
 use App\Repositories\PelaporanRepository;
 use App\Http\Requests\StorePelaporanRequest;
-use App\Models\SkorAltModel;
-use App\Models\KriteriaModel;
 
 class UsersController extends Controller
 {
@@ -33,11 +31,6 @@ class UsersController extends Controller
     public function statusLaporan()
     {
         return view('pages.users.status-laporan.index');
-    }
-
-    public function laporanDetail()
-    {
-        return view('pages.users.status-laporan.laporan-detail-laporan');
     }
 
     public function storePelaporan(StorePelaporanRequest $request): JsonResponse
@@ -95,7 +88,7 @@ class UsersController extends Controller
             'Gambar Selesai' => json_decode($laporan->gambar_selesai ?? '[]'),
         ];
 
-        return view('pages.users.status-laporan.laporan-detail-modal', [
+        return view('pages.users.status-laporan.laporan-detail', [
             'laporan' => $laporan,
             'status' => $latestStatus ? $latestStatus->status_pelaporan : 'Belum Ada Status',
             'gambar' => $gambar,
@@ -103,6 +96,33 @@ class UsersController extends Controller
             'frekuensiLabels' => $this->getFrekuensiLabels(),
             'skalaLabels' => $this->getSkalaLabels(),
         ]);
+    }
+
+    private function createPelaporan($request, $gambarPaths)
+    {
+        return $this->pelaporanRepo->StorePelaporan([
+            'fasilitas_id' => $request->input('lokasi'),
+            'deskripsi' => $request->input('deskripsi'),
+            'gambar' => $gambarPaths,
+        ]);
+    }
+
+    private function getFrekuensiLabels(): array
+    {
+        return [
+            1 => 'Jarang',
+            2 => 'Sedang',
+            3 => 'Sering',
+        ];
+    }
+
+    private function getSkalaLabels(): array
+    {
+        return [
+            1 => 'Ringan',
+            2 => 'Sedang',
+            3 => 'Berat',
+        ];
     }
 
     protected function validateImage(Request $request): ?array
@@ -139,32 +159,4 @@ class UsersController extends Controller
 
         return null;
     }
-
-    private function createPelaporan($request, $gambarPaths)
-    {
-        return $this->pelaporanRepo->StorePelaporan([
-            'fasilitas_id' => $request->input('lokasi'),
-            'deskripsi' => $request->input('deskripsi'),
-            'gambar' => $gambarPaths,
-        ]);
-    }
-
-    private function getFrekuensiLabels(): array
-    {
-        return [
-            1 => 'Jarang',
-            2 => 'Sedang',
-            3 => 'Sering',
-        ];
-    }
-
-    private function getSkalaLabels(): array
-    {
-        return [
-            1 => 'Ringan',
-            2 => 'Sedang',
-            3 => 'Berat',
-        ];
-    }
-
 }
