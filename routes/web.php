@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:2')->prefix('sarpra')->group(function (): void {
         Route::get('/', [SarpraController::class, 'dasbor'])->name('sarpra');
         Route::get('/laporan-kerusakan-fasilitas', [SarpraController::class, 'laporan_kerusakan_fasilitas'])->name('sarpra.laporan-kerusakan-fasilitas');
+        Route::get('/rekomendasi-prioritas-perbaikan', [SarpraController::class, 'rekomendasi_prioritas_perbaikan'])->name('sarpra.rekomendasi-prioritas-perbaikan');
         Route::get('/statistik-fasilitas', [SarpraController::class, 'statistikFasilitas'])->name('statistik-fasilitas');
         Route::get('/frekuensi-perbaikan', [SarpraController::class, 'frekuensiPerbaikan'])->name('frekuensi-perbaikan');
         Route::get('/kepuasan-pengguna', [SarpraController::class, 'kepuasanPengguna'])->name('kepuasan-pengguna');
