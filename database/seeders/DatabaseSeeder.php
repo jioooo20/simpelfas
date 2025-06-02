@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
             RuangSeeder::class,
             BarangSeeder::class,
             FasilitasSeeder::class,
+            PelaporanSeeder::class,
+            StatusPelaporanSeeder::class,
             KriteriaSeeder::class,
         ]);
     }
