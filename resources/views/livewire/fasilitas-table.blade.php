@@ -47,24 +47,27 @@
         <table class="table table-zebra w-full">
             <thead>
                 <tr class="bg-base-200">
-                    <th class="flex gap-2 justify-center">Kode</th>
+                    <th>Kode</th>
                     <th>Gedung</th>
                     <th>Lantai</th>
                     <th>Ruangan</th>
                     <th>Barang</th>
-                    <th>Status</th>
+                    <th class="text-center">Status</th>
                     <th class="flex gap-2 justify-center">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($facilities as $facility)
                     <tr>
-                        <td class="flex gap-2 justify-center font-medium">{{ $facility->fasilitas_kode }}</td>
+                        <td>{{ $facility->fasilitas_kode }}</td>
                         <td>{{ $facility->ruang->lantai->gedung->gedung_nama }}</td>
                         <td>{{ $facility->ruang->lantai->lantai_nama }}</td>
                         <td>{{ $facility->ruang->ruang_nama }}</td>
-                        <td>{{ $facility->barang->barang_nama }}</td>
                         <td>
+                            {{ $facility->barang->barang_nama }}
+                            <span>{{ substr($facility->fasilitas_kode, -2) }}</span>
+                        </td>
+                        <td class="text-center">
                             <span class="badge
                                 @if($facility->fasilitas_status == 'Baik') badge-success
                                 @elseif($facility->fasilitas_status == 'Dalam Perbaikan') badge-warning
@@ -73,15 +76,15 @@
                                 {{ $facility->fasilitas_status }}
                             </span>
                         </td>
-                        <td class="flex gap-2 justify-center">
-                            <div class="flex gap-2">
+                        <td class="text-center">
+                            <div class="flex gap-2 justify-center">
                                 <button wire:click="editFacility({{ $facility->fasilitas_id }})"
-                                        class="text-indigo-400 hover:text-indigo-800">
-                                   <i class="bi bi-pencil-square"></i>
+                                        class="btn btn-sm btn-ghost text-blue-600 hover:text-blue-800">
+                                   <i class="fas fa-edit"></i>
                                 </button>
                                 <button wire:click="openDeleteModal({{ $facility->fasilitas_id }})"
-                                        class="text-red-500 hover:text-red-700">
-                                  <i class="bi bi-trash"></i>
+                                        class="btn btn-sm btn-ghost text-red-600 hover:text-red-800">
+                                   <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </td>
@@ -187,7 +190,7 @@
                         <label class="label">
                             <span class="label-text">Barang <span class="text-red-500">*</span></span>
                         </label>
-                        <select wire:model="selectedBarang" class="select select-bordered w-full">
+                        <select wire:model.live="selectedBarang" class="select select-bordered w-full">
                             <option value="">Pilih Barang</option>
                             @foreach($barangs as $barang)
                                 <option value="{{ $barang->barang_id }}">{{ $barang->barang_nama }}</option>
@@ -198,15 +201,37 @@
                         @endif
                     </div>
 
-                    {{-- kode fasilitas, nnt jadiin otomatis via backend --}}
+                    {{-- kode fasilitas --}}
                     <div class="form-control mb-4">
                         <label class="label">
-                            <span class="label-text">Kode Fasilitas <span class="text-red-500">*</span><span class="text-gray-400"> Pastikan kode unik</span></span>
+                            <span class="label-text">Kode Fasilitas <span class="text-red-500">*</span></span>
                         </label>
-                        <input type="text" wire:model="fasilitasKode" class="input input-bordered w-full"
-                               placeholder="Masukkan kode fasilitas">
+                        <div class="flex gap-2">
+                            <div class="flex-1">
+                                <input type="text"
+                                       value="@if($selectedRuang && $selectedBarang){{ $formRuangs->where('ruang_id', $selectedRuang)->first()?->ruang_kode ?? '' }}{{ $barangs->where('barang_id', $selectedBarang)->first()?->barang_kode ?? '' }}@endif"
+                                       class="input input-bordered w-full bg-gray-100"
+                                       readonly
+                                       placeholder="Pilih ruangan dan barang">
+                            </div>
+                            <div class="w-24">
+                                <input type="text"
+                                       wire:model.live="fasilitasNumber"
+                                       class="input input-bordered w-full text-center"
+                                       placeholder="01"
+                                       maxlength="3">
+                            </div>
+                        </div>
+                        @if ($errors->has('fasilitasNumber'))
+                            <span class="text-error text-sm">{{ $errors->first('fasilitasNumber') }}</span>
+                        @endif
                         @if ($errors->has('fasilitasKode'))
                             <span class="text-error text-sm">{{ $errors->first('fasilitasKode') }}</span>
+                        @endif
+                        @if($fasilitasKode)
+                            <div class="text-sm text-gray-500 mt-1">
+                                Kode lengkap: <span class="font-mono bg-gray-100 px-2 py-1 rounded">{{ $fasilitasKode }}</span>
+                            </div>
                         @endif
                     </div>
 
