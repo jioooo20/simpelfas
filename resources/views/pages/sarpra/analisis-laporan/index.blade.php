@@ -27,23 +27,23 @@
                 <div class="flex text-yellow-400">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                         <path
-                                d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                     </svg>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                         <path
-                                d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                     </svg>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                         <path
-                                d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                     </svg>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                         <path
-                                d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                     </svg>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-current opacity-50" viewBox="0 0 24 24">
                         <path
-                                d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                     </svg>
                 </div>
             </div>
@@ -95,11 +95,16 @@
         <!-- Tab Content -->
         <!-- Konten Berdasarkan Tab -->
         <div id="tab-contents" class="mt-6">
-            <div data-tab="Overview" class="tab-panel hidden">@include('pages.sarpra.analisis-laporan.tabs.overview')</div>
-            <div data-tab="Analisis" class="tab-panel hidden">@include('pages.sarpra.analisis-laporan.tabs.analisis')</div>
-            <div data-tab="Kepuasan" class="tab-panel hidden">@include('pages.sarpra.analisis-laporan.tabs.kepuasan')</div>
-            <div data-tab="Frekuensi" class="tab-panel hidden">@include('pages.sarpra.analisis-laporan.tabs.frekuensi')</div>
-            <div data-tab="Perencanaan" class="tab-panel hidden">@include('pages.sarpra.analisis-laporan.tabs.perencanaan')</div>
+            <div data-tab="Overview"
+                 class="tab-panel hidden">@include('pages.sarpra.analisis-laporan.tabs.overview')</div>
+            <div data-tab="Analisis"
+                 class="tab-panel hidden">@include('pages.sarpra.analisis-laporan.tabs.analisis')</div>
+            <div data-tab="Kepuasan"
+                 class="tab-panel hidden">@include('pages.sarpra.analisis-laporan.tabs.kepuasan')</div>
+            <div data-tab="Frekuensi"
+                 class="tab-panel hidden">@include('pages.sarpra.analisis-laporan.tabs.frekuensi')</div>
+            <div data-tab="Perencanaan"
+                 class="tab-panel hidden">@include('pages.sarpra.analisis-laporan.tabs.perencanaan')</div>
         </div>
 
     </div>
@@ -138,12 +143,17 @@
                 });
             };
 
-            // Inisialisasi
+            // Ambil tab aktif dari localStorage jika ada
+            const activeTabName = localStorage.getItem('activeTabName');
+            let defaultTabName = tabs[0]?.textContent.trim();
+
+            // Inisialisasi tab
             tabs.forEach(tab => {
-                const isActive = tab.getAttribute('aria-selected') === 'true';
+                const tabName = tab.textContent.trim();
+                const isActive = tabName === activeTabName || (!activeTabName && tab === tabs[0]);
                 updateTabStyles(tab, isActive);
                 if (isActive) {
-                    showTabContent(tab.textContent.trim());
+                    showTabContent(tabName);
                 }
             });
 
@@ -151,8 +161,13 @@
             tabs.forEach(tab => {
                 tab.addEventListener('click', (e) => {
                     const clickedTab = e.currentTarget;
+                    const clickedTabName = clickedTab.textContent.trim();
+
                     tabs.forEach(t => updateTabStyles(t, t === clickedTab));
-                    showTabContent(clickedTab.textContent.trim());
+                    showTabContent(clickedTabName);
+
+                    // Simpan tab aktif ke localStorage
+                    localStorage.setItem('activeTabName', clickedTabName);
                 });
             });
         });
