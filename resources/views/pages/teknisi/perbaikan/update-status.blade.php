@@ -10,7 +10,6 @@
                 <label for="status" class="block mb-2 text-sm font-medium">Status Perbaikan</label>
                 <select name="status" id="status" class="select select-bordered w-full" required>
                     <option value="" disabled selected>Pilih Status</option>
-                    <option value="Menunggu">Menunggu</option>
                     <option value="Diproses">Diproses</option>
                     <option value="Selesai">Selesai</option>
                 </select>

@@ -2,7 +2,13 @@
 @section('judul', 'Detail Perbaikan Fasilitas')
 @section('content')
     <div class="container mx-auto px-4 py-4">
-        <h1 class="text-2xl font-bold mb-4">Detail Perbaikan Fasilitas PRB-001</h1>
+        <!-- Tombol kembali -->
+        <div class="mt-6 flex justify-between">
+            <h1 class="text-2xl font-bold mb-4">PRB-001</h1>
+            <a href="{{ route('teknisi') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>Kembali
+            </a>
+        </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Section 1: Informasi Perbaikan -->
@@ -97,11 +103,6 @@
                         </div>
 
                         <div class="mb-3">
-                            <span class="font-semibold">Kontak :</span>
-                            <p>08123456789</p>
-                        </div>
-
-                        <div class="mb-3">
                             <span class="font-semibold">Deskripsi Perbaikan :</span>
                             <p class="text-sm">Berdasarkan pemeriksaan awal, lampu proyektor perlu diganti. Sudah memesan
                                 komponen baru, estimasi tiba 2 hari lagi.</p>
@@ -112,7 +113,7 @@
         </div>
 
         <!-- Histori update perbaikan -->
-        <div class="mt-8">
+        <div class="mt-8 mb-10">
             <h2 class="text-xl font-bold mb-4">Histori Perbaikan</h2>
             <div class="overflow-x-auto">
                 <table class="table table-zebra w-full">
@@ -146,13 +147,6 @@
                     </tbody>
                 </table>
             </div>
-        </div>
-
-        <!-- Tombol kembali -->
-        <div class="mt-6 flex justify-end">
-            <a href="{{ route('teknisi') }}" class="btn btn-outline">
-                <i class="fas fa-arrow-left"></i>Kembali
-            </a>
         </div>
     </div>
     @include('pages.teknisi.perbaikan.view-image')
