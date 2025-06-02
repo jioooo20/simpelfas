@@ -177,7 +177,8 @@ class LaporanKerusakan extends Component
 
     public function terimaLaporan()
     {
-        if (empty($this->biaya) || !is_numeric($this->biaya) || $this->biaya <= 0) {
+        if (empty($this->biaya) || !is_numeric($this->biaya) || $this->biaya < 0) { // bisa biaya 0
+        // if (empty($this->biaya) || !is_numeric($this->biaya) || $this->biaya < 0) {
             $this->dispatch('showErrorToast', 'Biaya harus diisi dengan angka yang valid!');
             return;
         }

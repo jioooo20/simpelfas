@@ -113,7 +113,8 @@
     {{-- Pagination --}}
     <div class="flex items-center justify-between mt-6">
         <div class="text-sm text-gray-500">
-            Menampilkan {{ $laporans->firstItem() }} - {{ $laporans->lastItem() }} dari {{ $laporans->total() }} hasil
+            Menampilkan {{ $laporans->firstItem() }} - {{ $laporans->lastItem() }} dari {{ $laporans->total() }}
+            hasil
         </div>
         <div class="join">
 
@@ -196,11 +197,12 @@
                                                 {{-- Single image --}}
                                                 <div class="mt-2">
                                                     <img src="{{ asset('storage/' . $photos[0]) }}"
-                                                         alt="Foto kerusakan"
-                                                         class="w-full h-48 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
-                                                         onclick="window.open(this.src, '_blank')"
-                                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                                    <div class="w-full h-48 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center" style="display:none;">
+                                                        alt="Foto kerusakan"
+                                                        class="w-full h-48 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                                                        onclick="window.open(this.src, '_blank')"
+                                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                    <div class="w-full h-48 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center"
+                                                        style="display:none;">
                                                         <div class="text-center text-gray-500">
                                                             <i class="bi bi-image text-4xl mb-2"></i>
                                                             <p class="text-sm">Foto tidak tersedia</p>
@@ -211,19 +213,22 @@
                                                 {{-- Carousel for multiple images (max 3) --}}
                                                 <div class="mt-2 carousel w-full h-48 rounded-lg border">
                                                     @foreach (array_slice($photos, 0, 3) as $index => $photo)
-                                                        <div id="slide{{ $index }}" class="carousel-item relative w-full">
-                                                            <img src="{{ asset("storage/{$photo}") }}" alt="Foto kerusakan"
+                                                        <div id="slide{{ $index }}"
+                                                            class="carousel-item relative w-full">
+                                                            <img src="{{ asset("storage/{$photo}") }}"
+                                                                alt="Foto kerusakan"
                                                                 class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
                                                                 onclick="window.open(this.src, '_blank')"
                                                                 onerror="this.style.display='none';">
 
                                                             {{-- Navigation arrows --}}
                                                             @if (count($photos) > 1)
-                                                                <div class="absolute flex justify-between transform -translate-y-1/2 left-2 right-2 top-1/2">
+                                                                <div
+                                                                    class="absolute flex justify-between transform -translate-y-1/2 left-2 right-2 top-1/2">
                                                                     <a href="#slide{{ $index === 0 ? count(array_slice($photos, 0, 3)) - 1 : $index - 1 }}"
-                                                                       class="btn btn-circle btn-sm bg-black/50 border-none text-white hover:bg-black/70">❮</a>
+                                                                        class="btn btn-circle btn-sm bg-black/50 border-none text-white hover:bg-black/70">❮</a>
                                                                     <a href="#slide{{ $index === count(array_slice($photos, 0, 3)) - 1 ? 0 : $index + 1 }}"
-                                                                       class="btn btn-circle btn-sm bg-black/50 border-none text-white hover:bg-black/70">❯</a>
+                                                                        class="btn btn-circle btn-sm bg-black/50 border-none text-white hover:bg-black/70">❯</a>
                                                                 </div>
                                                             @endif
                                                         </div>
@@ -234,7 +239,8 @@
                                                 @if (count($photos) > 1)
                                                     <div class="flex justify-center w-full py-2 gap-2">
                                                         @foreach (array_slice($photos, 0, 3) as $index => $photo)
-                                                            <a href="#slide{{ $index }}" class="btn btn-xs btn-circle">{{ $index + 1 }}</a>
+                                                            <a href="#slide{{ $index }}"
+                                                                class="btn btn-xs btn-circle">{{ $index + 1 }}</a>
                                                         @endforeach
                                                     </div>
                                                 @endif
@@ -242,7 +248,8 @@
                                         @else
                                             {{-- No image placeholder --}}
                                             <div class="mt-2">
-                                                <div class="w-full h-48 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                                                <div
+                                                    class="w-full h-48 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
                                                     <div class="text-center text-gray-500">
                                                         <i class="bi bi-image text-4xl mb-2"></i>
                                                         <p class="text-sm">Tidak ada foto tersedia</p>
@@ -347,8 +354,8 @@
                                         <span class="label-text font-semibold">Estimasi Biaya Perbaikan (Rp)</span>
                                     </label>
                                     <input wire:model.live="biaya" type="number" class="input input-bordered w-full"
-                                        placeholder="Masukkan estimasi biaya perbaikan" min="0"
-                                        step="1000">
+                                        placeholder="Masukkan estimasi biaya perbaikan (Masukkan 00 untuk tanpa biaya)"
+                                        min="0" step="1000">
                                     @error('biaya')
                                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                                     @enderror
@@ -364,7 +371,8 @@
                                     </button>
 
                                     <button wire:click="terimaLaporan" class="btn btn-success"
-                                        @if(empty($biaya) || $biaya <= 0) disabled @endif>
+                                        @if (empty($biaya) || ($biaya = 0)) disabled @endif> {{-- bisa biaya 0 --}}
+                                        {{-- @if (empty($biaya) || $biaya <= 0) disabled @endif> --}}
                                         <i class="bi bi-check-circle mr-1"></i> Terima
                                     </button>
                                 </div>
