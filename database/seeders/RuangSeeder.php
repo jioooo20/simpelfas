@@ -16,7 +16,7 @@ class RuangSeeder extends Seeder
         DB::table('m_ruang')->insert([
             [
                 'lantai_id' => 9,
-                'ruang_kode' => 'RT01',
+                'ruang_kode' => 'RT01',//1
                 'ruang_nama' => 'Ruang Teori 01',
                 'ruang_keterangan' => 'Ruang ini untuk apa yaa',
                 'created_at' => now(),
@@ -24,7 +24,7 @@ class RuangSeeder extends Seeder
             ],
             [
                 'lantai_id' => 9,
-                'ruang_kode' => 'RT02',
+                'ruang_kode' => 'RT02',//2
                 'ruang_nama' => 'Ruang Teori 02',
                 'ruang_keterangan' => 'Ruang ini untuk apa yaa',
                 'created_at' => now(),
@@ -32,7 +32,7 @@ class RuangSeeder extends Seeder
             ],
             [
                 'lantai_id' => 9,
-                'ruang_kode' => 'RT03',
+                'ruang_kode' => 'RT03',//3
                 'ruang_nama' => 'Ruang Teori 03',
                 'ruang_keterangan' => 'Ruang ini untuk apa yaa',
                 'created_at' => now(),

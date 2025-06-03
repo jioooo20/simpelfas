@@ -29,6 +29,7 @@ class FasilitasTable extends Component
     public $selectedRuang = '';
     public $selectedBarang = '';
     public $fasilitasKode = '';
+    public $fasilitasNumber = '';
     public $fasilitasStatus = 'Baik';
 
     protected $queryString = [
@@ -77,7 +78,7 @@ class FasilitasTable extends Component
     public function editFacility($id)
     {
         $this->editingId = $id;
-        $facility = FasilitasModel::with(['ruang.lantai.gedung'])->find($id);
+        $facility = FasilitasModel::with(['ruang.lantai.gedung', 'barang'])->find($id);
 
         $this->selectedGedung = $facility->ruang->lantai->gedung->gedung_id;
         $this->selectedLantai = $facility->ruang->lantai->lantai_id;
@@ -85,6 +86,12 @@ class FasilitasTable extends Component
         $this->selectedBarang = $facility->barang_id;
         $this->fasilitasKode = $facility->fasilitas_kode;
         $this->fasilitasStatus = $facility->fasilitas_status;
+
+        // Extract number from existing facility code
+        $ruangKode = $facility->ruang->ruang_kode;
+        $barangKode = $facility->barang->barang_kode;
+        $baseCode = $ruangKode . $barangKode;
+        $this->fasilitasNumber = str_replace($baseCode, '', $facility->fasilitas_kode);
 
         $this->showModal = true;
     }
@@ -115,6 +122,7 @@ class FasilitasTable extends Component
         $this->selectedRuang = '';
         $this->selectedBarang = '';
         $this->fasilitasKode = '';
+        $this->fasilitasNumber = '';
         $this->fasilitasStatus = 'Baik';
         $this->resetErrorBag();
     }
@@ -123,11 +131,52 @@ class FasilitasTable extends Component
     {
         $this->selectedLantai = '';
         $this->selectedRuang = '';
+        $this->updateFasilitasKode();
     }
 
     public function updatedSelectedLantai()
     {
         $this->selectedRuang = '';
+        $this->updateFasilitasKode();
+    }
+
+    public function updatedSelectedRuang()
+    {
+        $this->updateFasilitasKode();
+    }
+
+    public function updatedSelectedBarang()
+    {
+        $this->updateFasilitasKode();
+    }
+
+    public function updatedFasilitasNumber()
+    {
+        // Format the number with leading zeros
+        if ($this->fasilitasNumber) {
+            $this->fasilitasNumber = str_pad($this->fasilitasNumber, 3, '0', STR_PAD_LEFT);
+        }
+        $this->updateFasilitasKode();
+    }
+
+    private function updateFasilitasKode()
+    {
+        if ($this->selectedRuang && $this->selectedBarang) {
+            $ruang = RuangModel::find($this->selectedRuang);
+            $barang = BarangModel::find($this->selectedBarang);
+
+            if ($ruang && $barang) {
+                $baseCode = $ruang->ruang_kode . $barang->barang_kode;
+                $this->fasilitasKode = $baseCode . $this->fasilitasNumber;
+            }
+        } else {
+            $this->fasilitasKode = '';
+        }
+    }
+
+    public function gotoPage($page)
+    {
+        $this->setPage($page);
     }
 
     public function save()
@@ -135,8 +184,12 @@ class FasilitasTable extends Component
         $rules = [
             'selectedRuang' => 'required',
             'selectedBarang' => 'required',
+            'fasilitasNumber' => 'required|numeric',
             'fasilitasStatus' => 'required',
         ];
+
+        // Update facility code before validation
+        $this->updateFasilitasKode();
 
         if ($this->editingId) {
             $rules['fasilitasKode'] = 'required|unique:t_fasilitas,fasilitas_kode,' . $this->editingId . ',fasilitas_id';
@@ -147,6 +200,8 @@ class FasilitasTable extends Component
         $messages = [
             'selectedRuang.required' => 'Ruangan harus dipilih.',
             'selectedBarang.required' => 'Barang harus dipilih.',
+            'fasilitasNumber.required' => 'Nomor fasilitas harus diisi.',
+            'fasilitasNumber.numeric' => 'Nomor fasilitas harus berupa angka.',
             'fasilitasKode.required' => 'Kode fasilitas harus diisi.',
             'fasilitasKode.unique' => 'Kode fasilitas sudah digunakan.',
             'fasilitasStatus.required' => 'Status harus dipilih.',
