@@ -17,7 +17,9 @@
                     <!-- Lokasi Kerusakan -->
                     <div class="form-control w-full relative"> <!-- Lokasi Kerusakan -->
                         <label for="search-lokasi" class="label">
-                            <span class="label-text text-base text-gray-700 font-semibold">Kerusakan Fasilitas</span>
+                            <span class="label-text text-base text-gray-700 font-semibold">
+                                Kerusakan Fasilitas <span class="text-red-500 text-sm" title="Wajib diisi">*</span>
+                            </span>
                         </label>
 
                         <div class="relative">
@@ -50,7 +52,8 @@
 
                     <!-- Skala Kerusakan -->
                     <div class="space-y-3">
-                        <label class="label-text text-base text-gray-700 font-semibold">Skala Kerusakan</label>
+                        <label class="label-text text-base text-gray-700 font-semibold">Skala Kerusakan
+                            <span class="text-red-500 text-sm" title="Wajib diisi">*</span></label>
                         <div id="radio-group" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <!-- Ringan -->
                             <label class="relative cursor-pointer">
@@ -134,7 +137,8 @@
 
                     <!-- Frekuensi Penggunaan -->
                     <div class="space-y-3">
-                        <label class="label-text text-base text-gray-700 font-semibold">Frekuensi Penggunaan</label>
+                        <label class="label-text text-base text-gray-700 font-semibold">Frekuensi Penggunaan
+                            <span class="text-red-500 text-sm" title="Wajib diisi">*</span></label>
                         <div id="radio-group" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
                             <!-- Jarang -->
@@ -221,7 +225,8 @@
                     <!-- Deskripsi Kerusakan -->
                     <div class="grid gap-2">
                         <label for="deskripsi" class="label-text text-base text-gray-700 font-semibold">Deskripsi
-                            Kerusakan</label>
+                            Kerusakan <span class="text-red-500 text-sm" title="Wajib diisi">*</span>
+                        </label>
                         <textarea
                             id="deskripsi"
                             name="deskripsi"
@@ -251,7 +256,7 @@
                                 <p class="mb-2 text-sm text-gray-500">
                                     <span class="font-semibold">Klik untuk upload</span> atau drag and drop
                                 </p>
-                                <p class="text-xs text-gray-500">PNG, JPG atau JPEG (Maks. 10MB)</p>
+                                <p class="text-xs text-gray-500">Upload hingga 3 file (PNG, JPG, JPEG), total ukuran maksimal 10 MB</p>
                                 <p id="foto-counter" class="text-xs text-gray-500 italic mt-1">
                                     (Opsional, tapi sangat disarankan untuk mempercepat proses perbaikan)
                                 </p>
@@ -530,6 +535,21 @@
         function handleResponse(res, data, form) {
             if (res.ok) {
                 form.reset();
+                uploadedFiles = [];
+                previewGrid.innerHTML = '';
+                const fotoCounter = document.getElementById('foto-counter');
+                if (fotoCounter) {
+                    fotoCounter.textContent = "(Opsional, tapi sangat disarankan untuk mempercepat proses perbaikan)";
+                }
+                const dataTransfer = new DataTransfer();
+                fotoInput.files = dataTransfer.files;
+                fotoInput.disabled = false;
+                uploadArea.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                // Render ulang preview (kosong + tombol tambah jika perlu)
+                renderPreview();
+
+                // Tampilkan toast dan reload halaman
                 showToast(data.message || "Laporan berhasil dikirim.", "green", () => location.reload());
             } else if (data.errors) {
                 for (const key in data.errors) showToast(`${key}: ${data.errors[key][0]}`, "red");
@@ -542,28 +562,45 @@
         // Utilitas: Toast & Loading
         // -----------------------------
 
-        function showToast(message, color = 'blue', cb = null) {
+        function showToast(message, color = "green", onClick = null) {
             const now = Date.now();
-            if (now - lastToastTime < 1000) return;
+            if (now - lastToastTime < 2000) return;
             lastToastTime = now;
 
+            const icon = color === "green"
+                ? '<i class="bi bi-check-circle-fill text-xl"></i>'
+                : '<i class="bi bi-exclamation-circle-fill text-xl"></i>';
+
+            const background = color === "green"
+                ? "linear-gradient(to right, #00b09b, #96c93d)"
+                : "linear-gradient(to right, #ff5f6d, #ffc371)";
+
             Toastify({
-                text: message,
-                duration: 1500,
+                text: `<div class="flex items-center gap-3">${icon}<span>${message}</span></div>`,
+                duration: 3000,
                 gravity: "top",
                 position: "right",
-                backgroundColor: color,
-                callback: cb
+                backgroundColor: background,
+                className: "rounded-lg shadow-md",
+                stopOnFocus: true,
+                escapeMarkup: false,
+                style: {
+                    padding: "12px 20px",
+                    fontWeight: "500",
+                    minWidth: "300px"
+                },
+                onClick: onClick || function () {
+                }
             }).showToast();
         }
 
         function showLoading(button) {
             button.innerHTML = `
-        <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
-        </svg> Mengirim...
-    `;
+                <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
+                </svg> Mengirim...
+            `;
         }
 
         function hideLoading(button, originalText) {
@@ -618,11 +655,25 @@
         // -----------------------------
         // UX: Handle Enter key submit
         // -----------------------------
-
         document.querySelectorAll('#search-lokasi, #deskripsi, #foto').forEach(field => {
             field.addEventListener('keydown', function (e) {
+                const isSearchLokasi = field.id === 'search-lokasi';
+                const dropdownIsVisible = !dropdown.classList.contains('hidden');
+
                 if (e.key === 'Enter') {
+                    // Special handling for search-lokasi input
+                    if (isSearchLokasi) {
+                        e.preventDefault();
+                        if (dropdownIsVisible) {
+                            selectOption(activeIndex); // hanya pilih lokasi
+                        }
+                        // Jika dropdown tidak terlihat, jangan submit atau lakukan apapun
+                        return; // Hindari submit saat masih di search-lokasi
+                    }
+
+                    // Handle form submission for other fields
                     e.preventDefault();
+
                     const form = document.getElementById('pelaporanForm');
                     const lokasi = form.querySelector('#lokasi');
                     const deskripsi = form.querySelector('#deskripsi');
@@ -652,6 +703,7 @@
                         return;
                     }
 
+                    // Submit form
                     form.dispatchEvent(new Event('submit', {cancelable: true, bubbles: true}));
                 }
             });
@@ -691,9 +743,14 @@
             const droppedFiles = [...e.dataTransfer.files];
 
             const totalFiles = uploadedFiles.length + droppedFiles.length;
-
             if (totalFiles > maxFoto) {
                 showToast(`Maksimal ${maxFoto} foto dapat diupload.`, "red");
+                return;
+            }
+
+            const totalSize = getTotalSize([...uploadedFiles, ...droppedFiles]);
+            if (totalSize > maxFileSize) {
+                showToast("Total ukuran file tidak boleh lebih dari 10MB.", "red");
                 return;
             }
 
@@ -705,14 +762,19 @@
                 }
             }
 
-            updateInputFiles(); // sinkronkan input file
+            updateInputFiles();
         }
 
         function addFiles(files) {
             const totalFiles = uploadedFiles.length + files.length;
-
             if (totalFiles > maxFoto) {
                 showToast(`Maksimal ${maxFoto} foto dapat diupload.`, "red");
+                return;
+            }
+
+            const totalSize = getTotalSize([...uploadedFiles, ...files]);
+            if (totalSize > maxFileSize) {
+                showToast("Total ukuran file tidak boleh lebih dari 10MB.", "red");
                 return;
             }
 
@@ -826,6 +888,10 @@
             } else {
                 fotoCounter.textContent = "(Opsional, tapi sangat disarankan untuk mempercepat proses perbaikan)";
             }
+        }
+
+        function getTotalSize(files) {
+            return files.reduce((acc, file) => acc + file.size, 0);
         }
     </script>
 @endpush
