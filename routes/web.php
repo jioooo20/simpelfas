@@ -52,9 +52,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/laporan-kerusakan-fasilitas', [SarpraController::class, 'laporan_kerusakan_fasilitas'])->name('sarpra.laporan-kerusakan-fasilitas');
         Route::get('/rekomendasi-prioritas-perbaikan', [SarpraController::class, 'rekomendasi_prioritas_perbaikan'])->name('sarpra.rekomendasi-prioritas-perbaikan');
         Route::get('/statistik-fasilitas', [SarpraController::class, 'statistikFasilitas'])->name('statistik-fasilitas');
-        Route::get('/frekuensi-perbaikan', [SarpraController::class, 'frekuensiPerbaikan'])->name('frekuensi-perbaikan');
-        Route::get('/kepuasan-pengguna', [SarpraController::class, 'kepuasanPengguna'])->name('kepuasan-pengguna');
-        Route::get('/perencanaan-pemeliharaan', [SarpraController::class, 'perencanaanPemeliharaan'])->name('perencanaan-pemeliharaan');
+        Route::get('/feedback', [SarpraController::class, 'count-total'])->name('feedback.index');
     });
     Route::middleware('role:3')->prefix('teknisi')->group(function (): void {
         Route::get('/', [TeknisiController::class, 'perbaikan'])->name('teknisi');

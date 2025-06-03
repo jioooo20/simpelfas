@@ -22,4 +22,5 @@ class SarpraController extends Controller
     {
         return view('pages.sarpra.rekomendasi-prioritas-perbaikan.index');
     }
+
 }

@@ -131,7 +131,11 @@ class UsersController extends Controller
 
         if ($request->hasFile('foto')) {
             try {
+                $totalSize = 0; // total ukuran dalam KB
+
                 foreach ($request->file('foto') as $file) {
+                    $totalSize += $file->getSize() / 1024; // convert dari byte ke KB
+
                     $imageInfo = getimagesize($file);
                     if ($imageInfo === false) {
                         throw ValidationException::withMessages(['foto' => 'Salah satu file bukan gambar yang valid.']);
@@ -143,7 +147,14 @@ class UsersController extends Controller
                     if ($width > 5000 || $height > 5000) {
                         throw ValidationException::withMessages(['foto' => 'Resolusi salah satu gambar melebihi 5000x5000 piksel.']);
                     }
+                }
 
+                if ($totalSize > 10240) {
+                    throw ValidationException::withMessages(['foto' => 'Total ukuran gambar tidak boleh lebih dari 10MB.']);
+                }
+
+                // Jika lolos semua validasi, simpan file
+                foreach ($request->file('foto') as $file) {
                     $filename = uniqid() . '.' . $file->getClientOriginalExtension();
                     $path = $file->storeAs('pelaporan/menunggu', $filename, 'public');
                     $gambarPaths[] = $path;

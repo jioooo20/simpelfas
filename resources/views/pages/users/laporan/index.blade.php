@@ -256,7 +256,7 @@
                                 <p class="mb-2 text-sm text-gray-500">
                                     <span class="font-semibold">Klik untuk upload</span> atau drag and drop
                                 </p>
-                                <p class="text-xs text-gray-500">PNG, JPG atau JPEG (Maks. 10MB)</p>
+                                <p class="text-xs text-gray-500">Upload hingga 3 file (PNG, JPG, JPEG), total ukuran maksimal 10 MB</p>
                                 <p id="foto-counter" class="text-xs text-gray-500 italic mt-1">
                                     (Opsional, tapi sangat disarankan untuk mempercepat proses perbaikan)
                                 </p>
@@ -743,9 +743,14 @@
             const droppedFiles = [...e.dataTransfer.files];
 
             const totalFiles = uploadedFiles.length + droppedFiles.length;
-
             if (totalFiles > maxFoto) {
                 showToast(`Maksimal ${maxFoto} foto dapat diupload.`, "red");
+                return;
+            }
+
+            const totalSize = getTotalSize([...uploadedFiles, ...droppedFiles]);
+            if (totalSize > maxFileSize) {
+                showToast("Total ukuran file tidak boleh lebih dari 10MB.", "red");
                 return;
             }
 
@@ -757,14 +762,19 @@
                 }
             }
 
-            updateInputFiles(); // sinkronkan input file
+            updateInputFiles();
         }
 
         function addFiles(files) {
             const totalFiles = uploadedFiles.length + files.length;
-
             if (totalFiles > maxFoto) {
                 showToast(`Maksimal ${maxFoto} foto dapat diupload.`, "red");
+                return;
+            }
+
+            const totalSize = getTotalSize([...uploadedFiles, ...files]);
+            if (totalSize > maxFileSize) {
+                showToast("Total ukuran file tidak boleh lebih dari 10MB.", "red");
                 return;
             }
 
@@ -878,6 +888,10 @@
             } else {
                 fotoCounter.textContent = "(Opsional, tapi sangat disarankan untuk mempercepat proses perbaikan)";
             }
+        }
+
+        function getTotalSize(files) {
+            return files.reduce((acc, file) => acc + file.size, 0);
         }
     </script>
 @endpush

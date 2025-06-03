@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             BarangSeeder::class,
             FasilitasSeeder::class,
             PelaporanSeeder::class,
+            FeedbackSeeder::class,
             StatusPelaporanSeeder::class,
             KriteriaSeeder::class,
         ]);

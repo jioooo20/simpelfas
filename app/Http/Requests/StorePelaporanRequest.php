@@ -37,6 +37,7 @@ class StorePelaporanRequest extends FormRequest
             'foto.*.file' => 'Setiap foto harus berupa file.',
             'foto.*.mimetypes' => 'Setiap foto harus berformat JPEG atau PNG.',
             'foto.*.max' => 'Ukuran setiap foto maksimal 10MB.',
+            'foto.total_size' => 'Total ukuran semua foto tidak boleh lebih dari 10MB.',
         ];
     }
 }
