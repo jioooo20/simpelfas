@@ -256,7 +256,8 @@
                                 <p class="mb-2 text-sm text-gray-500">
                                     <span class="font-semibold">Klik untuk upload</span> atau drag and drop
                                 </p>
-                                <p class="text-xs text-gray-500">Upload hingga 3 file (PNG, JPG, JPEG), total ukuran maksimal 10 MB</p>
+                                <p class="text-xs text-gray-500">Upload hingga 3 file (PNG, JPG, JPEG), total ukuran
+                                    maksimal 10 MB</p>
                                 <p id="foto-counter" class="text-xs text-gray-500 italic mt-1">
                                     (Opsional, tapi sangat disarankan untuk mempercepat proses perbaikan)
                                 </p>
@@ -289,11 +290,40 @@
         </div> <!-- End of Card Body -->
     </div> <!-- End of Main Card -->
 
+    <!-- Modal Konfirmasi Kirim -->
+    <div id="konfirmasiKirimModal"
+         class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
+        <!-- Modal Content -->
+        <div class="w-11/12 max-w-lg md:w-1/3 bg-white rounded-lg shadow-xl p-6 md:p-8">
 
-    <!-- Modal Zoom Foto -->
-    <div id="zoomModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <img id="zoomedImage" src="" class="max-w-full max-h-full rounded-lg shadow-lg"/>
-    </div> <!-- End of Modal Zoom Foto -->
+            <!-- Judul Modal -->
+            <h2 class="text-xl md:text-2xl font-semibold text-gray-800 mb-4">
+                Konfirmasi Pengiriman
+            </h2> <!-- End of Judul Modal -->
+
+            <!-- Isi Modal -->
+            <p class="text-gray-600 mb-6">
+                Apakah Anda yakin ingin mengirim laporan ini?
+            </p> <!-- End of Isi Modal -->
+
+            <!-- Tombol Aksi -->
+            <div class="flex justify-end gap-3">
+                <!-- Tombol Batal -->
+                <button id="batalKirimBtn"
+                        type="button"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-150">
+                    Batal
+                </button> <!-- End of Tombol Batal -->
+                <!-- Tombol Lanjut Kirim -->
+                <button id="lanjutKirimBtn"
+                        type="button"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-150">
+                    Ya, Kirim
+                </button> <!-- End of Tombol Lanjut Kirim -->
+            </div> <!-- End of Tombol Aksi -->
+        </div> <!-- End of Modal Content -->
+    </div> <!-- End of Modal Konfirmasi Kirim -->
+
 @endsection
 @push('skrip')
     <script>
@@ -320,6 +350,14 @@
         const previewGrid = document.getElementById('preview-grid');
 
         // -----------------------------
+        // Modal confirmation variables
+        // -----------------------------
+        const konfirmasiKirimModal = document.getElementById('konfirmasiKirimModal');
+        const batalKirimBtn = document.getElementById('batalKirimBtn');
+        const lanjutKirimBtn = document.getElementById('lanjutKirimBtn');
+        let currentFormToSubmit = null;
+
+        // -----------------------------
         // File upload configuration variables
         // -----------------------------
 
@@ -338,7 +376,7 @@
         let uploadedFiles = [];
 
         // -----------------------------
-        // Lokasi: Dropdown handling
+        // Lokasi: UI helpers
         // -----------------------------
 
         function showDropdown() {
@@ -350,33 +388,107 @@
             activeIndex = -1;
         }
 
-        function renderOptions(filter) {
-            optionsList.innerHTML = '';
-            const terms = filter.toLowerCase().split(/\s+/).filter(Boolean);
+        // -----------------------------
+        // Lokasi: Filter helpers
+        // -----------------------------
 
-            currentOptions = locations.filter(loc => {
-                const searchable = `${loc.label} ${loc.search || ''}`.toLowerCase();
-                return terms.every(term => searchable.includes(term));
+        function parseFilter(filter = '') {
+            return filter.toLowerCase().split(/\s+/).filter(Boolean);
+        }
+
+        function getFilteredLocations(filter, locations) {
+            const terms = parseFilter(filter);
+
+            return locations.filter(loc => {
+                if (!terms.length && filter === '') return true;
+                if (!terms.length && filter !== '') return false;
+
+                const searchable = `${loc.label} ${loc.search || ''} ${loc.statusText || ''}`.toLowerCase();
+
+                return terms.every(term =>
+                    searchable.includes(term) ||
+                    searchable.split(/[\s\-]+/).some(word => word.startsWith(term))
+                );
             });
+        }
 
-            if (!currentOptions.length) {
-                notFound.classList.remove('hidden');
+        // -----------------------------
+        // Lokasi: Option element helpers
+        // -----------------------------
+
+        function createStatusBadge(statusCode = '', statusText = '') {
+            if (!statusText || statusCode === 'BAIK') return null;
+
+            const badge = document.createElement('span');
+            badge.textContent = statusText;
+            badge.className = 'px-2 py-0.5 text-xs font-semibold rounded-full flex-shrink-0';
+
+            if (statusCode === 'RUSAK') {
+                badge.classList.add('bg-red-100', 'text-red-800');
+            } else if (statusCode === 'DALAM PERBAIKAN') {
+                badge.classList.add('bg-blue-100', 'text-blue-800');
             } else {
-                notFound.classList.add('hidden');
-                currentOptions.slice(0, 8).forEach((loc, i) => {
-                    const li = document.createElement('li');
-                    li.textContent = loc.label;
-                    li.className = "px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors";
-                    li.dataset.index = i;
-                    li.onclick = () => selectOption(i);
-                    optionsList.appendChild(li);
-                });
+                badge.classList.add('bg-gray-100', 'text-gray-800');
             }
+
+            return badge;
+        }
+
+        function createOptionItem(loc, index) {
+            const li = document.createElement('li');
+            const statusCode = loc.statusCode || '';
+            const isSelectable = !(statusCode === 'RUSAK' || statusCode === 'DALAM PERBAIKAN');
+
+            let liClasses = 'px-4 py-2 transition-colors flex justify-between items-center';
+            li.dataset.originalIndex = index;
+
+            if (isSelectable) {
+                liClasses += ' hover:bg-blue-50 cursor-pointer';
+                li.onclick = () => selectOption(index);
+            } else {
+                liClasses += ' text-gray-500 cursor-not-allowed opacity-75';
+                li.onclick = event => {
+                    event.stopPropagation();
+                    console.warn(`Klik pada item yang dinonaktifkan: ${loc.label}`);
+                };
+            }
+            li.className = liClasses;
+
+            const labelTextSpan = document.createElement('span');
+            labelTextSpan.textContent = loc.label;
+            labelTextSpan.className = 'flex-grow mr-2 overflow-hidden overflow-ellipsis whitespace-nowrap';
+            li.appendChild(labelTextSpan);
+
+            const badge = createStatusBadge(statusCode, loc.statusText);
+            if (badge) li.appendChild(badge);
+
+            return li;
+        }
+
+        // -----------------------------
+        // Lokasi: Rendering & selection
+        // -----------------------------
+
+        function isOptionSelectable(index) {
+            if (!currentOptions || index < 0 || index >= currentOptions.length) {
+                return false;
+            }
+            const option = currentOptions[index];
+            if (!option) return false;
+
+            const statusCode = option.statusCode || '';
+            return !(statusCode === 'RUSAK' || statusCode === 'DALAM PERBAIKAN');
         }
 
         function selectOption(index) {
             if (index < 0 || index >= currentOptions.length) return;
+
             const selected = currentOptions[index];
+            const statusCode = selected.statusCode || '';
+            const isSelectable = !(statusCode === 'RUSAK' || statusCode === 'DALAM PERBAIKAN');
+
+            if (!isSelectable) return;
+
             searchInput.value = selected.label;
             lokasiHidden.value = selected.id;
             hideDropdown();
@@ -384,49 +496,101 @@
 
         function updateActiveOption() {
             optionsList.querySelectorAll('li').forEach((li, i) => {
-                li.classList.toggle('bg-blue-100', i === activeIndex);
+                const isActive = i === activeIndex;
+                li.classList.toggle('bg-blue-100', isActive);
+                if (isActive) {
+                    li.scrollIntoView({block: 'nearest', inline: 'nearest'});
+                }
             });
         }
 
+        function renderOptions(filter = '') {
+            optionsList.innerHTML = '';
+            currentOptions = getFilteredLocations(filter, locations);
+
+            if (!currentOptions.length) {
+                notFound.classList.remove('hidden');
+                activeIndex = -1;
+                return;
+            }
+
+            notFound.classList.add('hidden');
+            currentOptions.forEach((loc, i) => optionsList.appendChild(createOptionItem(loc, i)));
+
+            if (filter) activeIndex = -1;
+            updateActiveOption();
+        }
+
         // -----------------------------
-        // Lokasi: Input event handlers
+        // Lokasi: Navigasi keyboard & input event handlers
         // -----------------------------
+
+        function debounce(fn, delay = 200) {
+            let t;
+            return (...args) => {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(null, args), delay);
+            };
+        }
 
         function initializeSearchInputEvents() {
             searchInput.addEventListener('input', function () {
                 const filter = this.value.trim();
-                filter ? (showDropdown(), renderOptions(filter)) : hideDropdown();
+                if (filter) {
+                    renderOptions(filter);
+                    showDropdown();
+                } else {
+                    hideDropdown();
+                }
             });
 
+            /* ----------  N A V I G A S I   P A N A H  ---------- */
             searchInput.addEventListener('keydown', function (e) {
                 if (dropdown.classList.contains('hidden') || !currentOptions.length) return;
 
+                const nextSelectable = (start, step) => {
+                    for (let i = start; i >= 0 && i < currentOptions.length; i += step) {
+                        if (isOptionSelectable(i)) return i;
+                    }
+                    return -1;
+                };
+
                 if (e.key === 'ArrowDown') {
                     e.preventDefault();
-                    activeIndex = (activeIndex + 1) % currentOptions.length;
-                    updateActiveOption();
+
+                    const begin = activeIndex === -1 ? 0 : activeIndex + 1;
+                    const candidate = nextSelectable(begin, +1);
+
+                    if (candidate !== -1) {
+                        activeIndex = candidate;
+                        updateActiveOption();
+                    }
                 } else if (e.key === 'ArrowUp') {
                     e.preventDefault();
-                    activeIndex = (activeIndex - 1 + currentOptions.length) % currentOptions.length;
-                    updateActiveOption();
+
+                    const begin = activeIndex === -1 ? currentOptions.length - 1 : activeIndex - 1;
+                    const candidate = nextSelectable(begin, -1);
+
+                    if (candidate !== -1) {
+                        activeIndex = candidate;
+                        updateActiveOption();
+                    }
                 } else if (e.key === 'Enter') {
                     e.preventDefault();
-                    selectOption(activeIndex);
+                    if (activeIndex !== -1 && isOptionSelectable(activeIndex)) {
+                        selectOption(activeIndex);
+                    }
                 }
             });
 
             searchInput.addEventListener('focus', function () {
                 const value = this.value.trim();
-                if (value) {
-                    showDropdown();
-                    renderOptions(value);
-                }
+                renderOptions(value);
+                showDropdown();
             });
 
             document.addEventListener('click', e => {
-                if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
-                    hideDropdown();
-                }
+                if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) hideDropdown();
             });
         }
 
@@ -447,27 +611,41 @@
         initializeSearchInputEvents();
 
         // -----------------------------
-        // Form handling
+        // Form: Event handling
         // -----------------------------
 
         document.getElementById('pelaporanForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             const form = e.target;
+
+            const lokasi = form.querySelector('#lokasi').value.trim();
+            const deskripsi = form.querySelector('#deskripsi').value.trim();
+            const skalaChecked = document.querySelector('input[name="skala-kerusakan"]:checked');
+            const frekuensiChecked = document.querySelector('input[name="frekuensi-penggunaan"]:checked');
+
+            if (!validateForm({lokasi, deskripsi, skalaChecked, frekuensiChecked, uploadedFiles})) {
+                return;
+            }
+
+            showKonfirmasiModal(form);
+        });
+
+        async function kirimForm(form) {
+            if (!form) {
+                showToast("Terjadi kesalahan internal saat mencoba mengirim form.", "red");
+                return;
+            }
+
             const submitBtn = form.querySelector('button[type="submit"]');
+            if (!submitBtn) {
+                showToast("Terjadi kesalahan: tombol submit tidak ditemukan.", "red");
+                return;
+            }
+
             const formData = new FormData(form);
 
             const skala = document.querySelector('input[name="skala-kerusakan"]:checked')?.value;
             const frekuensi = document.querySelector('input[name="frekuensi-penggunaan"]:checked')?.value;
-
-            const values = {
-                lokasi: form.querySelector('#lokasi').value.trim(),
-                deskripsi: form.querySelector('#deskripsi').value.trim(),
-                foto: uploadedFiles,
-                skala,
-                frekuensi
-            };
-
-            if (!validateForm(values)) return;
 
             submitBtn.disabled = true;
             const originalText = submitBtn.innerHTML;
@@ -477,14 +655,15 @@
                 formData.append(`foto[${index}]`, file);
             });
 
-            formData.append('skala', skala);
-            formData.append('frekuensi', frekuensi);
+            if (skala) formData.append('skala', skala);
+            if (frekuensi) formData.append('frekuensi', frekuensi);
 
             try {
                 const res = await fetch('{{ route('store-pelaporan') }}', {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
                     },
                     body: formData
                 });
@@ -492,45 +671,61 @@
                 const data = await res.json();
                 handleResponse(res, data, form);
             } catch (err) {
-                console.error('Error:', err);
-                showToast('Terjadi kesalahan pada sistem.', 'red');
+                console.error('Error submitting form:', err);
+                showToast('Terjadi kesalahan pada sistem saat mengirim.', 'red');
             } finally {
                 submitBtn.disabled = false;
                 hideLoading(submitBtn, originalText);
             }
-        });
+        }
 
-        function validateForm({lokasi, deskripsi}) {
-            const skalaChecked = document.querySelector('input[name="skala-kerusakan"]:checked');
-            const frekuensiChecked = document.querySelector('input[name="frekuensi-penggunaan"]:checked');
+        // -----------------------------
+        // Form: Validation
+        // -----------------------------
+
+        function validateForm({lokasi, deskripsi, skalaChecked, frekuensiChecked, uploadedFiles}) {
+            const MAX_FOTO = 3;
+            if (uploadedFiles && uploadedFiles.length > MAX_FOTO) {
+                showToast(`Anda hanya dapat mengunggah maksimal ${MAX_FOTO} foto.`, "red");
+                return false;
+            }
 
             if (!lokasi) {
                 showToast("Fasilitas harus dipilih.", "red");
+                document.getElementById('search-lokasi')?.focus();
                 return false;
             }
 
             if (!skalaChecked) {
                 showToast("Skala kerusakan harus dipilih.", "red");
+                document.getElementById('skala-kerusakan')?.focus();
                 return false;
             }
 
             if (!frekuensiChecked) {
                 showToast("Frekuensi penggunaan harus dipilih.", "red");
+                document.getElementById('frekuensi-penggunaan')?.focus();
                 return false;
             }
 
             if (!deskripsi) {
                 showToast("Deskripsi harus diisi.", "red");
+                document.getElementById('deskripsi')?.focus();
                 return false;
             }
 
             if (deskripsi.length > 1000) {
                 showToast("Deskripsi tidak boleh lebih dari 1000 karakter.", "red");
+                document.getElementById('deskripsi')?.focus();
                 return false;
             }
 
             return true;
         }
+
+        // -----------------------------
+        // Form: Response Handling
+        // -----------------------------
 
         function handleResponse(res, data, form) {
             if (res.ok) {
@@ -538,18 +733,16 @@
                 uploadedFiles = [];
                 previewGrid.innerHTML = '';
                 const fotoCounter = document.getElementById('foto-counter');
+
                 if (fotoCounter) {
                     fotoCounter.textContent = "(Opsional, tapi sangat disarankan untuk mempercepat proses perbaikan)";
                 }
+
                 const dataTransfer = new DataTransfer();
                 fotoInput.files = dataTransfer.files;
                 fotoInput.disabled = false;
                 uploadArea.classList.remove('opacity-50', 'cursor-not-allowed');
-
-                // Render ulang preview (kosong + tombol tambah jika perlu)
                 renderPreview();
-
-                // Tampilkan toast dan reload halaman
                 showToast(data.message || "Laporan berhasil dikirim.", "green", () => location.reload());
             } else if (data.errors) {
                 for (const key in data.errors) showToast(`${key}: ${data.errors[key][0]}`, "red");
@@ -557,6 +750,49 @@
                 showToast(data.message || 'Terjadi kesalahan.', "red");
             }
         }
+
+        // -----------------------------
+        // Form: Modal Konfirmasi
+        // -----------------------------
+
+        function showKonfirmasiModal(formElement) {
+            currentFormToSubmit = formElement;
+            if (konfirmasiKirimModal) {
+                konfirmasiKirimModal.classList.remove('hidden');
+            } else {
+                console.error("Elemen modal 'konfirmasiKirimModal' tidak ditemukan.");
+            }
+        }
+
+        function hideKonfirmasiModal() {
+            if (konfirmasiKirimModal) {
+                konfirmasiKirimModal.classList.add('hidden');
+            }
+            currentFormToSubmit = null;
+        }
+
+        function initKonfirmasiModalHandlers() {
+            if (batalKirimBtn) {
+                batalKirimBtn.addEventListener('click', hideKonfirmasiModal);
+            }
+
+            if (lanjutKirimBtn) {
+                lanjutKirimBtn.addEventListener('click', () => {
+                    const formToProcess = currentFormToSubmit;
+
+                    if (formToProcess) {
+                        hideKonfirmasiModal();
+                        kirimForm(formToProcess);
+                    } else {
+                        console.error("Tidak ada form yang akan diproses setelah konfirmasi.");
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initKonfirmasiModalHandlers();
+        });
 
         // -----------------------------
         // Utilitas: Toast & Loading
@@ -655,23 +891,21 @@
         // -----------------------------
         // UX: Handle Enter key submit
         // -----------------------------
+
         document.querySelectorAll('#search-lokasi, #deskripsi, #foto').forEach(field => {
             field.addEventListener('keydown', function (e) {
                 const isSearchLokasi = field.id === 'search-lokasi';
                 const dropdownIsVisible = !dropdown.classList.contains('hidden');
 
                 if (e.key === 'Enter') {
-                    // Special handling for search-lokasi input
                     if (isSearchLokasi) {
                         e.preventDefault();
                         if (dropdownIsVisible) {
-                            selectOption(activeIndex); // hanya pilih lokasi
+                            selectOption(activeIndex);
                         }
-                        // Jika dropdown tidak terlihat, jangan submit atau lakukan apapun
-                        return; // Hindari submit saat masih di search-lokasi
+                        return;
                     }
 
-                    // Handle form submission for other fields
                     e.preventDefault();
 
                     const form = document.getElementById('pelaporanForm');
