@@ -57,14 +57,14 @@ class PelaporanRepository
             'pelaporan_id' => $pelaporanId,
             'kriteria_id' => $kriteriaSkala->kriteria_id,
             'nilai_skor' => $skalaBobot[$skala],
-            'skor_alt_kode' => 'SKR-' . strtoupper(Str::random(6)),
+            'skor_alt_kode' => $pelaporanId . '-C2',
         ]);
 
         SkorAltModel::create([
             'pelaporan_id' => $pelaporanId,
             'kriteria_id' => $kriteriaFrekuensi->kriteria_id,
             'nilai_skor' => $frekuensiBobot[$frekuensi],
-            'skor_alt_kode' => 'SKR-' . strtoupper(Str::random(6)),
+            'skor_alt_kode' => $pelaporanId . '-C3',
         ]);
     }
 

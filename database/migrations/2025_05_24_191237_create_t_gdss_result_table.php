@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('t_gdss_result', function (Blueprint $table) {
-            $table->id('gdss__id');
-            $table->string('gdss_kode', 30)->unique(); //format angka dtk-mnt-jam-day-bln-thn
+            $table->id('gdss_id');
+            $table->string('gdss_kode', 30); //format angka dtk-mnt-jam-day-bln-thn
             $table->unsignedBigInteger('pelaporan_id')->index();
             $table->integer('nilai_skor');
             $table->integer('rank');
