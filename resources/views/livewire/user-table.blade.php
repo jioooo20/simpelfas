@@ -115,7 +115,7 @@
 
     <div class="flex items-center justify-between mt-6">
         <div class="text-sm text-gray-500">
-             Menampilkan {{ $table->firstItem() }} - {{ $table->lastItem() }} dari {{ $table->total() }} hasil
+            Menampilkan {{ $table->firstItem() }} - {{ $table->lastItem() }} dari {{ $table->total() }} hasil
         </div>
         <div class="join">
             @php
@@ -134,11 +134,6 @@
                     </button>
                 </a>
             @endfor
-
-            <a href="{{ $table->nextPageUrl() }}">
-                <button class="join-item btn btn-sm"
-                    {{ $table->currentPage() == $table->lastPage() ? 'disabled' : '' }}>»</button>
-            </a>
         </div>
     </div>
 
@@ -217,12 +212,10 @@
                 </div>
 
                 <div class="flex justify-end gap-3 mt-6">
-                    <button wire:click="$set('confirmingUserDeletion', false)"
-                        class="btn btn-outline btn-sm">
+                    <button wire:click="$set('confirmingUserDeletion', false)" class="btn btn-outline btn-sm">
                         <i class="bi bi-x mr-1"></i> Batal
                     </button>
-                    <button wire:click="deleteUser"
-                        class="btn btn-error btn-sm">
+                    <button wire:click="deleteUser" class="btn btn-error btn-sm">
                         <i class="bi bi-trash mr-1"></i> Hapus Pengguna
                     </button>
                 </div>
