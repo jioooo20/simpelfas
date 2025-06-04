@@ -7,7 +7,9 @@ use App\Models\PelaporanModel;
 use App\Models\SkorAltModel;
 use App\Models\StatusPelaporanModel;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
 
 class PelaporanRepository
 {
@@ -140,6 +142,29 @@ class PelaporanRepository
             ->mapWithKeys(function ($item) {
                 return [$item->kriteria->kriteria_nama => $item->nilai_skor];
             });
+    }
+
+    public function getTotalPelaporan(): int
+    {
+        return DB::table('m_pelaporan')->count('pelaporan_id');
+    }
+
+    public function countLaporanDenganStatusTerakhir(string $status): int
+    {
+        return DB::table('t_status_pelaporan as sp')
+            ->join(
+                DB::raw('(
+                SELECT pelaporan_id, MAX(created_at) AS latest_status_time
+                FROM t_status_pelaporan
+                GROUP BY pelaporan_id
+            ) as latest'),
+                function ($join) {
+                    $join->on('sp.pelaporan_id', '=', 'latest.pelaporan_id')
+                        ->on('sp.created_at', '=', 'latest.latest_status_time');
+                }
+            )
+            ->where('sp.status_pelaporan', $status)
+            ->count();
     }
 
 }

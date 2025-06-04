@@ -7,44 +7,36 @@
             <!-- Total Laporan -->
             <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
                 <p class="text-gray-500 text-sm mb-2">Total Laporan</p>
-                <h2 class="text-xl font-semibold text-gray-800">1,247</h2>
-                <p class="text-sm text-gray-400">89 pending • 1098 selesai</p>
-            </div>
+                <h2 class="text-xl font-semibold text-gray-800">{{ number_format($total ?? 0) }}</h2>
+                <p class="text-sm text-gray-400">{{ $pending }} pending • {{ $selesai }} selesai</p>
+            </div> <!-- End Total Laporan -->
 
-            <!-- Kepuasan Pengguna -->
-            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-col justify-between">
+            <div id="kepuasan-pengguna-card-js-logic"
+                 class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-col justify-between"
+                 data-rating="{{ $kepuasan }}">
                 <p class="text-gray-500 text-sm mb-2">Kepuasan Pengguna</p>
                 <div class="flex items-center gap-2">
-                    <h2 class="text-xl font-semibold text-yellow-500">4.8</h2>
-                    <!-- Ikon ekspresi berdasarkan skor -->
+                    <h2 class="text-xl font-semibold text-yellow-500">
+                        {{ number_format($kepuasan, 2, ',', '.') }}
+                    </h2>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-green-500" fill="none"
                          viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/>
                     </svg>
                 </div>
-                <!-- Grafik Bintang -->
-                <div class="flex text-yellow-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                        <path
-                            d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                    </svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                        <path
-                            d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                    </svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                        <path
-                            d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                    </svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                        <path
-                            d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                    </svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-current opacity-50" viewBox="0 0 24 24">
-                        <path
-                            d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                    </svg>
+
+                {{-- Kontainer ini memberikan warna dasar kuning untuk bintang --}}
+                <div id="kepuasan-stars-container-js-logic" class="flex text-yellow-400 mt-1">
+                    {{-- Blade akan merender 5 SVG bintang di sini TANPA logika kelas dinamis --}}
+                    @for ($i = 1; $i <= 5; $i++)
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-5 h-5 fill-current star-item" {{-- Tambahkan kelas 'star-item' --}}
+                             viewBox="0 0 24 24">
+                            <path
+                                d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        </svg>
+                    @endfor
                 </div>
             </div>
 
@@ -112,64 +104,142 @@
 @push('skrip')
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const tabsContainer = document.querySelector('[role="tablist"]');
-            if (!tabsContainer) {
-                console.warn('Element [role="tablist"] tidak ditemukan.');
-                return;
-            }
 
-            const tabs = Array.from(tabsContainer.querySelectorAll('[role="tab"]'));
-            const tabPanels = document.querySelectorAll('.tab-panel');
-
-            const updateTabStyles = (tab, isActive) => {
-                if (isActive) {
-                    tab.setAttribute('aria-selected', 'true');
-                    tab.classList.add('bg-white', 'shadow', 'text-gray-800');
-                    tab.classList.remove('text-gray-500', 'hover:text-gray-700');
-                } else {
-                    tab.setAttribute('aria-selected', 'false');
-                    tab.classList.remove('bg-white', 'shadow', 'text-gray-800');
-                    tab.classList.add('text-gray-500', 'hover:text-gray-700');
+            // Modul untuk Fungsionalitas Tab
+            (function TabSystem() {
+                const tabsContainer = document.querySelector('[role="tablist"]');
+                if (!tabsContainer) {
+                    // console.warn('Sistem Tab: Elemen [role="tablist"] tidak ditemukan. Fungsionalitas tab tidak akan aktif.');
+                    return; // Keluar jika kontainer tab utama tidak ada
                 }
-            };
 
-            const showTabContent = (tabName) => {
-                tabPanels.forEach(panel => {
-                    if (panel.getAttribute('data-tab') === tabName) {
-                        panel.classList.remove('hidden');
-                    } else {
-                        panel.classList.add('hidden');
-                    }
-                });
-            };
+                const tabs = Array.from(tabsContainer.querySelectorAll('[role="tab"]'));
+                const tabPanels = document.querySelectorAll('.tab-panel'); // Asumsi panel ada di luar tabsContainer
 
-            // Ambil tab aktif dari localStorage jika ada
-            const activeTabName = localStorage.getItem('activeTabName');
-            let defaultTabName = tabs[0]?.textContent.trim();
+                if (tabs.length === 0) {
+                    // console.warn('Sistem Tab: Tidak ada tombol tab yang ditemukan.');
+                    return;
+                }
 
-            // Inisialisasi tab
-            tabs.forEach(tab => {
-                const tabName = tab.textContent.trim();
-                const isActive = tabName === activeTabName || (!activeTabName && tab === tabs[0]);
-                updateTabStyles(tab, isActive);
-                if (isActive) {
+                function updateTabVisuals(targetTab) {
+                    tabs.forEach(tab => {
+                        const isActive = tab === targetTab;
+                        tab.setAttribute('aria-selected', isActive.toString());
+                        tab.classList.toggle('bg-white', isActive);
+                        tab.classList.toggle('shadow', isActive); // Gaya untuk tab aktif
+                        tab.classList.toggle('text-gray-800', isActive); // Teks lebih gelap untuk aktif
+                        tab.classList.toggle('text-gray-500', !isActive); // Teks lebih terang untuk non-aktif
+                        tab.classList.toggle('hover:text-gray-700', !isActive); // Hover untuk non-aktif
+                    });
+                }
+
+                function showTabContent(tabName) {
+                    tabPanels.forEach(panel => {
+                        panel.classList.toggle('hidden', panel.getAttribute('data-tab') !== tabName);
+                    });
+                }
+
+                function activateTab(targetTab) {
+                    if (!targetTab) return;
+                    const tabName = targetTab.textContent.trim();
+                    updateTabVisuals(targetTab);
                     showTabContent(tabName);
+                    try {
+                        localStorage.setItem('activeTabName', tabName);
+                    } catch (e) {
+                        console.warn('Sistem Tab: Gagal menyimpan tab aktif ke localStorage.', e);
+                    }
                 }
-            });
 
-            // Event saat tab diklik
-            tabs.forEach(tab => {
-                tab.addEventListener('click', (e) => {
-                    const clickedTab = e.currentTarget;
-                    const clickedTabName = clickedTab.textContent.trim();
+                function initializeTabs() {
+                    let activeTabToSet = tabs[0]; // Default ke tab pertama
+                    try {
+                        const savedTabName = localStorage.getItem('activeTabName');
+                        if (savedTabName) {
+                            const savedActiveTab = tabs.find(tab => tab.textContent.trim() === savedTabName);
+                            if (savedActiveTab) {
+                                activeTabToSet = savedActiveTab;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Sistem Tab: Gagal membaca tab aktif dari localStorage.', e);
+                    }
+                    activateTab(activeTabToSet);
+                }
 
-                    tabs.forEach(t => updateTabStyles(t, t === clickedTab));
-                    showTabContent(clickedTabName);
-
-                    // Simpan tab aktif ke localStorage
-                    localStorage.setItem('activeTabName', clickedTabName);
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', (event) => {
+                        activateTab(event.currentTarget);
+                    });
                 });
-            });
-        });
+
+                initializeTabs();
+                // console.log('Sistem Tab berhasil diinisialisasi.');
+
+            })(); // Akhir dari IIFE TabSystem
+
+            // Modul untuk Fungsionalitas Rating Bintang
+            (function StarRatingSystem() {
+                const kepuasanCard = document.getElementById('kepuasan-pengguna-card-js-logic');
+
+                if (!kepuasanCard) {
+                    // console.warn('Rating Bintang: Elemen #kepuasan-pengguna-card-js-logic tidak ditemukan.');
+                    return;
+                }
+
+                const ratingValueString = kepuasanCard.dataset.rating;
+                const ratingValue = parseFloat(ratingValueString);
+                const starsContainer = kepuasanCard.querySelector('#kepuasan-stars-container-js-logic');
+                // Skor numerik bisa diupdate di sini juga jika diinginkan, seperti sebelumnya
+                // const scoreDisplayElement = kepuasanCard.querySelector('#kepuasan-score-value');
+
+                if (isNaN(ratingValue)) {
+                    console.error('Rating Bintang: Nilai rating tidak valid atau tidak ditemukan:', ratingValueString);
+                    if (starsContainer) {
+                        starsContainer.innerHTML = '<span class="text-xs text-gray-400">Rating tidak tersedia.</span>';
+                    }
+                    return;
+                }
+
+                // Jika Anda ingin mengupdate skor numerik juga dengan JS:
+                // if (scoreDisplayElement) {
+                //     scoreDisplayElement.textContent = ratingValue.toLocaleString('id-ID', {
+                //         minimumFractionDigits: 2,
+                //         maximumFractionDigits: 2
+                //     });
+                // }
+
+                if (starsContainer) {
+                    applyStarStyling(ratingValue, starsContainer);
+                    // console.log('Rating Bintang berhasil dirender.');
+                }
+
+                function applyStarStyling(kepuasanScore, containerElement) {
+                    const totalStars = 5;
+                    const fullStars = Math.floor(kepuasanScore);
+                    const hasFraction = (kepuasanScore - fullStars) >= 0.01;
+                    const starElements = containerElement.querySelectorAll('svg.star-item');
+
+                    if (starElements.length !== totalStars) {
+                        // console.warn(`Rating Bintang: Jumlah SVG bintang (${starElements.length}) tidak sesuai harapan (${totalStars}).`);
+                        // Mungkin perlu penanganan lebih lanjut jika jumlah bintang tidak sesuai
+                    }
+
+                    starElements.forEach((svgElement, index) => {
+                        const starNumber = index + 1;
+                        svgElement.classList.remove('opacity-50', 'text-gray-300'); // Reset
+
+                        if (starNumber <= fullStars) {
+                            // Full star (default, no class needed if parent has text-yellow-400)
+                        } else if (starNumber === fullStars + 1 && hasFraction) {
+                            svgElement.classList.add('opacity-50');
+                        } else {
+                            svgElement.classList.add('text-gray-300');
+                        }
+                    });
+                }
+            })(); // Akhir dari IIFE StarRatingSystem
+
+        }); // Akhir dari DOMContentLoaded utama
     </script>
 @endpush
