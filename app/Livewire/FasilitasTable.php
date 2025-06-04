@@ -227,7 +227,12 @@ class FasilitasTable extends Component
 
             $this->closeModal();
         } catch (\Illuminate\Validation\ValidationException $e) {
+            // Check if the error is specifically about duplicate facility code
+            if ($e->validator->errors()->has('fasilitasKode')) {
+            $this->dispatch('showErrorToast', 'Kode fasilitas sudah digunakan. Silakan gunakan kode yang berbeda.');
+            } else {
             $this->dispatch('showErrorToast', 'Periksa kembali data yang diisi.');
+            }
         } catch (\Exception $e) {
             $this->dispatch('showErrorToast', 'Terjadi kesalahan saat menyimpan data.');
         }
