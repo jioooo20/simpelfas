@@ -4,6 +4,13 @@
     <div class="p-6 bg-white min-h-screen">
         <!-- Breadcrumb -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 w-full">
+            <!-- Laporan Hari Ini -->
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                <p class="text-gray-500 text-sm mb-2">Hari Ini</p>
+                <h2 class="text-xl font-semibold text-gray-800">{{ $laporan_pending_hari_ini }}</h2>
+                <p class="text-sm text-gray-400">Laporan masuk</p>
+            </div> <!-- End Laporan Hari Ini -->
+
             <!-- Total Laporan -->
             <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
                 <p class="text-gray-500 text-sm mb-2">Total Laporan</p>
@@ -11,6 +18,7 @@
                 <p class="text-sm text-gray-400">{{ $pending }} pending • {{ $selesai }} selesai</p>
             </div> <!-- End Total Laporan -->
 
+            <!-- Kepuasan Pengguna -->
             <div id="kepuasan-pengguna-card-js-logic"
                  class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-col justify-between"
                  data-rating="{{ $kepuasan }}">
@@ -38,22 +46,15 @@
                         </svg>
                     @endfor
                 </div>
-            </div>
+            </div> <!-- End Kepuasan Pengguna -->
 
             <!-- Waktu Respon -->
             <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
                 <p class="text-gray-500 text-sm mb-2">Waktu Respon</p>
-                <h2 class="text-xl font-semibold text-gray-800">3.2 hari</h2>
+                <h2 class="text-xl font-semibold text-gray-800">{{ $averageResponseDays }} hari</h2>
                 <p class="text-sm text-gray-400">Rata-rata penyelesaian</p>
-            </div>
-
-            <!-- Maintenance -->
-            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                <p class="text-gray-500 text-sm mb-2">Maintenance</p>
-                <h2 class="text-xl font-semibold text-gray-800">45</h2>
-                <p class="text-sm text-gray-400">68% preventif</p>
-            </div>
-        </div>
+            </div> <!-- End Waktu Respon -->
+        </div> <!-- End Breadcrumb -->
 
         <!-- Filter Tab - Full width like the cards above -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 w-full">

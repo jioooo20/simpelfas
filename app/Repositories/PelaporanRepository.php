@@ -167,4 +167,51 @@ class PelaporanRepository
             ->count();
     }
 
+    public function getAverageResponseDays(): float
+    {
+        $avg = DB::table('t_status_pelaporan as s')
+            ->selectRaw('ROUND(AVG(TIMESTAMPDIFF(HOUR, m.created_at, s.created_at)) / 24, 1) as rata_rata_respon_hari')
+            ->joinSub(
+                DB::table('t_status_pelaporan')
+                    ->select('pelaporan_id', DB::raw('MIN(created_at) as created_at'))
+                    ->where('status_pelaporan', 'Menunggu')
+                    ->groupBy('pelaporan_id'),
+                'm',
+                fn ($join) => $join->on('s.pelaporan_id', '=', 'm.pelaporan_id')
+            )
+            ->where('s.status_pelaporan', 'Diproses')
+            ->whereColumn('s.created_at', '>', 'm.created_at')
+            ->value('rata_rata_respon_hari');
+
+        return (float) $avg;
+    }
+
+    public function countTodayPendingReports(): int
+    {
+        $totalPendingToday = DB::table('m_pelaporan as p')
+            ->joinSub(
+                DB::table('t_status_pelaporan as sp')
+                    ->joinSub(
+                        DB::table('t_status_pelaporan')
+                            ->select('pelaporan_id', DB::raw('MAX(created_at) as latest_status_time'))
+                            ->groupBy('pelaporan_id'),
+                        'latest_status',
+                        function ($join) {
+                            $join->on('sp.pelaporan_id', '=', 'latest_status.pelaporan_id')
+                                ->on('sp.created_at', '=', 'latest_status.latest_status_time');
+                        }
+                    )
+                    ->where('sp.status_pelaporan', 'Menunggu')
+                    ->select('sp.pelaporan_id'),
+                'filtered_latest_status',
+                'filtered_latest_status.pelaporan_id',
+                '=',
+                'p.pelaporan_id'
+            )
+            ->whereDate('p.created_at', now()->toDateString())
+            ->distinct('p.pelaporan_id')
+            ->count('p.pelaporan_id');
+
+        return $totalPendingToday;
+    }
 }

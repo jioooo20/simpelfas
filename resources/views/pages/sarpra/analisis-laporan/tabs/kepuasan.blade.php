@@ -1,8 +1,23 @@
 <div class="flex flex-col lg:flex-row gap-6">
 
     <div class="w-full lg:w-1/2 bg-white p-6 rounded-xl shadow-lg">
-        <h4 class="text-lg font-bold text-gray-800 mb-1">Tren Kepuasan Bulanan</h4>
-        <p class="text-xs text-gray-500 mb-6">Perkembangan tingkat kepuasan pengguna</p>
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h4 class="text-lg font-bold text-gray-800">Tren Kepuasan Bulanan</h4>
+                <p class="text-xs text-gray-500">Perkembangan tingkat kepuasan pengguna</p>
+            </div>
+            <div class="relative">
+                {{-- Dropdown sekarang diisi secara dinamis dari data controller --}}
+                <select id="yearFilter"
+                        class="appearance-none w-24 bg-white border border-gray-300 text-gray-700 py-2 pl-3 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    @forelse (array_keys($yearlyRatingsData) as $year)
+                        <option value="{{ $year }}" @if ($loop->last) selected @endif>{{ $year }}</option>
+                    @empty
+                        <option>N/A</option>
+                    @endforelse
+                </select>
+            </div>
+        </div>
         <div class="h-80 md:h-[330px]">
             <canvas id="satisfactionTrendChart"></canvas>
         </div>
@@ -43,7 +58,7 @@
                                 <span class="ml-1.5 text-xs text-gray-600 font-medium">
                                     {{ number_format($facility->rating, 1) }}
                                 </span>
-                                    <span class="ml-2 text-xs text-gray-400 hidden sm:inline">
+                                <span class="ml-2 text-xs text-gray-400 hidden sm:inline">
                                     ({{ $facility->total_ratings }} ulasan)
                                 </span>
                             </div>
@@ -57,6 +72,7 @@
                                     class="bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all duration-300 ease-in-out"
                                     style="width: {{ ($facility->rating / $maxStars) * 100 }}%;">
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -72,90 +88,92 @@
 
 @push('skrip')
     <script>
-        const rawRatings = @json($monthlyRatings);
-
-        const monthMap = {
-            '01': 'Jan', '02': 'Feb', '03': 'Mar', '04': 'Apr',
-            '05': 'Mei', '06': 'Jun', '07': 'Jul', '08': 'Agu',
-            '09': 'Sep', '10': 'Okt', '11': 'Nov', '12': 'Des'
-        };
-
-        const trendLabels = rawRatings.map(item => {
-            const [year, month] = item.bulan.split('-');
-            return monthMap[month] || month;
-        });
-
-        const trendData = rawRatings.map(item => item.rata_rata_rating);
-
+        const yearlyRatings = @json($yearlyRatingsData);
+        const yearFilter = document.getElementById('yearFilter');
         const ctxTrend = document.getElementById('satisfactionTrendChart').getContext('2d');
+        let satisfactionTrendChart;
 
-        const satisfactionTrendChart = new Chart(ctxTrend, {
-            type: 'line',
-            data: {
-                labels: trendLabels,
+        function updateChart(selectedYear) {
+            const rawRatings = yearlyRatings[selectedYear] || [];
+            const ratingsMap = new Map(rawRatings.map(item => [item.month, item.rating]));
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const isCurrentYear = parseInt(selectedYear, 10) === currentYear;
+            const monthsToShow = isCurrentYear ? now.getMonth() + 1 : 12;
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const finalLabels = [];
+            const finalData = [];
+
+            for (let i = 0; i < monthsToShow; i++) {
+                finalLabels.push(monthNames[i]);
+                const monthKey = String(i + 1).padStart(2, '0');
+                finalData.push(ratingsMap.get(monthKey) || 0);
+            }
+
+            const chartData = {
+                labels: finalLabels,
                 datasets: [{
-                    label: 'Tingkat Kepuasan',
-                    data: trendData,
+                    label: `Tingkat Kepuasan ${selectedYear}`,
+                    data: finalData,
                     borderColor: 'rgba(79, 209, 197, 1)',
                     backgroundColor: 'rgba(79, 209, 197, 1)',
                     fill: false,
                     tension: 0.1,
-                    pointBackgroundColor: 'rgba(79, 209, 197, 1)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(79, 209, 197, 1)',
                     pointRadius: 4,
-                    pointHoverRadius: 6,
                     borderWidth: 2.5,
                 }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        callbacks: {
-                            label: function (context) {
-                                return ` Rating: ${context.raw}`;
+            };
+
+            if (!satisfactionTrendChart) {
+                satisfactionTrendChart = new Chart(ctxTrend, {
+                    type: 'line',
+                    data: chartData,
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: {display: false},
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                callbacks: {label: context => ` Rating: ${context.raw}`}
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                min: 0,
+                                max: 5.3,
+                                ticks: {
+                                    stepSize: 1,
+                                    callback: function (value, index, ticks) {
+                                        if (value === 5.3) {
+                                            return null;
+                                        }
+                                        return value;
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
                             }
                         }
                     }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        min: 0,
-                        max: 5.5,
-                        ticks: {
-                            stepSize: 1,
-                            color: '#6b7280',
-                            font: { size: 10 }
-                        },
-                        grid: {
-                            color: '#e5e7eb'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: '#6b7280',
-                            font: { size: 10 }
-                        },
-                        grid: {
-                            display: false
-                        }
-                    }
-                },
-                hover: {
-                    mode: 'nearest',
-                    intersect: true
-                }
+                });
+            } else {
+                satisfactionTrendChart.data = chartData;
+                satisfactionTrendChart.update();
             }
+        }
+
+        yearFilter.addEventListener('change', (event) => {
+            updateChart(event.target.value);
         });
+
+        if (yearFilter.value) {
+            updateChart(yearFilter.value);
+        }
     </script>
 @endpush
 

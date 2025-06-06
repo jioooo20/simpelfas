@@ -13,13 +13,31 @@ class FeedbackRepository
         return round($avg, 2);
     }
 
-    public function getAverageRatingByMonth(): Collection
+    public function getYearlyAverageRatings(): array
     {
-        return DB::table('m_feedback')
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') AS bulan, ROUND(AVG(rating), 2) AS rata_rata_rating")
-            ->groupBy(DB::raw("DATE_FORMAT(created_at, '%Y-%m')"))
-            ->orderBy(DB::raw("DATE_FORMAT(created_at, '%Y-%m')"))
+        $allMonthlyRatings = DB::table('m_feedback')
+            ->selectRaw("
+                YEAR(created_at) as year,
+                LPAD(MONTH(created_at), 2, '0') as month,
+                ROUND(AVG(rating), 2) as average_rating
+            ")
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
             ->get();
+
+        $yearlyData = [];
+        foreach ($allMonthlyRatings as $rating) {
+            if (!isset($yearlyData[$rating->year])) {
+                $yearlyData[$rating->year] = [];
+            }
+            $yearlyData[$rating->year][] = [
+                'month' => $rating->month,
+                'rating' => $rating->average_rating,
+            ];
+        }
+
+        return $yearlyData;
     }
 
     public function getFacilityRatings(): Collection

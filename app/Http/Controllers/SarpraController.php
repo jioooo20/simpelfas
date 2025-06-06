@@ -35,18 +35,26 @@ class SarpraController extends Controller
 
     public function statistikFasilitas()
     {
-        $statistik = $this->getStatistikUmum();
-        $facilities = $this->getFormattedFacilityRatings();
+        $data = $this->collectStatistikFasilitasData();
+        return view('pages.sarpra.analisis-laporan.index', $data);
+    }
 
-        return view('pages.sarpra.analisis-laporan.index', array_merge($statistik, [
-            'facilities' => $facilities,
-            'monthlyRatings' => $this->feedbackRepository->getAverageRatingByMonth(),
-        ]));
+    private function collectStatistikFasilitasData(): array
+    {
+        return array_merge(
+            $this->getStatistikUmum(),
+            [
+                'facilities' => $this->getFormattedFacilityRatings(),
+                'yearlyRatingsData' => $this->feedbackRepository->getYearlyAverageRatings(),
+                'averageResponseDays' => $this->pelaporanRepository->getAverageResponseDays(),
+            ]
+        );
     }
 
     private function getStatistikUmum(): array
     {
         return [
+            'laporan_pending_hari_ini' => $this->pelaporanRepository->countTodayPendingReports(),
             'total' => $this->pelaporanRepository->getTotalPelaporan(),
             'pending' => $this->pelaporanRepository->countLaporanDenganStatusTerakhir('Menunggu'),
             'selesai' => $this->pelaporanRepository->countLaporanDenganStatusTerakhir('Diterima'),
@@ -75,7 +83,7 @@ class SarpraController extends Controller
         return $facility;
     }
 
-    private function formatFasilitasKodeHelper($rawKode)
+    private function formatFasilitasKodeHelper($rawKode): string
     {
         if (!is_string($rawKode) || empty(trim($rawKode))) {
             return 'N/A';
@@ -83,22 +91,18 @@ class SarpraController extends Controller
 
         $rawKode = strtoupper(trim($rawKode));
 
-        // Ambil semua pasangan [HURUF]+[ANGKA max 3 digit]
         preg_match_all('/[A-Z]+[0-9]{1,3}/', $rawKode, $matches);
 
         $segments = $matches[0];
 
-        // Jika ada 2 atau lebih bagian yang valid, ambil maksimal 3 dan gabungkan
         if (count($segments) >= 2) {
             return implode('-', array_slice($segments, 0, 3));
         }
 
-        // Kemungkinan 1 bagian: tetap tampilkan seperti apa adanya
         if (count($segments) === 1) {
             return $segments[0];
         }
 
-        // Fallback jika tidak cocok regex (tidak ada angka, dsb.)
         return $rawKode;
     }
 }
