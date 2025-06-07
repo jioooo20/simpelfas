@@ -2,9 +2,6 @@
 @section('judul', 'Laporan & Statistik Sistem')
 @section('content')
     <div class="container mx-auto px-4 py-4">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-base-content text-center md:text-left">Laporan & Statistik Sistem</h1>
-        </div>
 
         {{-- Grafik Statistik --}}
         <div class="my-8">
@@ -20,7 +17,7 @@
 
                 <!-- Chart 2 -->
                 <div class="w-full md:w-[48%] bg-white rounded shadow p-4">
-                    <h3 class="text-lg font-semibold mb-2">🧩 Jenis Fasilitas Paling Banyak Dilaporkan</h3>
+                    <h3 class="text-lg font-semibold mb-2">🧩 Fasilitas Paling Banyak Dilaporkan</h3>
                     <div class="relative h-64">
                         <canvas id="fasilitasChart"></canvas>
                     </div>
@@ -111,10 +108,6 @@
                 <div class="stat-title">Ditolak</div>
                 <div class="stat-value text-red-600">{{ $ditolak }}</div>
             </div>
-            {{-- <div class="stat bg-base-200 rounded-xl p-4 shadow">
-        <div class="stat-title">Rata-Rata Kepuasan</div>
-        <div class="stat-value text-purple-600">{{ number_format($rataRating, 1) ?? '-' }}/5</div>
-    </div> --}}
         </div>
 
         {{-- kotak --}}
@@ -125,38 +118,3 @@
             </div>
         </div>
     @endsection
-
-    {{-- @extends('layouts.main')
-@section('judul', 'Laporan dan Statistik Sistem')
-@section('content')
-    <div class="p-4">
-        <h2 class="text-xl font-bold mb-4">Laporan & Statistik Sistem</h2>
-
-        <div class="overflow-x-auto">
-            <table class="table w-full border">
-                <thead>
-                    <tr class="bg-base-200">
-                        <th>No</th>
-                        <th>Judul</th>
-                        <th>Status</th>
-                        <th>Tanggal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($laporan as $index => $data)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $data['judul'] }}</td>
-                            <td>{{ $data['status'] }}</td>
-                            <td>{{ $data['tanggal'] }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="text-center">Tidak ada data laporan.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-@endsection --}}

@@ -32,30 +32,34 @@ class AdminController extends Controller
         $start = $request->input('start_date') ?? Carbon::now()->startOfMonth();
         $end = $request->input('end_date') ?? Carbon::now()->endOfMonth();
 
-        $table = PelaporanModel::with(['fasilitas', 'fasilitas.barang', 'user', 'statusPelaporan'])
+        $table = PelaporanModel::with(['fasilitas', 'fasilitas.barang', 'user', 'statusPelaporan',
+        'skorAlternatif.kriteria'])
             ->whereBetween('created_at', [$start, $end])
             ->paginate(10);
 
-        $totalLaporan = PelaporanModel::whereBetween('created_at', [$start, $end])->count();
+        //  statistik laporan - buat ringkasan
+            $totalLaporan = PelaporanModel::whereBetween('created_at', [$start, $end])->count();
 
-        $selesai = StatusPelaporanModel::where('status_pelaporan', 'selesai')
-            ->whereHas('pelaporan', function ($q) use ($start, $end) {
-                $q->whereBetween('created_at', [$start, $end]);
-            })->count();
+            $selesai = StatusPelaporanModel::where('status_pelaporan', 'selesai')
+                ->whereHas('pelaporan', function ($q) use ($start, $end) {
+                    $q->whereBetween('created_at', [$start, $end]);
+                })->count();
 
-        $proses = StatusPelaporanModel::where('status_pelaporan', 'dalam_proses')
-            ->whereHas('pelaporan', function ($q) use ($start, $end) {
-                $q->whereBetween('created_at', [$start, $end]);
-            })->count();
+            $proses = StatusPelaporanModel::where('status_pelaporan', 'dalam_proses')
+                ->whereHas('pelaporan', function ($q) use ($start, $end) {
+                    $q->whereBetween('created_at', [$start, $end]);
+                })->count();
 
-        $ditolak = StatusPelaporanModel::where('status_pelaporan', 'ditolak')
-            ->whereHas('pelaporan', function ($q) use ($start, $end) {
-                $q->whereBetween('created_at', [$start, $end]);
-            })->count();
+            $ditolak = StatusPelaporanModel::where('status_pelaporan', 'ditolak')
+                ->whereHas('pelaporan', function ($q) use ($start, $end) {
+                    $q->whereBetween('created_at', [$start, $end]);
+                })->count();
 
+        // referensi diambil semua
         $fasilitas = FasilitasModel::all();
         $user = UserModel::all();
         $status = StatusPelaporanModel::all();
+        
         // Grafik Tren Laporan (jumlah laporan per bulan)
         $laporanPerBulan = PelaporanModel::select(
             DB::raw("DATE_FORMAT(created_at, '%Y-%m') as bulan"),
@@ -65,10 +69,6 @@ class AdminController extends Controller
             ->orderBy('bulan')
             ->get();
 
-        // $rataRating = UserModel::whereHas('pelaporan', function ($q) use ($start, $end) {
-        //     $q->whereBetween('created_at', [$start, $end]);
-        // })->avg('rating');
-
         $kerusakanPerBarang = PelaporanModel::with('fasilitas.barang')
             ->get()
             ->groupBy(function ($item) {
@@ -77,7 +77,6 @@ class AdminController extends Controller
             ->map(function ($group) {
                 return $group->count();
             });
-
 
         return view('pages.admin.laporan-statistik.index', compact(
             'table',

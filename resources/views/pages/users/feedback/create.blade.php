@@ -5,26 +5,13 @@
         <div class="bg-white rounded-lg shadow-md p-6 mx-auto">
             <h1 class="text-2xl font-bold mb-6 text-gray-800">Beri Umpan Balik</h1>
 
-            <!-- Informasi Laporan (Statis) -->
-            {{-- <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h3 class="font-semibold text-lg mb-3 text-gray-700">Laporan yang Ditangani</h3>
-                <div class="flex flex-col md:flex-row gap-4 items-start">
-                    <img src="https://via.placeholder.com/150" alt="Foto kerusakan"
-                        class="w-24 h-24 object-cover rounded-md shadow">
-                    <div class="grid grid-cols-1 gap-2">
-                        <p><span class="font-medium">Judul:</span> Kerusakan AC Ruang 301</p>
-                        <p><span class="font-medium">Lokasi:</span> Gedung A Lantai 3</p>
-                        <p class="mt-5"><span class="font-thin-">Tanggal Lapor:</span> 10 Mei 2024</p>
-                        <p><span class="font-medium">Ditangani pada:</span> 15 Mei 2024</p>
-                    </div>
-                </div>
-            </div> --}}
-
             {{-- Dinamis --}}
             <!-- Informasi Laporan (Dinamis) -->
             <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h3 class="font-semibold text-lg mb-3 text-gray-700">Laporan yang Ditangani</h3>
                 <div class="flex flex-col md:flex-row gap-4 items-start">
+
+
                     
                     @php
                         $gambarList = json_decode($laporan->pelaporan_gambar, true);
@@ -35,10 +22,25 @@
                         class="w-24 h-24 object-cover rounded-md shadow">
 
                     <div class="grid grid-cols-1 gap-2">
-                        <p><span class="font-medium">Perbaikan:</span> {{ $laporan->fasilitas->barang->barang_nama ?? '-' }}</p>
+                        <p><span class="font-medium">Perbaikan:</span> 
+                            {{ $laporan->fasilitas->barang->barang_nama ?? '-' }} 
+                            ({{ $laporan->fasilitas->ruang->lantai->gedung->gedung_nama ?? '-' }} - 
+                             {{ $laporan->fasilitas->ruang->lantai->lantai_nama?? '-' }} -
+                             {{ $laporan->fasilitas->ruang->ruang_nama ?? '-' }})
+                        </p>
                         
-                        <p class="mt-5"><span class="font-medium">Tanggal Lapor:</span> {{ \Carbon\Carbon::parse($laporan->pelaporan_tanggal)->format('d M Y') }}</p>
-                        <p><span class="font-medium">Ditangani pada:</span> {{ \Carbon\Carbon::parse($laporan->tanggal_ditangani)->format('d M Y') ?? '-' }}</p>
+@php
+        $statusSelesai = $laporan->statusPelaporan->where('status_pelaporan', 'SELESAI')->first();
+        $tanggalDitangani = $statusSelesai ? $statusSelesai->created_at : ($laporan->tanggal_ditangani ?? $laporan->updated_at);
+    @endphp
+
+    <p class="mt-5"><span class="font-medium">Tanggal Lapor:</span> 
+        {{ \Carbon\Carbon::parse($laporan->pelaporan_tanggal)->format('d M Y') }}
+    </p>
+    <p><span class="font-medium">Ditangani pada:</span> 
+        {{ \Carbon\Carbon::parse($tanggalDitangani)->format('d M Y') }}
+    </p>
+                        
                     </div>
                 </div>
             </div>
