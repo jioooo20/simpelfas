@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use App\Repositories\FasilitasRepository;
 use App\Repositories\PelaporanRepository;
 use App\Http\Requests\StorePelaporanRequest;
+use App\Models\FeedbackModel;
 
 class UsersController extends Controller
 {
@@ -170,4 +171,81 @@ class UsersController extends Controller
 
         return null;
     }
+
+    public function UmpanBalik()
+    {
+        $userId = auth()->id();
+
+        $perbaikan = PelaporanModel::with(['fasilitas', 'statusPelaporan' => function ($query) {
+            $query->orderBy('created_at');
+        }])->where('user_id', $userId)->get();
+
+        $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
+        
+        $perbaikan->transform(function ($item) use ($fasilitasOptions) {
+            $item['fasilitas_label'] = $fasilitasOptions[$item->fasilitas_id]['label'] ?? null;
+            return $item;
+        });
+
+        return view('pages.users.feedback.index', compact('perbaikan'));
+    }
+
+    public function UmpanBalik_Create($perbaikan_id) {
+        $laporan = PelaporanModel::with([
+            'fasilitas.barang', 
+            'perbaikan.statusPerbaikan' => function($query) {
+                $query->orderBy('created_at', 'desc');
+            }
+        ])->findOrFail($perbaikan_id);
+        
+        $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
+        $laporan->fasilitas_label = $fasilitasOptions[$laporan->fasilitas_id]['label'] ?? null;
+
+        // Ambil foto teknisi dari status perbaikan
+        $fotoTeknisi = [];
+            if ($laporan->perbaikan && $laporan->perbaikan->statusPerbaikan) {
+                $fotoTeknisi = json_decode($laporan->perbaikan->statusPerbaikan->perbaikan_gambar, true) ?? [];
+            }
+
+        return view('pages.users.feedback.create', [
+            'laporan' => $laporan,
+            'fotoTeknisi' => $fotoTeknisi
+    ]);
+}
+
+public function storeFeedback(Request $request)
+{
+    // Validasi input
+    $validated = $request->validate([
+        'report_id' => 'required|exists:m_pelaporan,pelaporan_id',
+        'rating' => 'required|integer|between:1,5',
+        'comment' => 'nullable|string|max:1000',
+    ]);
+
+    try {
+        // Cek apakah feedback untuk laporan ini sudah ada
+        $existingFeedback = FeedbackModel::where('pelaporan_id', $validated['report_id'])->first();
+
+        if ($existingFeedback) {
+            return redirect()->back()
+                ->with('error', 'Anda sudah memberikan umpan balik untuk laporan ini sebelumnya.')
+                ->withInput();
+        }
+
+        // Buat feedback baru
+        FeedbackModel::create([
+            'pelaporan_id' => $validated['report_id'],
+            'feedback_text' => $validated['comment'],
+            'rating' => $validated['rating'],
+        ]);
+
+        return redirect()->route('users.feedback')
+            ->with('success', 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.');
+
+    } catch (Exception $e) {
+        return redirect()->back()
+            ->with('error', 'Terjadi kesalahan saat mengirim umpan balik: ' . $e->getMessage())
+            ->withInput();
+    }
+}
 }

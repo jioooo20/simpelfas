@@ -44,4 +44,8 @@ class PelaporanModel extends Model
     {
         return $this->hasMany(SkorAltModel::class, 'pelaporan_id', 'pelaporan_id');
     }
+    public function perbaikan()
+{
+    return $this->hasOne(PerbaikanModel::class, 'pelaporan_id', 'pelaporan_id');
+}
 }
