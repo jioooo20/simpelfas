@@ -8,43 +8,69 @@
         </div>
     </div>
 
+{{--    @php--}}
+{{--        // --- DATA DUMMY UNTUK TESTING -----}}
+{{--        $fasilitasBerisiko = collect([--}}
+{{--            (object)[--}}
+{{--                'nama_lokasi' => 'Auditorium Utama',--}}
+{{--                'jumlah_laporan' => 215,--}}
+{{--                'interval_rata_rata_hari' => 2 // <-- Interval sangat pendek--}}
+{{--            ],--}}
+{{--            (object)[--}}
+{{--                'nama_lokasi' => 'Toilet Lantai 3 (Pria)',--}}
+{{--                'jumlah_laporan' => 55,--}}
+{{--                'interval_rata_rata_hari' => 0 // <-- Interval ekstrem (misal: beberapa laporan di hari yang sama)--}}
+{{--            ],--}}
+{{--            (object)[--}}
+{{--                'nama_lokasi' => 'Ruang Server',--}}
+{{--                'jumlah_laporan' => 34,--}}
+{{--                'interval_rata_rata_hari' => 7--}}
+{{--            ],--}}
+{{--            (object)[--}}
+{{--                'nama_lokasi' => 'Perpustakaan',--}}
+{{--                'jumlah_laporan' => 120,--}}
+{{--                'interval_rata_rata_hari' => 29 // <-- Mendekati batas 30 hari--}}
+{{--            ],--}}
+{{--        ]);--}}
+{{--    @endphp--}}
     <div class="w-full lg:w-1/2 bg-white p-6 rounded-xl shadow-lg">
         <h4 class="text-lg font-bold text-gray-800 mb-1">Fasilitas Berisiko Tinggi</h4>
         <p class="text-xs text-gray-500 mb-6">Fasilitas dengan interval perbaikan pendek</p>
-        <div class="space-y-3">
-            <div
-                class="bg-red-50 border border-red-200 p-3.5 rounded-lg flex justify-between items-center hover:shadow-md transition-shadow duration-200">
-                <div>
-                    <h5 class="font-semibold text-sm text-gray-700">Gedung B</h5>
-                    <p class="text-xs text-gray-600">189 laporan - Interval 28 hari</p>
+        <div class="space-y-3 overflow-y-auto max-h-72 pr-2">
+
+            @forelse ($fasilitasBerisiko as $fasilitas)
+                <div class="bg-red-50 border border-red-200 p-3.5 rounded-lg flex justify-between items-center">
+                    <div>
+                        <h5 class="font-semibold text-sm text-gray-700">{{ $fasilitas->nama_lokasi }}</h5>
+                        <p class="text-xs text-gray-600">
+                            {{ $fasilitas->jumlah_laporan }} laporan - Interval {{ $fasilitas->interval_rata_rata_hari }} hari
+                        </p>
+                    </div>
+                    <button class="bg-red-100 text-red-600 text-xs font-medium px-3 py-1.5 rounded-md">
+                        Perlu Perhatian
+                    </button>
                 </div>
-                <button
-                    class="bg-red-100 text-red-600 text-xs font-medium px-3 py-1.5 rounded-md hover:bg-red-200 transition-colors duration-200">
-                    Perlu Perhatian
-                </button>
-            </div>
-            <div
-                class="bg-red-50 border border-red-200 p-3.5 rounded-lg flex justify-between items-center hover:shadow-md transition-shadow duration-200">
-                <div>
-                    <h5 class="font-semibold text-sm text-gray-700">Laboratorium</h5>
-                    <p class="text-xs text-gray-600">167 laporan - Interval 12 hari</p>
+            @empty
+                <div class="rounded-lg border border-green-200 bg-green-50 p-5">
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0">
+                            <svg class="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                            <h4 class="text-sm font-semibold text-green-800">
+                                Tidak Ada Isu Ditemukan
+                            </h4>
+                            <p class="mt-1 text-sm text-green-700">
+                                Semua fasilitas dalam kondisi terpantau dan tidak ada yang diklasifikasikan sebagai berisiko tinggi.
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <button
-                    class="bg-red-100 text-red-600 text-xs font-medium px-3 py-1.5 rounded-md hover:bg-red-200 transition-colors duration-200">
-                    Perlu Perhatian
-                </button>
-            </div>
-            <div
-                class="bg-red-50 border border-red-200 p-3.5 rounded-lg flex justify-between items-center hover:shadow-md transition-shadow duration-200">
-                <div>
-                    <h5 class="font-semibold text-sm text-gray-700">Kantin</h5>
-                    <p class="text-xs text-gray-600">123 laporan - Interval 25 hari</p>
-                </div>
-                <button
-                    class="bg-red-100 text-red-600 text-xs font-medium px-3 py-1.5 rounded-md hover:bg-red-200 transition-colors duration-200">
-                    Perlu Perhatian
-                </button>
-            </div>
+            @endforelse
+
         </div>
     </div>
 </div>

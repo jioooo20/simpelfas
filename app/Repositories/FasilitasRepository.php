@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\FasilitasModel;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 
 class FasilitasRepository
@@ -51,5 +52,37 @@ class FasilitasRepository
                 'statusCode' => $statusCode,
             ];
         });
+    }
+
+    public function getFasilitasBerisikoTinggi(): Collection
+    {
+        // Menyimpan perhitungan RAW SQL agar lebih rapi
+        $intervalCalculation = 'ROUND(
+        CASE
+            WHEN COUNT(p.pelaporan_id) > 1
+            THEN DATEDIFF(MAX(p.created_at), MIN(p.created_at)) / (COUNT(p.pelaporan_id) - 1)
+            ELSE 0
+        END
+    )';
+
+        return DB::table('m_pelaporan as p')
+            ->join('t_fasilitas as f', 'p.fasilitas_id', '=', 'f.fasilitas_id')
+            ->join('m_ruang as r', 'f.ruang_id', '=', 'r.ruang_id')
+            ->join('m_lantai as l', 'r.lantai_id', '=', 'l.lantai_id')
+            ->join('m_gedung as g', 'l.gedung_id', '=', 'g.gedung_id')
+            ->select(
+                'g.gedung_nama as nama_lokasi',
+                DB::raw('COUNT(p.pelaporan_id) as jumlah_laporan'),
+                DB::raw($intervalCalculation . ' as interval_rata_rata_hari')
+            )
+            ->groupBy('g.gedung_id', 'g.gedung_nama')
+            // Menerapkan filter yang sama dengan klausa HAVING di SQL
+            ->having('jumlah_laporan', '>', 1)
+            ->having('interval_rata_rata_hari', '<', 30)
+            // ->having('interval_rata_rata_hari', '>', 0) // <-- HAPUS BARIS INI
+            // Mengurutkan hasilnya
+            ->orderBy('interval_rata_rata_hari', 'ASC')
+            ->orderBy('jumlah_laporan', 'DESC')
+            ->get();
     }
 }

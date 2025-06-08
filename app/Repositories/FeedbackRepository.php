@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 
@@ -42,6 +43,13 @@ class FeedbackRepository
 
     public function getFacilityRatings(): Collection
     {
+        return $this->buildFacilityRatingsQuery()
+            ->havingRaw('COUNT(fb.rating) > 0')
+            ->get();
+    }
+
+    private function buildFacilityRatingsQuery(): Builder
+    {
         return DB::table('t_fasilitas as f')
             ->join('m_barang as b', 'f.barang_id', '=', 'b.barang_id')
             ->join('m_ruang as r',   'f.ruang_id',  '=', 'r.ruang_id')
@@ -50,23 +58,18 @@ class FeedbackRepository
             ->leftJoin('m_pelaporan as p', 'f.fasilitas_id', '=', 'p.fasilitas_id')
             ->leftJoin('m_feedback as fb',   'p.pelaporan_id',  '=', 'fb.pelaporan_id')
             ->selectRaw("
+                f.fasilitas_id,
                 b.barang_nama    AS item_name,
                 f.fasilitas_kode AS original_fasilitas_kode,
                 r.ruang_nama     AS room,
                 l.lantai_nama    AS floor,
                 g.gedung_nama    AS building,
-                ROUND(AVG(fb.rating), 2) AS rating,
-                COUNT(fb.rating)       AS total_ratings
+                AVG(fb.rating)   AS rata_rata_rating,
+                COUNT(fb.rating) AS total_ratings
             ")
             ->groupBy(
-                'f.fasilitas_id',
-                'b.barang_nama',
-                'f.fasilitas_kode',
-                'r.ruang_nama',
-                'l.lantai_nama',
-                'g.gedung_nama'
-            )
-            ->havingRaw('COUNT(fb.rating) > 0')
-            ->get();
+                'f.fasilitas_id', 'b.barang_nama', 'f.fasilitas_kode',
+                'r.ruang_nama', 'l.lantai_nama', 'g.gedung_nama'
+            );
     }
 }

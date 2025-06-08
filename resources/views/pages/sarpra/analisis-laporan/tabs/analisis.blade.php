@@ -1,169 +1,267 @@
-<div class="flex flex-col lg:flex-row gap-6">
+@php
+    // Logika ini tetap sama
+    $reportTrendData = $reportTrendData ?? [];
+    $availableYears = !empty($reportTrendData) ? array_keys($reportTrendData) : [date('Y')];
+    $latestYear = $availableYears[0] ?? date('Y');
+@endphp
 
+    <!-- main content -->
+<div class="flex flex-col lg:flex-row gap-6">
+    <!-- Tren Laporan & Penyelesaian -->
     <div class="w-full lg:w-1/2 bg-white p-6 rounded-xl shadow-lg">
-        <h4 class="text-lg font-bold text-gray-800 mb-1">Tren Laporan & Penyelesaian</h4>
-        <p class="text-xs text-gray-500 mb-6">Perkembangan laporan masuk vs laporan selesai</p>
+        <!-- Header dan Filter -->
+        <div class="flex justify-between items-center mb-2">
+            <!-- Judul dan Info -->
+            <div class="flex items-center space-x-2">
+                <h4 class="text-lg font-bold text-gray-800">Tren Laporan & Penyelesaian</h4>
+
+                <!-- Info Icon dan Popover -->
+                <div class="relative" id="legend-container">
+                    <button id="legend-trigger"
+                            class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                  clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+
+                    <!-- Popover Legend -->
+                    <div id="legend-popover"
+                         class="hidden absolute top-full mt-2 -left-2 z-10 w-48 bg-white border border-gray-200 rounded-lg shadow-xl p-3">
+                        <p class="text-xs font-bold text-gray-700 mb-2">Legenda</p>
+                        <ul class="space-y-2 text-xs text-gray-600">
+                            <li class="flex items-center cursor-pointer" data-dataset-index="0">
+                                <span class="w-3 h-3 rounded-sm inline-block mr-2"
+                                      style="background-color: rgba(56, 168, 157, 1);"></span>
+                                Laporan Masuk
+                            </li>
+                            <li class="flex items-center cursor-pointer" data-dataset-index="1">
+                                <span class="w-3 h-3 rounded-sm inline-block mr-2"
+                                      style="background-color: rgba(255, 127, 80, 1);"></span>
+                                Laporan Selesai
+                            </li>
+                        </ul>
+                    </div> <!-- End of Popover Legend -->
+                </div> <!-- End of Info Icon dan Popover -->
+            </div> <!-- End of Judul dan Info -->
+
+            <!-- Filter Tahun -->
+            <div class="relative">
+                <select id="yearFilter"
+                        class="appearance-none w-24 bg-white border border-gray-300 text-gray-700 py-2 pl-3 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    @forelse ($availableYears as $year)
+                        <option value="{{ $year }}" @if ($year == $latestYear) selected @endif>{{ $year }}</option>
+                    @empty
+                        <option>{{ date('Y') }}</option>
+                    @endforelse
+                </select>
+            </div> <!-- End of Filter Tahun -->
+        </div> <!-- End of Header dan Filter -->
+
+        <p class="text-xs text-gray-500 -mt-2 mb-6">Perkembangan laporan masuk vs laporan selesai</p>
+
+        <!-- Chart -->
         <div class="h-80 md:h-[350px]">
             <canvas id="reportTrendChart"></canvas>
-        </div>
-    </div>
+        </div> <!-- End of Chart -->
+    </div> <!-- End of Tren Laporan & Penyelesaian -->
 
+    <!-- Performa Fasilitas -->
     <div class="w-full lg:w-1/2 bg-white p-6 rounded-xl shadow-lg">
         <h4 class="text-lg font-bold text-gray-800 mb-1">Performa Fasilitas</h4>
-        <p class="text-xs text-gray-500 mb-6">Skor gabungan berdasarkan laporan, kepuasan, dan maintenance</p>
+        <p class="text-xs text-gray-500 mb-6">Skor gabungan per item berdasarkan laporan, kepuasan, dan maintenance</p>
+
+        <!-- List Performa -->
         <div class="space-y-3 h-80 md:h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-            @php
-                $facilitiesPerformance = [
-                    ['name' => 'Gedung A', 'status' => 'Rendah', 'status_color' => 'green', 'reports' => 234, 'satisfaction' => '4.6/5', 'interval' => '35 hari', 'score' => 85],
-                    ['name' => 'Gedung B', 'status' => 'Sedang', 'status_color' => 'yellow', 'reports' => 189, 'satisfaction' => '4.3/5', 'interval' => '28 hari', 'score' => 78],
-                    ['name' => 'Laboratorium', 'status' => 'Tinggi', 'status_color' => 'red', 'reports' => 167, 'satisfaction' => '4/5', 'interval' => '12 hari', 'score' => 65],
-                    ['name' => 'Perpustakaan', 'status' => 'Rendah', 'status_color' => 'green', 'reports' => 145, 'satisfaction' => '4.5/5', 'interval' => '42 hari', 'score' => 88],
-                    ['name' => 'Kantin', 'status' => 'Sedang', 'status_color' => 'yellow', 'reports' => 123, 'satisfaction' => '3.8/5', 'interval' => '25 hari', 'score' => 72],
-                    // Add more items to test scroll
-                    ['name' => 'Area Parkir', 'status' => 'Rendah', 'status_color' => 'green', 'reports' => 98, 'satisfaction' => '4.0/5', 'interval' => '50 hari', 'score' => 82],
-                ];
-
-                $statusColors = [
-                    'green' => ['bg' => 'bg-green-100', 'text' => 'text-green-700'],
-                    'yellow' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-700'],
-                    'red' => ['bg' => 'bg-red-100', 'text' => 'text-red-700'],
-                ];
-            @endphp
-
             @foreach ($facilitiesPerformance as $facility)
+                <!-- Card Fasilitas -->
                 <div
-                    class="bg-white border border-gray-200 p-4 rounded-lg flex justify-between items-center hover:shadow-sm transition-shadow duration-150">
+                    class="bg-white border border-gray-200 p-4 rounded-lg flex justify-between items-start hover:shadow-sm transition-shadow duration-150">
+                    <!-- Info Fasilitas -->
                     <div class="flex-grow">
-                        <div class="flex items-center mb-1">
-                            <h5 class="font-semibold text-sm text-gray-700 mr-2">{{ $facility['name'] }}</h5>
-                            <span
-                                class="{{ $statusColors[$facility['status_color']]['bg'] }} {{ $statusColors[$facility['status_color']]['text'] }} text-xs font-semibold px-2 py-0.5 rounded-md">
-                                    {{ $facility['status'] }}
-                                </span>
+                        <div class="flex items-start justify-between mb-2">
+                            <div>
+                                <h5 class="font-semibold text-sm text-gray-800 leading-tight">{{ $facility['title'] }}</h5>
+                                <p class="text-xs text-gray-500">{{ $facility['subtitle'] }}</p>
+                            </div>
                         </div>
-                        <p class="text-xs text-gray-500">
-                            {{ $facility['reports'] }} laporan &nbsp;&bull;&nbsp; {{ $facility['satisfaction'] }}
-                            kepuasan &nbsp;&bull;&nbsp; {{ $facility['interval'] }} interval
-                        </p>
-                    </div>
-                    <div class="text-right pl-4">
+                        <div class="text-xs pt-4 rounded-md">
+                            <div class="text-gray-600 bg-gray-50 p-2">
+                                <span>{{ $facility['reports'] }} laporan</span>
+                                <span class="mx-1.5">&bull;</span>
+                                <span>{{ $facility['satisfaction'] }}/5 kepuasan</span>
+                                <span class="mx-1.5">&bull;</span>
+                                <span>{{ $facility['interval'] }} hari interval</span>
+                            </div>
+                        </div>
+                    </div> <!-- End of Info Fasilitas -->
+
+                    <!-- Skor -->
+                    <div class="text-center pl-4">
+                        <span
+                            class="{{ $statusColors[$facility['status_color']]['bg'] }} {{ $statusColors[$facility['status_color']]['text'] }} text-xs font-semibold px-2 py-0.5 rounded-md w-20 inline-block mb-2">
+                            {{ $facility['status'] }}
+                        </span>
                         <p class="text-2xl font-bold text-gray-800">{{ $facility['score'] }}</p>
-                        <p class="text-xs text-gray-500">Skor</p>
-                    </div>
-                </div>
+                        <p class="text-xs text-gray-500 -mt-1">Skor</p>
+                    </div> <!-- End of Skor -->
+                </div> <!-- End of Card Fasilitas -->
             @endforeach
-        </div>
-    </div>
-</div>
-<script>
-    // Data and Configuration for Multi-Line Chart (Tren Laporan & Penyelesaian)
-    const ctxReportTrend = document.getElementById('reportTrendChart').getContext('2d');
-    const reportLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        </div> <!-- End of List Performa -->
+    </div> <!-- End of Performa Fasilitas -->
+</div> <!-- End of main content -->
 
-    // Data perkiraan dari gambar
-    const laporanMasukData = [100, 115, 90, 140, 160, 150, 180, 195, 150, 120, 50, 0];
-    const laporanSelesaiData = [90, 100, 80, 120, 140, 145, 160, 170, 130, 90, 30, 0];
-
-    const reportTrendChart = new Chart(ctxReportTrend, {
-        type: 'line',
-        data: {
-            labels: reportLabels,
-            datasets: [
-                {
-                    label: 'Laporan Masuk',
-                    data: laporanMasukData,
-                    borderColor: 'rgba(56, 168, 157, 1)', // Teal/Green
-                    backgroundColor: 'rgba(56, 168, 157, 0.1)',
-                    fill: false,
-                    tension: 0.1,
-                    pointBackgroundColor: 'rgba(56, 168, 157, 1)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(56, 168, 157, 1)',
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    borderWidth: 2.5,
-                },
-                {
-                    label: 'Laporan Selesai',
-                    data: laporanSelesaiData,
-                    borderColor: 'rgba(255, 127, 80, 1)', // Orange/Coral
-                    backgroundColor: 'rgba(255, 127, 80, 0.1)',
-                    fill: false,
-                    tension: 0.1,
-                    pointBackgroundColor: 'rgba(255, 127, 80, 1)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(255, 127, 80, 1)',
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    borderWidth: 2.5,
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false // Legenda tidak ditampilkan sesuai gambar
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    min: 0,
-                    max: 200,
-                    ticks: {
-                        stepSize: 50,
-                        color: '#6b7280', // text-gray-500
-                        font: {size: 10},
-                        // Callback untuk menambahkan '-' jika diinginkan, tapi umumnya angka saja sudah cukup
-                        // callback: function(value) { return value === 0 ? '0' : value + '–'; }
-                    },
-                    grid: {
-                        color: '#e5e7eb' // gray-200
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: '#6b7280', // text-gray-500
-                        font: {size: 10}
-                    },
-                    grid: {
-                        display: false
-                    }
-                }
-            },
-            hover: {
-                mode: 'nearest',
-                intersect: true
-            }
+@push('css')
+    <style>
+        /* Kustomisasi scrollbar jika diperlukan, contoh sederhana */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
         }
-    });
-</script>
-<style>
-    /* Kustomisasi scrollbar jika diperlukan, contoh sederhana */
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-    }
 
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
 
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #c5c5c5;
-        border-radius: 10px;
-    }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c5c5c5;
+            border-radius: 10px;
+        }
 
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #a5a5a5;
-    }
-</style>
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a5a5a5;
+        }
+    </style>
+@endpush
 
+@push('skrip')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const allTrendsData = @json($reportTrendData);
+            const yearFilter = document.getElementById('yearFilter');
+            const ctxReportTrend = document.getElementById('reportTrendChart').getContext('2d');
+            const reportLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const legendContainer = document.getElementById('legend-container');
+            const legendTrigger = document.getElementById('legend-trigger');
+            const legendPopover = document.getElementById('legend-popover');
+
+            if (!allTrendsData || Object.keys(allTrendsData).length === 0) {
+                const chartContainer = document.getElementById('reportTrendChart').parentElement;
+                chartContainer.innerHTML = '<div class="flex items-center justify-center h-full"><p class="text-center text-gray-500">Tidak ada data tren untuk ditampilkan.</p></div>';
+                return;
+
+            }
+
+            legendTrigger.addEventListener('click', (event) => {
+                event.stopPropagation();
+                legendPopover.classList.toggle('hidden');
+            });
+
+            window.addEventListener('click', (e) => {
+                if (legendContainer && !legendContainer.contains(e.target)) {
+                    legendPopover.classList.add('hidden');
+                }
+            });
+
+
+            const getSuggestedMaxY = (data) => {
+                const maxDataPoint = Math.max(...(data.laporanMasuk || []), ...(data.laporanSelesai || []));
+
+                if (maxDataPoint === 0) {
+                    return 5;
+                }
+
+                if (maxDataPoint < 20) {
+                    return maxDataPoint + 1;
+                }
+
+                return Math.ceil((maxDataPoint * 1.1) / 10) * 10;
+            };
+
+            const initialYear = yearFilter.value;
+            const initialData = allTrendsData[initialYear] || {laporanMasuk: [], laporanSelesai: []};
+
+            const reportTrendChart = new Chart(ctxReportTrend, {
+                type: 'line',
+                data: {
+                    labels: reportLabels,
+                    datasets: [
+                        {
+                            label: 'Laporan Masuk',
+                            data: initialData.laporanMasuk,
+                            borderColor: 'rgba(56, 168, 157, 1)',
+                            backgroundColor: 'rgba(56, 168, 157, 0.1)',
+                            fill: false,
+                            tension: 0.4,
+                            borderWidth: 2.5
+                        },
+                        {
+                            label: 'Laporan Selesai',
+                            data: initialData.laporanSelesai,
+                            borderColor: 'rgba(255, 127, 80, 1)',
+                            backgroundColor: 'rgba(255, 127, 80, 0.1)',
+                            fill: false,
+                            tension: 0.4,
+                            borderWidth: 2.5
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: getSuggestedMaxY(initialData),
+                            grid: {color: '#e5e7eb'},
+                            ticks: {color: '#6b7280'}
+                        },
+                        x: {
+                            grid: {display: false},
+                            ticks: {color: '#6b7280'}
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#1f2937',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            padding: 10,
+                            cornerRadius: 6,
+                            boxPadding: 4,
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
+                }
+            });
+
+            // --- Logika Interaktif ---
+            legendPopover.addEventListener('click', (e) => {
+                const target = e.target.closest('li');
+                if (!target) return;
+                const datasetIndex = parseInt(target.dataset.datasetIndex);
+                reportTrendChart.toggleDataVisibility(datasetIndex);
+                target.classList.toggle('opacity-50');
+                target.classList.toggle('line-through');
+                reportTrendChart.update();
+            });
+
+            yearFilter.addEventListener('change', function () {
+                const selectedYear = this.value;
+                const newData = allTrendsData[selectedYear] || {laporanMasuk: [], laporanSelesai: []};
+
+                reportTrendChart.data.datasets[0].data = newData.laporanMasuk;
+                reportTrendChart.data.datasets[1].data = newData.laporanSelesai;
+                reportTrendChart.options.scales.y.max = getSuggestedMaxY(newData);
+                reportTrendChart.update();
+            });
+        });
+    </script>
+@endpush

@@ -47,16 +47,16 @@
                             </p>
                             <div class="flex items-center mt-1">
                                 @for ($i = 1; $i <= $maxStars; $i++)
-                                    @if ($facility->rating >= $i)
+                                    @if ($facility->rata_rata_rating >= $i)
                                         <i class="fas fa-star text-yellow-400 text-xs"></i>
-                                    @elseif ($facility->rating >= $i - 0.5)
+                                    @elseif ($facility->rata_rata_rating >= $i - 0.5)
                                         <i class="fas fa-star-half-alt text-yellow-400 text-xs"></i>
                                     @else
                                         <i class="far fa-star text-gray-400 text-xs"></i>
                                     @endif
                                 @endfor
                                 <span class="ml-1.5 text-xs text-gray-600 font-medium">
-                                    {{ number_format($facility->rating, 1) }}
+                                    {{ number_format($facility->rata_rata_rating, 1) }}
                                 </span>
                                 <span class="ml-2 text-xs text-gray-400 hidden sm:inline">
                                     ({{ $facility->total_ratings }} ulasan)
@@ -67,10 +67,10 @@
                         {{-- Kolom Kanan: Indikator Visual --}}
                         <div class="flex-shrink-0 ml-2">
                             <div class="bg-gray-200 h-2 w-16 sm:w-20 rounded-full overflow-hidden"
-                                 title="Rating: {{ number_format($facility->rating,1) }} dari {{ $maxStars }}">
+                                 title="Rating: {{ number_format($facility->rata_rata_rating,1) }} dari {{ $maxStars }}">
                                 <div
                                     class="bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all duration-300 ease-in-out"
-                                    style="width: {{ ($facility->rating / $maxStars) * 100 }}%;">
+                                    style="width: {{ ($facility->rata_rata_rating / $maxStars) * 100 }}%;">
                                 </div>
 
                             </div>

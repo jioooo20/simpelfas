@@ -1,7 +1,7 @@
 <div class="flex flex-col lg:flex-row gap-6">
     <div class="w-full lg:w-1/2 bg-white p-6 rounded-lg shadow">
-        <h4 class="text-md font-semibold text-gray-700 mb-1">Statistik Laporan Kerusakan</h4>
-        <p class="text-sm text-gray-500 mb-6">Jumlah laporan kerusakan dalam 30 hari terakhir</p>
+        <h4 class="text-md font-semibold text-gray-700 mb-1">Jadwal Maintenance Mendatang</h4>
+        <p class="text-sm text-gray-500 mb-6">Maintenance yang dijadwalkan dalam 30 hari ke depan</p>
 
         <div class="h-64">
             <canvas id="maintenanceChart"></canvas>
@@ -10,8 +10,8 @@
     </div>
 
     <div class="w-full lg:w-1/2 bg-white p-6 rounded-lg shadow">
-        <h4 class="text-md font-semibold text-gray-700 mb-1">Analisis Fasilitas</h4>
-        <p class="text-sm text-gray-500 mb-4">Berdasarkan frekuensi kerusakan dan kepuasan setelah perbaikan</p>
+        <h4 class="text-md font-semibold text-gray-700 mb-1">Rekomendasi Maintenance</h4>
+        <p class="text-sm text-gray-500 mb-4">Berdasarkan analisis frekuensi dan kepuasan</p>
         <div class="space-y-4">
             <div class="bg-red-50 border border-red-200 p-4 rounded-lg">
                 <div class="flex items-start">
@@ -19,8 +19,8 @@
                         <i class="fas fa-exclamation-triangle fa-lg"></i>
                     </div>
                     <div>
-                        <h5 class="font-semibold text-red-700">Sering Rusak</h5>
-                        <p class="text-sm text-red-600">Laboratorium dilaporkan rusak sebanyak 5 kali bulan ini</p>
+                        <h5 class="font-semibold text-red-700">Prioritas Tinggi</h5>
+                        <p class="text-sm text-red-600">Laboratorium memerlukan maintenance segera</p>
                     </div>
                 </div>
             </div>
@@ -31,8 +31,8 @@
                         <i class="fas fa-clock fa-lg"></i>
                     </div>
                     <div>
-                        <h5 class="font-semibold text-yellow-700">Perlu Monitoring</h5>
-                        <p class="text-sm text-yellow-600">Gedung B memiliki 2 laporan dan skor kepuasan rendah</p>
+                        <h5 class="font-semibold text-yellow-700">Maintenance Rutin</h5>
+                        <p class="text-sm text-yellow-600">Gedung B perlu dijadwalkan maintenance preventif</p>
                     </div>
                 </div>
             </div>
@@ -43,9 +43,8 @@
                         <i class="fas fa-check-circle fa-lg"></i>
                     </div>
                     <div>
-                        <h5 class="font-semibold text-green-700">Tidak Ada Masalah</h5>
-                        <p class="text-sm text-green-600">Perpustakaan tidak ada laporan kerusakan dalam 30 hari
-                            terakhir</p>
+                        <h5 class="font-semibold text-green-700">Kondisi Baik</h5>
+                        <p class="text-sm text-green-600">Perpustakaan dalam kondisi optimal</p>
                     </div>
                 </div>
             </div>
