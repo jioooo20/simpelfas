@@ -125,7 +125,7 @@
                         <h2 class="text-xl font-semibold text-gray-800">Berikan Penilaian Anda</h2>
                     </div>
 
-                    <form action="{{ route('feedback-store') }}" method="POST" class="space-y-6">
+                    <form id="feedbackForm" action="{{ route('feedback-store') }}" method="POST" class="space-y-6">
                         @csrf
                         <input type="hidden" name="report_id" value="{{ $laporan->pelaporan_id }}">
 
@@ -186,13 +186,8 @@
                                 </svg>
                                 Batal
                             </a>
-                            <button type="submit" class="btn btn-primary px-6 py-3 text-white rounded-lg font-medium">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                                </svg>
-                                Kirim Umpan Balik
+                            <button type="submit" id="submitBtn" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-transform hover:scale-105">
+                                <i class="bi bi-send"></i>Kirim Umpan Balik
                             </button>
                         </div>
                     </form>
@@ -216,53 +211,304 @@
         </form>
     </dialog>
 
+    <!-- Modal Konfirmasi Kirim - Fixed Structure-->
+    <div id="konfirmasiKirimModal"
+         class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <!-- Modal Content -->
+        <div class="w-full max-w-md bg-white rounded-lg shadow-xl overflow-hidden">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800">
+                    Konfirmasi Pengiriman
+                </h2>
+            </div>
+            
+            <!-- Body -->
+            <div class="px-6 py-4">
+                <p class="text-gray-600">
+                    Apakah Anda yakin ingin mengirim umpan balik ini?
+                </p>
+            </div>
+            
+            <!-- Footer -->
+            <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3">
+                <button id="batalKirimBtn"
+                        type="button"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-150 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Batal
+                </button>
+                <button id="lanjutKirimBtn"
+                        type="button"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Ya, Kirim
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification - Fixed Structure -->
+    <div id="toast" class="fixed top-4 right-4 z-50 hidden transform transition-all duration-300">
+        <div id="toastContent" class="px-6 py-3 rounded-lg shadow-lg text-white font-medium max-w-sm">
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
 @endsection
 
 @push('scripts')
     <script>
+        // Global variables
+        let isSubmitting = false;
+        const PHOTOS = @json($fotoTeknisi ?? []);
+        
         // Photo Modal Functions
         function openPhotoModal(pelaporanId) {
             const modal = document.getElementById('photoModal');
             const photoContainer = document.getElementById('photoContainer');
 
-            // Gunakan foto teknisi yang sudah dikirim dari controller
-            const photos = @json($fotoTeknisi);
-
             // Clear container
             photoContainer.innerHTML = '';
 
-            if (photos && photos.length > 0) {
+            if (PHOTOS && PHOTOS.length > 0) {
                 // Create photo gallery
-                photos.forEach((photo, index) => {
+                PHOTOS.forEach((photo, index) => {
                     const photoDiv = document.createElement('div');
                     photoDiv.className = 'relative mb-4';
                     photoDiv.innerHTML = `
-                <img src="{{ asset('storage/') }}/${photo}" 
-                     alt="Foto perbaikan ${index + 1}"
-                     class="w-full h-auto max-h-[70vh] object-contain rounded-lg shadow-sm cursor-pointer hover:shadow-md transition mx-auto"
-                     onclick="window.open('{{ asset('storage/') }}/${photo}', '_blank')">
-                ${photos.length > 1 ? `<div class="absolute top-3 right-3 bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded-full">
-                        ${index + 1} / ${photos.length}
-                    </div>` : ''}
-            `;
+                        <img src="{{ asset('storage/') }}/${photo}" 
+                             alt="Foto perbaikan ${index + 1}"
+                             class="w-full h-auto max-h-[70vh] object-contain rounded-lg shadow-sm cursor-pointer hover:shadow-md transition mx-auto"
+                             onclick="window.open('{{ asset('storage/') }}/${photo}', '_blank')">
+                        ${PHOTOS.length > 1 ? `<div class="absolute top-3 right-3 bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded-full">
+                                ${index + 1} / ${PHOTOS.length}
+                            </div>` : ''}
+                    `;
                     photoContainer.appendChild(photoDiv);
                 });
             } else {
                 // No photos available
                 photoContainer.innerHTML = `
-            <div class="text-center">
-                <div class="bg-gray-100 rounded-lg p-8 inline-block">
-                    <i class="bi bi-camera text-6xl text-gray-400 mb-4"></i>
-                    <p class="text-xl mb-2">Foto Tidak Tersedia</p>
-                    <p class="text-gray-500">Belum ada foto perbaikan yang diunggah</p>
-                </div>
-            </div>
-        `;
+                    <div class="text-center">
+                        <div class="bg-gray-100 rounded-lg p-8 inline-block">
+                            <i class="bi bi-camera text-6xl text-gray-400 mb-4"></i>
+                            <p class="text-xl mb-2">Foto Tidak Tersedia</p>
+                            <p class="text-gray-500">Belum ada foto perbaikan yang diunggah</p>
+                        </div>
+                    </div>
+                `;
             }
 
             modal.showModal();
         }
 
-        // DaisyUI modal will handle the close functionality
+        // Toast Notification Function
+        function showToast(message, type = 'green', callback = null) {
+            const toast = document.getElementById('toast');
+            const toastContent = document.getElementById('toastContent');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            if (!toast || !toastContent || !toastMessage) {
+                console.error('Toast elements not found');
+                alert(message); // Fallback
+                return;
+            }
+            
+            // Set message
+            toastMessage.textContent = message;
+            
+            // Set color based on type
+            const colorClass = type === 'green' ? 'bg-green-500' : 
+                              type === 'red' ? 'bg-red-500' : 'bg-blue-500';
+            
+            toastContent.className = `px-6 py-3 rounded-lg shadow-lg text-white font-medium max-w-sm ${colorClass}`;
+            
+            // Show toast with animation
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('transform', 'translate-x-0');
+            }, 10);
+            
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('transform', 'translate-x-full');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                    toast.classList.remove('transform', 'translate-x-full', 'translate-x-0');
+                    if (callback) callback();
+                }, 300);
+            }, 3000);
+        }
+
+        // Form validation function
+        function validateForm() {
+            const form = document.getElementById('feedbackForm');
+            const rating = form.querySelector('input[name="rating"]:checked');
+            
+            if (!rating) {
+                showToast('Mohon berikan rating kepuasan terlebih dahulu', 'red');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Main DOMContentLoaded event
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded - Starting initialization');
+            
+            const feedbackForm = document.getElementById('feedbackForm');
+            const konfirmasiModal = document.getElementById('konfirmasiKirimModal');
+            const batalKirimBtn = document.getElementById('batalKirimBtn');
+            const lanjutKirimBtn = document.getElementById('lanjutKirimBtn');
+            
+            // Debug: Check if elements exist
+            console.log('Elements check:', {
+                form: !!feedbackForm,
+                modal: !!konfirmasiModal,
+                batalBtn: !!batalKirimBtn,
+                lanjutBtn: !!lanjutKirimBtn
+            });
+            
+            if (!feedbackForm || !konfirmasiModal || !batalKirimBtn || !lanjutKirimBtn) {
+                console.error('Required elements not found!');
+                return;
+            }
+            
+            // Prevent default form submission and show confirmation modal
+            feedbackForm.addEventListener('submit', function(e) {
+                console.log('Form submit event triggered');
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Prevent double submission
+                if (isSubmitting) {
+                    console.log('Already submitting, prevented double submit');
+                    return false;
+                }
+                
+                // Validate form
+                if (!validateForm()) {
+                    return false;
+                }
+                
+                // Show confirmation modal
+                console.log('Showing confirmation modal');
+                konfirmasiModal.classList.remove('hidden');
+                
+                // Focus on modal for accessibility
+                setTimeout(() => {
+                    lanjutKirimBtn.focus();
+                }, 100);
+                
+                return false;
+            });
+            
+            // Handle modal buttons
+            batalKirimBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Batal button clicked');
+                konfirmasiModal.classList.add('hidden');
+            });
+            
+            lanjutKirimBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Lanjut button clicked');
+                
+                // Hide modal and submit form
+                konfirmasiModal.classList.add('hidden');
+                isSubmitting = true;
+                submitFeedbackForm();
+            });
+            
+            // Close modal when clicking outside
+            konfirmasiModal.addEventListener('click', function(e) {
+                if (e.target === konfirmasiModal) {
+                    console.log('Modal backdrop clicked');
+                    konfirmasiModal.classList.add('hidden');
+                }
+            });
+            
+            // Handle ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !konfirmasiModal.classList.contains('hidden')) {
+                    console.log('ESC key pressed - closing modal');
+                    konfirmasiModal.classList.add('hidden');
+                }
+            });
+            
+            // Enhanced rating system
+            const ratingInputs = document.querySelectorAll('input[name="rating"]');
+            ratingInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    console.log('Rating selected:', this.value);
+                    // Visual feedback for rating selection
+                    const ratingContainer = this.closest('.rating');
+                    ratingContainer.classList.add('opacity-75');
+                    setTimeout(() => {
+                        ratingContainer.classList.remove('opacity-75');
+                    }, 200);
+                });
+            });
+            
+            console.log('Initialization complete');
+        });
+
+        // Submit feedback form via AJAX
+        async function submitFeedbackForm() {
+            const form = document.getElementById('feedbackForm');
+            const formData = new FormData(form);
+            const submitBtn = document.getElementById('submitBtn');
+            
+            console.log('Submitting form via AJAX');
+            
+            // Disable submit button and show loading state
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split animate-spin"></i> Mengirim...';
+            submitBtn.classList.add('opacity-75');
+            
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    // Success
+                    showToast(data.message || "Umpan balik berhasil dikirim.", "green", () => {
+                        window.location.href = "{{ route('users.feedback') }}";
+                    });
+                } else if (data.errors) {
+                    // Validation errors
+                    let errorMessage = 'Validasi gagal: ';
+                    for (const key in data.errors) {
+                        errorMessage += data.errors[key][0];
+                        break; // Show only first error
+                    }
+                    showToast(errorMessage, "red");
+                } else {
+                    // Other errors
+                    showToast(data.message || 'Terjadi kesalahan.', "red");
+                }
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                showToast('Terjadi kesalahan saat mengirim umpan balik.', "red");
+            } finally {
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                submitBtn.classList.remove('opacity-75');
+                isSubmitting = false;
+            }
+        }
     </script>
 @endpush

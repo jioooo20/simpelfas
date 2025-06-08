@@ -227,6 +227,14 @@ public function storeFeedback(Request $request)
         $existingFeedback = FeedbackModel::where('pelaporan_id', $validated['report_id'])->first();
 
         if ($existingFeedback) {
+            // Jika request AJAX, return JSON response
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Anda sudah memberikan umpan balik untuk laporan ini sebelumnya.'
+                ], 409); // 409 Conflict status code
+            }
+
+            // Jika bukan AJAX, return redirect seperti biasa
             return redirect()->back()
                 ->with('error', 'Anda sudah memberikan umpan balik untuk laporan ini sebelumnya.')
                 ->withInput();
@@ -239,13 +247,41 @@ public function storeFeedback(Request $request)
             'rating' => $validated['rating'],
         ]);
 
+        // Jika request AJAX, return JSON response
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.',
+                'status' => 'success'
+            ], 200);
+        }
+
+        // Jika bukan AJAX, return redirect seperti biasa
         return redirect()->route('users.feedback')
             ->with('success', 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.');
 
+    } catch (ValidationException $e) {
+        // Handle validation errors
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'Data yang dikirim tidak valid.',
+                'errors' => $e->validator->errors()
+            ], 422); // 422 Unprocessable Entity
+        }
+
+        // Jika bukan AJAX, throw exception seperti biasa
+        throw $e;
+
     } catch (Exception $e) {
+        // Handle general errors
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat mengirim umpan balik: ' . $e->getMessage()
+            ], 500); // 500 Internal Server Error
+        }
+
+        // Jika bukan AJAX, return redirect seperti biasa
         return redirect()->back()
             ->with('error', 'Terjadi kesalahan saat mengirim umpan balik: ' . $e->getMessage())
             ->withInput();
     }
-}
-}
+}}
