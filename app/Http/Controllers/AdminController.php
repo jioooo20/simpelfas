@@ -69,14 +69,6 @@ class AdminController extends Controller
             ->orderBy('bulan')
             ->get();
 
-        // $kerusakanPerBarang = PelaporanModel::with('fasilitas.barang')
-        //     ->get()
-        //     ->groupBy(function ($item) {
-        //         return $item->fasilitas->barang->nama ?? 'Tidak Diketahui';
-        //     })
-        //     ->map(function ($group) {
-        //         return $group->count();
-        //     });
         $kerusakanPerBarang = PelaporanModel::join('t_fasilitas', 'm_pelaporan.fasilitas_id', '=', 't_fasilitas.fasilitas_id')
             ->join('m_barang', 't_fasilitas.barang_id', '=', 'm_barang.barang_id')
             ->whereBetween('m_pelaporan.created_at', [$start, $end])

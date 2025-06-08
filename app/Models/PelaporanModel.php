@@ -48,4 +48,9 @@ class PelaporanModel extends Model
 {
     return $this->hasOne(PerbaikanModel::class, 'pelaporan_id', 'pelaporan_id');
 }
+
+public function feedback()
+{
+    return $this->hasOne(FeedbackModel::class, 'pelaporan_id', 'pelaporan_id');
+}
 }
