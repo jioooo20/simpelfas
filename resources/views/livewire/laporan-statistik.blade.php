@@ -74,41 +74,65 @@
                         <th>Status</th>
                     </tr>
                 </thead>
-                
+
                 <tbody>
-    @foreach ($table as $laporan)
-        @php
-            $status = $laporan->statusPelaporan->first()->status_pelaporan ?? 'pending';
-            $statusClass = match ($status) {
-                'selesai' => 'badge-success',
-                'dalam_proses' => 'badge-warning',
-                'ditolak' => 'badge-error',
-                default => 'badge-info',
-            };
-            
-            $skala = $laporan->skorAlternatif->first(function ($item) {
-                return optional($item->kriteria)->kriteria_nama === 'Skala Kerusakan';
-            });
-            
-            $frekuensi = $laporan->skorAlternatif->first(function ($item) {
-                return optional($item->kriteria)->kriteria_nama === 'Frekuensi Penggunaan';
-            });
-        @endphp
-        <tr>
-            <td>{{ $laporan->user->nama ?? '-' }}</td>
-            <td>{{ $laporan->pelaporan_kode ?? '-' }}</td>
-            <td>{{ $skala ? match($skala->nilai_skor) {1=>'Ringan',2=>'Sedang',3=>'Berat'} : '-' }}</td>
-            <td>{{ $frekuensi ? match($frekuensi->nilai_skor) {1=>'Jarang',2=>'Sedang',3=>'Sering'} : '-' }}</td>
-            <td>{{ $laporan->created_at->format('d M Y') }}</td>
-            <td>
-                <span class="badge {{ $statusClass }}">
-                    {{ ucfirst(str_replace('_', ' ', $status)) }}
-                </span>
-            </td>
-        </tr>
-    @endforeach
-</tbody>
-                
+                    @foreach ($table as $laporan)
+                        @php
+                            $status = $laporan->statusPelaporan->first()->status_pelaporan ?? 'pending';
+                            $statusClass = match ($status) {
+                                'selesai' => 'badge-success',
+                                'dalam_proses' => 'badge-warning',
+                                'ditolak' => 'badge-error',
+                                default => 'badge-info',
+                            };
+
+                            // $skala = $laporan->skorAlternatif->first(function ($item) {
+                            //     return optional($item->kriteria)->kriteria_nama === 'Skala Kerusakan';
+                            // });
+
+                            // $frekuensi = $laporan->skorAlternatif->first(function ($item) {
+                            //     return optional($item->kriteria)->kriteria_nama === 'Frekuensi Penggunaan';
+                            // });
+                            $skala = $laporan->skorAlternatif->where('kriteria_id', 2)->first();
+                            $frekuensi = $laporan->skorAlternatif->where('kriteria_id', 3)->first();
+                        @endphp
+                        <tr>
+                            <td>{{ $laporan->user->nama ?? '-' }}</td>
+                            <td>{{ $laporan->pelaporan_kode ?? '-' }}</td>
+                            <td>
+                                @if ($skala)
+                                    {{ match ((int) $skala->nilai_skor) {
+                                        1 => 'Ringan',
+                                        2 => 'Sedang',
+                                        3 => 'Berat',
+                                        default => 'Nilai: ' . $skala->nilai_skor,
+                                    } }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td>
+                                @if ($frekuensi)
+                                    {{ match ((int) $frekuensi->nilai_skor) {
+                                        1 => 'Jarang',
+                                        2 => 'Sedang',
+                                        3 => 'Sering',
+                                        default => 'Nilai: ' . $frekuensi->nilai_skor,
+                                    } }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td>{{ $laporan->created_at->format('d M Y') }}</td>
+                            <td>
+                                <span class="badge {{ $statusClass }}">
+                                    {{ ucfirst(str_replace('_', ' ', $status)) }}
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+
             </table>
 
             {{ $table->links() }}

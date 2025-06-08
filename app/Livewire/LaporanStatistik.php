@@ -28,11 +28,12 @@ class LaporanStatistik extends Component
                 'statusPelaporan' => function($query) {
                     $query->latest()->limit(1);
                 },
-                'skorAlternatif' => function($query) {
-                    $query->whereHas('kriteria', function($q) {
-                        $q->whereIn('kriteria_nama', ['Skala Kerusakan', 'Frekuensi Penggunaan']);
-                    })->with('kriteria');
-                }
+                // 'skorAlternatif' => function($query) {
+                //     $query->with(['kriteria' => function($q) {
+                //         $q->whereIn('kriteria_nama', ['Skala Kerusakan', 'Frekuensi Penggunaan']);
+                //     }]);
+                // }
+                'skorAlternatif'
             ])
             ->when($this->search, function ($query) {
                 $query->whereHas('user', function ($q) {
