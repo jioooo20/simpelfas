@@ -1,0 +1,335 @@
+<?php
+
+namespace App\Livewire;
+
+use Livewire\Component;
+use Livewire\WithPagination;
+use App\Models\PerbaikanModel;
+use App\Models\PelaporanModel;
+use App\Models\UserModel;
+use App\Models\PerbaikanPetugasModel;
+use App\Models\StatusPerbaikanModel;
+use App\Models\StatusPelaporanModel;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+class PenugasanPerbaikanTable extends Component
+{
+    use WithPagination;
+
+    // Search and filter properties
+    public $search = '';
+    public $statusFilter = '';
+    public $teknisiFilter = '';
+    public $perPage = 10;
+
+    // Modal properties
+    public $showAssignModal = false;
+    public $showDetailModal = false;
+    public $selectedPerbaikan = null;
+    public $selectedTeknisi = [];
+    public $catatan_penugasan = '';    // Data properties
+    public $teknisiList = [];
+    public $statusList = 
+    [
+        'Diterima',
+        'Diproses', 
+        'Selesai'
+    ];
+
+    protected $listeners = 
+    [
+        'refreshTable' => '$refresh',
+        'updateStats' => 'emitStatsUpdate'
+    ];
+
+    public function mount()
+    {
+        $this->loadTeknisiList();
+    }
+
+    public function loadTeknisiList()
+    {
+        // Load teknisi (users with role teknisi)
+        $this->teknisiList = UserModel::whereHas('role', function($query) {
+            $query->where('role_nama', 'teknisi');
+        })->get();
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+        $this->emitStatsUpdate();
+    }
+
+    public function updatedStatusFilter()
+    {
+        $this->resetPage();
+        $this->emitStatsUpdate();
+    }
+
+    public function updatedTeknisiFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilters()
+    {
+        $this->search = '';
+        $this->statusFilter = '';
+        $this->teknisiFilter = '';
+        $this->resetPage();
+        $this->emitStatsUpdate();
+    }    
+      
+    public function getPerbaikanData()
+    {
+        // Ambil status pelaporan terbaru untuk setiap pelaporan_id
+        $latestStatuses = DB::table('t_status_pelaporan as sp1')
+            ->select('sp1.pelaporan_id', 'sp1.status_pelaporan', 'sp1.created_at')
+            ->whereRaw('sp1.created_at = (
+                SELECT MAX(sp2.created_at)
+                FROM t_status_pelaporan sp2
+                WHERE sp2.pelaporan_id = sp1.pelaporan_id
+            )')
+            ->whereIn('sp1.status_pelaporan', ['Diterima', 'Diproses', 'Selesai'])
+            ->orderBy('sp1.created_at', 'desc')
+            ->get();
+
+        $orderedIds = $latestStatuses->pluck('pelaporan_id')->toArray();
+
+        $query = PelaporanModel::with([
+            'fasilitas.barang',
+            'fasilitas.ruang.lantai.gedung',
+            'user',
+        ])->whereIn('pelaporan_id', $orderedIds);
+
+        // Search filter
+        if (!empty($this->search)) {
+            $query->where(function($q) {
+                $q->where('pelaporan_kode', 'like', '%' . $this->search . '%')
+                  ->orWhere('pelaporan_deskripsi', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('fasilitas.barang', function($subQ) {
+                      $subQ->where('barang_nama', 'like', '%' . $this->search . '%');
+                  })
+                  ->orWhereHas('fasilitas.ruang.lantai.gedung', function($subQ) {
+                      $subQ->where('gedung_nama', 'like', '%' . $this->search . '%');
+                  })
+                  ->orWhereHas('fasilitas.ruang', function($subQ) {
+                      $subQ->where('ruang_nama', 'like', '%' . $this->search . '%');
+                  });
+            });
+        }
+
+        // Filter status berdasarkan status terakhir
+        if (!empty($this->statusFilter)) {
+            $filteredIds = DB::table('t_status_pelaporan as sp1')
+                ->select('sp1.pelaporan_id')
+                ->whereRaw('sp1.created_at = (
+                    SELECT MAX(sp2.created_at)
+                    FROM t_status_pelaporan sp2
+                    WHERE sp2.pelaporan_id = sp1.pelaporan_id
+                )')
+                ->where('sp1.status_pelaporan', $this->statusFilter)
+                ->pluck('pelaporan_id')
+                ->toArray();
+            $query->whereIn('pelaporan_id', $filteredIds);
+        }
+
+        // Filter teknisi
+        if (!empty($this->teknisiFilter)) {
+            $query->whereHas('perbaikan.perbaikanPetugas', function($subQ) {
+                $subQ->where('user_id', $this->teknisiFilter);
+            });
+        }
+
+        // Urutkan sesuai urutan pelaporan_id terbaru dari status pelaporan
+        if (!empty($orderedIds)) {
+            $query->orderByRaw('FIELD(pelaporan_id, ' . implode(',', $orderedIds) . ')');
+        }
+
+        return $query->paginate($this->perPage);
+    }    
+    
+    public function openAssignModal($pelaporanId)
+    {
+        try {
+            // Get the pelaporan record with correct relationships
+            $this->selectedPerbaikan = PelaporanModel::with([
+                'fasilitas.barang',
+                'fasilitas.ruang.lantai.gedung',
+                'user',
+                'perbaikan.perbaikanPetugas.user',
+                'perbaikan.statusPerbaikan'
+            ])->find($pelaporanId);
+
+            if (!$this->selectedPerbaikan) {
+                $this->dispatch('showErrorToast', 'Data laporan tidak ditemukan');
+                return;
+            }
+
+            // Load currently assigned technicians if perbaikan exists
+            if ($this->selectedPerbaikan->perbaikan) {
+                $this->selectedTeknisi = $this->selectedPerbaikan->perbaikan->perbaikanPetugas->pluck('user_id')->toArray();
+            } else {
+                $this->selectedTeknisi = [];
+            }
+            
+            $this->catatan_penugasan = '';
+            $this->showAssignModal = true;
+
+        } catch (\Exception $e) {
+            Log::error('Error opening assign modal: ' . $e->getMessage());
+            $this->dispatch('showErrorToast', 'Terjadi kesalahan saat membuka modal penugasan');
+        }
+    }    
+    
+    public function closeAssignModal()
+    {
+        $this->showAssignModal = false;
+        $this->selectedPerbaikan = null;
+        $this->selectedTeknisi = [];
+        $this->catatan_penugasan = '';
+        $this->resetValidation();
+    }
+    
+    public function assignTeknisi()
+    {
+        $this->validate([
+            'selectedTeknisi' => 'required|array|min:1',
+            'selectedTeknisi.*' => 'exists:m_user,user_id',                 
+        ], [
+            'selectedTeknisi.required' => 'Pilih minimal satu teknisi',
+            'selectedTeknisi.min' => 'Pilih minimal satu teknisi',
+            'selectedTeknisi.*.exists' => 'Teknisi tidak valid',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Ambil semua laporan dengan fasilitas yang sama
+            $fasilitasId = $this->selectedPerbaikan->fasilitas_id;
+            $laporanList = PelaporanModel::where('fasilitas_id', $fasilitasId)->get();
+            $index = 1;
+            // Generate kode dasar perbaikan
+            $tgl = date('ymd');
+            // Hitung jumlah perbaikan unik berdasarkan fasilitas_id
+            if (PerbaikanModel::count() != 0) {
+                $total_perbaikan_unik = PerbaikanModel::join('m_pelaporan', 'm_pelaporan.pelaporan_id', '=', 't_perbaikan.pelaporan_id')
+                    ->distinct('m_pelaporan.fasilitas_id')
+                    ->count();
+            }
+            else {
+                $total_perbaikan_unik = 0;
+            }
+
+            $kodeDasar = 'PRBK-'. ($total_perbaikan_unik + 1) . '-' . $tgl . '-';
+            foreach ($laporanList as $laporan) {
+                // Cek jika belum ada perbaikan untuk laporan ini
+                $perbaikanLaporan = $laporan->perbaikan;
+                if (!$perbaikanLaporan) {
+                    $kodePerbaikan = $kodeDasar . $laporan->pelaporan_id;
+                    $perbaikanLaporan = PerbaikanModel::create([
+                        'perbaikan_kode' => $kodePerbaikan,
+                        'pelaporan_id' => $laporan->pelaporan_id,
+                        'perbaikan_deskripsi' => $this->catatan_penugasan,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                }
+                // Remove existing assignments
+                PerbaikanPetugasModel::where('perbaikan_id', $perbaikanLaporan->perbaikan_id)->delete();
+                // Tambahkan assignment teknisi
+                foreach ($this->selectedTeknisi as $teknisiId) {
+                    PerbaikanPetugasModel::create([
+                        'perbaikan_id' => $perbaikanLaporan->perbaikan_id,
+                        'user_id' => $teknisiId,
+                    ]);
+                }
+                // Update/create status perbaikan
+                $statusPerbaikan = StatusPerbaikanModel::where('perbaikan_id', $perbaikanLaporan->perbaikan_id)->first();
+                if ($statusPerbaikan) {
+                    $statusPerbaikan->update([
+                        'perbaikan_status' => 'Diproses'
+                    ]);
+                } else {
+                    StatusPerbaikanModel::create([
+                        'perbaikan_id' => $perbaikanLaporan->perbaikan_id,
+                        'perbaikan_status' => 'Diproses'
+                    ]);
+                }
+                // Update status pelaporan
+                StatusPelaporanModel::create([
+                    'pelaporan_id' => $laporan->pelaporan_id,
+                    'status_pelaporan' => 'Diproses'
+                ]);
+                $index++;
+            }
+
+            DB::commit();
+
+            $teknisiNames = UserModel::whereIn('user_id', $this->selectedTeknisi)->pluck('nama')->join(', ');
+            $message = count($this->selectedTeknisi) > 1 ? 
+                "Berhasil menugaskan teknisi: {$teknisiNames}" :
+                "Berhasil menugaskan teknisi: {$teknisiNames}";
+
+            $this->dispatch('showSuccessToast', $message);
+            $this->closeAssignModal();
+            $this->resetPage();
+            $this->emitStatsUpdate();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error assigning technicians: ' . $e->getMessage());
+            $this->dispatch('showErrorToast', 'Terjadi kesalahan saat menugaskan teknisi: ' . $e->getMessage());
+        }
+    }    
+    
+    public function openDetailModal($pelaporanId)
+    {
+        try {
+            $this->selectedPerbaikan = PelaporanModel::with([
+                'fasilitas.barang',
+                'fasilitas.ruang.lantai.gedung',
+                'user',
+                'perbaikan.perbaikanPetugas.user',
+                'perbaikan.statusPerbaikan'
+            ])->find($pelaporanId);
+
+            if (!$this->selectedPerbaikan) {
+                $this->dispatch('showErrorToast', 'Data laporan tidak ditemukan');
+                return;
+            }
+
+            $this->showDetailModal = true;
+
+        } catch (\Exception $e) {
+            Log::error('Error opening detail modal: ' . $e->getMessage());
+            $this->dispatch('showErrorToast', 'Terjadi kesalahan saat membuka detail');
+        }
+    }
+
+    public function closeDetailModal()
+    {
+        $this->showDetailModal = false;
+        $this->selectedPerbaikan = null;
+    }    
+    
+    
+    public function getStatusBadgeColor($status)
+    {
+        return match($status) {
+            'Diproses' => 'badge-info',
+            'Selesai' => 'badge-success',
+            default => 'badge-ghost'
+        };
+    }    
+    
+    public function render()
+    {
+        return view('livewire.penugasan-perbaikan-table', [
+            'perbaikanData' => $this->getPerbaikanData(),
+            'teknisiList' => $this->teknisiList
+        ]);
+    }
+}
