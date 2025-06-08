@@ -58,7 +58,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:3')->prefix('teknisi')->group(function (): void {
         Route::get('/', [TeknisiController::class, 'perbaikan'])->name('teknisi');
         Route::group(['prefix' => 'perbaikan'], function (): void {
-            Route::get('/detail', [TeknisiController::class, 'perbaikanShow'])->name('detail-perbaikan');
+            Route::get('/detail/{id}', [TeknisiController::class, 'perbaikanShow'])->name('detail-perbaikan');
             Route::post('/update', [TeknisiController::class, 'update'])->name('update-perbaikan');
         });
         Route::group(['prefix' => 'riwayat-perbaikan'], function (): void {

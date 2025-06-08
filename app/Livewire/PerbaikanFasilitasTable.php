@@ -16,28 +16,32 @@ class PerbaikanFasilitasTable extends Component
     protected $paginationTheme = 'tailwind';
 
     public $search = '';
-    public $id;
-    public $kode_perbaikan;
-    public $fasilitas_id;
-    public $gedung_id;
-    public $ruang_id;
-    public $lokasi;
-    public $deskripsi_masalah;
-    public $status;
-    public $teknisi_id;
-    public $tanggal_lapor;
-
-    public $showModal = false;
-    public $showDeleteModal = false;
-    public $isEditing = false;
-
+    public $perPage = 10;
     public $selectedStatus = '';
+
+    public $selectedFacilityId = null;
+    public $selectedFacilityName = null;
+
+    public $sortField = 'created_at';
+    public $sortDirection = 'desc';
+
+    public $page = 1;
 
     protected $listeners = [
         'refreshPerbaikanTable' => '$refresh',
         'perbaikanCreated' => '$refresh',
         'perbaikanUpdated' => '$refresh',
-        'perbaikanDeleted' => '$refresh'
+        'perbaikanDeleted' => '$refresh',
+        'showAllRepairsForFacility' => 'showAllForFacility',
+    ];
+
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'selectedStatus' => ['except' => ''],
+        'perPage' => ['except' => 10],
+        'groupByFasilitas' => ['except' => true],
+        'sortField' => ['except' => 'created_at'],
+        'sortDirection' => ['except' => 'desc'],
     ];
 
     protected $rules = [
@@ -49,6 +53,7 @@ class PerbaikanFasilitasTable extends Component
         'status' => 'required|string',
         'teknisi_id' => 'nullable',
     ];
+
     public function updatingSearch()
     {
         $this->resetPage();
@@ -61,171 +66,175 @@ class PerbaikanFasilitasTable extends Component
 
     public function render()
     {
-        $perbaikan = collect([
-            [
-                'id' => 1,
-                'kode_perbaikan' => 'PRB-001',
-                'fasilitas_id' => 1,
-                'gedung_id' => 1,
-                'ruang_id' => 1,
-                'lokasi' => 'Gedung A - Ruang 101',
-                'deskripsi_masalah' => 'AC tidak dingin',
-                'status' => 'Diproses',
-                'teknisi_id' => 1,
-                'tanggal_lapor' => '2023-11-01',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 2,
-                'kode_perbaikan' => 'PRB-002',
-                'fasilitas_id' => 2,
-                'gedung_id' => 1,
-                'ruang_id' => 2,
-                'lokasi' => 'Gedung A - Ruang 102',
-                'deskripsi_masalah' => 'Proyektor tidak menyala',
-                'status' => 'Diproses',
-                'teknisi_id' => 1,
-                'tanggal_lapor' => '2023-11-02',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 3,
-                'kode_perbaikan' => 'PRB-003',
-                'fasilitas_id' => 3,
-                'gedung_id' => 2,
-                'ruang_id' => 3,
-                'lokasi' => 'Gedung B - Ruang 201',
-                'deskripsi_masalah' => 'Kebocoran air',
-                'status' => 'Selesai',
-                'teknisi_id' => 2,
-                'tanggal_lapor' => '2023-11-03',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 4,
-                'kode_perbaikan' => 'PRB-004',
-                'fasilitas_id' => 1,
-                'gedung_id' => 2,
-                'ruang_id' => 3,
-                'lokasi' => 'Gedung B - Ruang 201',
-                'deskripsi_masalah' => 'AC berisik',
-                'status' => 'Selesai',
-                'teknisi_id' => 2,
-                'tanggal_lapor' => '2023-11-04',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
-        $fasilitas = collect([
-            ['id' => 1, 'nama' => 'AC'],
-            ['id' => 2, 'nama' => 'Proyektor'],
-            ['id' => 3, 'nama' => 'Pipa Air'],
-        ]);
-
-        $gedung = collect([
-            ['id' => 1, 'gedung_nama' => 'Gedung A'],
-            ['id' => 2, 'gedung_nama' => 'Gedung B'],
-        ]);
-
-        $ruang = collect([
-            ['id' => 1, 'ruang_nama' => 'Ruang 101', 'gedung_id' => 1],
-            ['id' => 2, 'ruang_nama' => 'Ruang 102', 'gedung_id' => 1],
-            ['id' => 3, 'ruang_nama' => 'Ruang 201', 'gedung_id' => 2],
-        ]);
-
-        $teknisi = collect([
-            ['id' => 1, 'nama' => 'Teknisi A', 'role_id' => 2],
-            ['id' => 2, 'nama' => 'Teknisi B', 'role_id' => 2],
-        ]);
-
-        // First map the items to include all related data
-        $perbaikan = $perbaikan->map(function ($item) use ($fasilitas, $gedung, $ruang, $teknisi) {
-            $item['fasilitas_nama'] = $fasilitas->firstWhere('id', $item['fasilitas_id'])['nama'] ?? '-';
-            $item['gedung_nama'] = $gedung->firstWhere('id', $item['gedung_id'])['gedung_nama'] ?? '-';
-            $item['ruang_nama'] = $ruang->firstWhere('id', $item['ruang_id'])['ruang_nama'] ?? '-';
-            $item['teknisi_nama'] = $teknisi->firstWhere('id', $item['teknisi_id'])['nama'] ?? '-';
-            return $item;
-        });
-
-        // Then apply status filter if selected
-        if ($this->selectedStatus) {
-            $perbaikan = $perbaikan->filter(function ($item) {
-                return $item['status'] === $this->selectedStatus;
-            });
-        }
-
-        // Then apply search filter if provided
+        $query = $this->getPerbaikanQuery();
         if ($this->search) {
-            $search = strtolower(trim($this->search));
-            $perbaikan = $perbaikan->filter(function ($item) use ($search) {
-                // Search in multiple fields
-                return str_contains(strtolower($item['kode_perbaikan']), $search)
-                    || str_contains(strtolower($item['deskripsi_masalah']), $search)
-                    || str_contains(strtolower($item['lokasi']), $search)
-                    || str_contains(strtolower($item['gedung_nama']), $search)
-                    || str_contains(strtolower($item['ruang_nama']), $search)
-                    || str_contains(strtolower($item['teknisi_nama']), $search);
-            });
+            $search = trim($this->search);
+            if (preg_match('/^fasilitas_id:(\d+)$/', $search, $matches)) {
+                $facilityId = $matches[1];
+                $query->whereHas('pelaporan', function($subq) use ($facilityId) {
+                    $subq->where('fasilitas_id', $facilityId);
+                });
+            } else {
+                $search = '%' . $search . '%';
+                $query->where(function($q) use ($search) {
+                    $q->where('perbaikan_kode', 'like', $search)
+                      ->orWhere('perbaikan_deskripsi', 'like', $search)
+                      ->orWhereHas('pelaporan', function($subq) use ($search) {
+                          $subq->where('pelaporan_deskripsi', 'like', $search);
+                      })
+                      ->orWhereHas('pelaporan.fasilitas.ruang.lantai.gedung', function($subq) use ($search) {
+                          $subq->where('gedung_nama', 'like', $search);
+                      })
+                      ->orWhereHas('pelaporan.fasilitas.ruang', function($subq) use ($search) {
+                          $subq->where('ruang_nama', 'like', $search);
+                      })
+                      ->orWhereHas('perbaikanPetugas.user', function($subq) use ($search) {
+                          $subq->where('nama', 'like', $search);
+                      });
+                });
+            }
         }
-
-        return view('livewire.perbaikanFasilitas-table', compact('perbaikan'));
+        $allPerbaikanData = $query->orderBy($this->sortField, $this->sortDirection)->get();
+        $groupedByPrefix = $allPerbaikanData->groupBy(function($item) {
+            return $this->getKodePerbaikanPrefix($item->perbaikan_kode);
+        })->map(function($group) {
+            // Ambil item terakhir (terbaru) berdasarkan created_at
+            return $group->sortByDesc('created_at')->first();
+        })->values();
+        
+        // Tambahkan filter status di sini
+        if ($this->selectedStatus) {
+            $groupedByPrefix = $groupedByPrefix->filter(function($item) {
+                // Ambil status terbaru dari relasi latestStatusPerbaikan
+                $latestStatus = $item->latestStatusPerbaikan ? $item->latestStatusPerbaikan->perbaikan_status : 'Menunggu';
+                return $latestStatus === $this->selectedStatus;
+            })->values();
+        }
+        $perbaikanData = new \Illuminate\Pagination\LengthAwarePaginator(
+            $groupedByPrefix->forPage($this->page ?: 1, $this->perPage),
+            $groupedByPrefix->count(),
+            $this->perPage,
+            $this->page ?: 1,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+        $perbaikan = collect($perbaikanData->items())->map(function($item) use ($allPerbaikanData) {
+            $pelaporan = $item->pelaporan;
+            $fasilitas = $pelaporan->fasilitas ?? null;
+            $gedung = $fasilitas && $fasilitas->ruang && $fasilitas->ruang->lantai ? $fasilitas->ruang->lantai->gedung : null;
+            $ruang = $fasilitas ? $fasilitas->ruang : null;
+            
+            // Ambil semua teknisi dari relasi perbaikanPetugas
+            $teknisiCollection = $item->perbaikanPetugas->map(function($petugas) {
+                return $petugas->user ?? null;
+            })->filter()->values();
+            
+            // Ambil status terbaru dari relasi latestStatusPerbaikan
+            $status = $item->latestStatusPerbaikan ? $item->latestStatusPerbaikan->perbaikan_status : 'Menunggu';
+            
+            $additionalRepairs = 0;
+            if ($fasilitas) {
+                $additionalRepairs = $allPerbaikanData->filter(function($repairItem) use ($fasilitas, $item) {
+                    return $repairItem->pelaporan && $repairItem->pelaporan->fasilitas_id == $fasilitas->fasilitas_id && $repairItem->perbaikan_id != $item->perbaikan_id;
+                })->count();
+            }
+            return [
+                'id' => $item->perbaikan_id,
+                'kode_perbaikan' => $item->perbaikan_kode,
+                'deskripsi_masalah' => $pelaporan->pelaporan_deskripsi ?? $item->perbaikan_deskripsi,
+                'gedung_nama' => $gedung->gedung_nama ?? '-',
+                'ruang_nama' => $ruang->ruang_nama ?? '-',
+                'tanggal_perbaikan' => $item->created_at,
+                'status' => $status,
+                'teknisi_collection' => $teknisiCollection,
+                'teknisi_nama' => $teknisiCollection->isNotEmpty() ? $teknisiCollection->first()->nama : '-',
+                'jumlah_teknisi' => $teknisiCollection->count(),
+                'fasilitas_id' => $fasilitas->fasilitas_id ?? null,
+                'fasilitas_nama' => $fasilitas->barang->barang_nama ?? '-',
+                'additional_repairs' => $additionalRepairs
+            ];
+        });
+        return view('livewire.perbaikanFasilitas-table', [
+            'perbaikan' => $perbaikan,
+            'perbaikanData' => $perbaikanData
+        ]);
     }
 
-    public function nextPage()
+    public function getPerbaikanQuery()
     {
-        $this->setPage($this->page + 1);
+        return PerbaikanModel::with([
+            'pelaporan.fasilitas.barang',
+            'pelaporan.fasilitas.ruang.lantai.gedung',
+            'pelaporan.user',
+            'latestStatusPerbaikan',
+            'perbaikanPetugas.user'
+        ]);
     }
 
-    public function previousPage()
+    private function getKodePerbaikanPrefix($kode)
     {
-        $this->setPage(max($this->page - 1, 1));
+        return preg_replace('/\d+$/', '', $kode);
     }
 
-    public function gotoPage($page)
+    public function updatePerbaikanMassal($perbaikanId, $data)
     {
-        $this->setPage($page);
+        $perbaikan = PerbaikanModel::find($perbaikanId);
+        if (!$perbaikan) return;
+        $prefix = $this->getKodePerbaikanPrefix($perbaikan->perbaikan_kode);
+        PerbaikanModel::where('perbaikan_kode', 'like', $prefix . '%')->update($data);
     }
-    public function resetFilters()
+
+    public function sortBy($field)
     {
-        $this->selectedStatus = '';
-        $this->search = '';
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
         $this->resetPage();
     }
 
-    public function clearStatusFilter()
+    public function goToDetail($perbaikanId)
     {
-        $this->selectedStatus = '';
-        $this->resetPage();
+        return redirect()->route('detail-perbaikan', ['id' => $perbaikanId]);
     }
-
-    public function clearSearch()
-    {
-        $this->search = '';
-        $this->resetPage();
-    }
-
+    
+    // Tambahkan method untuk filter status
     public function setStatusFilter($status)
     {
         $this->selectedStatus = $status;
         $this->resetPage();
     }
-
-    protected function getPerbaikanQuery()
+    
+    public function clearStatusFilter()
     {
-        $query = PerbaikanModel::query()
-            ->join(/* your existing joins */);
-
-        if ($this->search) {
-            $query->where(/* your existing search logic */);
+        $this->selectedStatus = '';
+        $this->resetPage();
+    }
+    
+    public function resetFilters()
+    {
+        $this->search = '';
+        $this->selectedStatus = '';
+        $this->resetPage();
+    }
+    
+    public function clearSearch()
+    {
+        $this->search = '';
+        $this->resetPage();
+    }
+    
+    // Method untuk mendapatkan nama fasilitas dari ID dalam pencarian
+    public function getFacilityNameFromSearch()
+    {
+        if (preg_match('/^fasilitas_id:(\d+)$/', $this->search, $matches)) {
+            $facilityId = $matches[1];
+            $facility = FasilitasModel::with('barang')->find($facilityId);
+            if ($facility && $facility->barang) {
+                return $facility->barang->barang_nama;
+            }
         }
-
-        if ($this->selectedStatus) {
-            $query->where('status', $this->selectedStatus);
-        }
-
-        return $query;
+        return null;
     }
 }
