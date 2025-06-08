@@ -53,12 +53,11 @@ class SarpraController extends Controller
                 'statusColors' => $this->statusColors,
 
                 // data tab kepuasan
-                'facilities' => $this->getFormattedFacilityRatings(),
                 'yearlyRatingsData' => $this->feedbackRepository->getYearlyAverageRatings(),
-                'averageResponseDays' => $this->pelaporanRepository->getAverageResponseDays(),
+                'facilities' => $this->getFormattedFacilityRatings(),
 
                 // data tab frekuensi
-                'fasilitasBerisiko' => $this->fasilitasRepository->getFasilitasBerisikoTinggi(),
+                'fasilitasBerisiko' => $this->getFormattedFasilitasBerisiko(),
 
                 // data tab perencanaan
                 'statistikKerusakan' => $this->pelaporanRepository->getStatistikLaporanPerBulan(),
@@ -67,11 +66,11 @@ class SarpraController extends Controller
         );
     }
 
-
     private function getStatistikUmum(): array
     {
         return [
             'laporan_pending_hari_ini' => $this->pelaporanRepository->countTodayPendingReports(),
+            'averageResponseDays' => $this->pelaporanRepository->getAverageResponseDays(),
             'total' => $this->pelaporanRepository->getTotalPelaporan(),
             'pending' => $this->pelaporanRepository->countLaporanDenganStatusTerakhir('Menunggu'),
             'selesai' => $this->pelaporanRepository->countLaporanDenganStatusTerakhir('Diterima'),
@@ -83,6 +82,13 @@ class SarpraController extends Controller
     {
         return $this->feedbackRepository
             ->getFacilityRatings()
+            ->transform(fn($facility) => $this->formatFacilityItem($facility));
+    }
+
+    private function getFormattedFasilitasBerisiko(): Collection
+    {
+        return $this->fasilitasRepository
+            ->getFasilitasBerisikoTinggi()
             ->transform(fn($facility) => $this->formatFacilityItem($facility));
     }
 

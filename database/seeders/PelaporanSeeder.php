@@ -27,50 +27,36 @@ class PelaporanSeeder extends Seeder
             : null;
 
         $data = [
-            [
-                'user_id' => 6,
-                'fasilitas_id' => 5,
-                'pelaporan_kode' => 'PLP-0001',
-                'pelaporan_deskripsi' => 'AC tidak berfungsi dengan baik, suhu tidak turun meskipun sudah diatur.',
-            ],
-            [
-                'user_id' => 4,
-                'fasilitas_id' => 1,
-                'pelaporan_kode' => 'PLP-0002',
-                'pelaporan_deskripsi' => 'Meja pecah, tidak bisa digunakan.',
-            ],
-            [
-                'user_id' => 5,
-                'fasilitas_id' => 2,
-                'pelaporan_kode' => 'PLP-0003',
-                'pelaporan_deskripsi' => 'Proyektor tidak bisa digunakan.',
-            ],
-            [
-                'user_id' => 6,
-                'fasilitas_id' => 3,
-                'pelaporan_kode' => 'PLP-0004',
-                'pelaporan_deskripsi' => 'Kursi tidak bisa digunakan.',
-            ],
-            [
-                'user_id' => 4,
-                'fasilitas_id' => 4,
-                'pelaporan_kode' => 'PLP-0005',
-                'pelaporan_deskripsi' => 'Papan tulis tidak bisa digunakan.',
-            ],
-            [
-                'user_id' => 5,
-                'fasilitas_id' => 4,
-                'pelaporan_kode' => 'PLP-0006',
-                'pelaporan_deskripsi' => 'Papan tulis rusak total.',
-            ],
+            // Laporan untuk AC 1PK (fasilitas_id: 5)
+            ['user_id' => 6, 'fasilitas_id' => 5, 'pelaporan_kode' => 'PLP-0001', 'pelaporan_deskripsi' => 'AC tidak berfungsi dengan baik, suhu tidak turun.'],
+            ['user_id' => 4, 'fasilitas_id' => 5, 'pelaporan_kode' => 'PLP-0007', 'pelaporan_deskripsi' => 'AC kembali mati total, tidak ada respon dari remote.'],
+            ['user_id' => 5, 'fasilitas_id' => 5, 'pelaporan_kode' => 'PLP-0008', 'pelaporan_deskripsi' => 'Suara AC sangat berisik dan mengganggu.'],
+
+            // Laporan untuk Meja (fasilitas_id: 1)
+            ['user_id' => 4, 'fasilitas_id' => 1, 'pelaporan_kode' => 'PLP-0002', 'pelaporan_deskripsi' => 'Meja pecah, tidak bisa digunakan.'],
+
+            // Laporan untuk Proyektor (fasilitas_id: 2)
+            ['user_id' => 5, 'fasilitas_id' => 2, 'pelaporan_kode' => 'PLP-0003', 'pelaporan_deskripsi' => 'Proyektor tidak bisa digunakan, gambar buram.'],
+            ['user_id' => 6, 'fasilitas_id' => 2, 'pelaporan_kode' => 'PLP-0009', 'pelaporan_deskripsi' => 'Kabel proyektor putus.'],
+
+            // Laporan untuk Kursi (fasilitas_id: 3)
+            ['user_id' => 6, 'fasilitas_id' => 3, 'pelaporan_kode' => 'PLP-0004', 'pelaporan_deskripsi' => 'Kaki kursi patah.'],
+
+            // Laporan untuk Papan Tulis (fasilitas_id: 4)
+            ['user_id' => 4, 'fasilitas_id' => 4, 'pelaporan_kode' => 'PLP-0005', 'pelaporan_deskripsi' => 'Papan tulis sulit dihapus, spidol membekas.'],
+            ['user_id' => 5, 'fasilitas_id' => 4, 'pelaporan_kode' => 'PLP-0006', 'pelaporan_deskripsi' => 'Papan tulis retak di bagian tengah.'],
+            ['user_id' => 4, 'fasilitas_id' => 4, 'pelaporan_kode' => 'PLP-0010', 'pelaporan_deskripsi' => 'Permukaan papan tulis menggelembung.'],
+            ['user_id' => 6, 'fasilitas_id' => 4, 'pelaporan_kode' => 'PLP-0011', 'pelaporan_deskripsi' => 'Penghapus papan tulis hilang.'],
         ];
 
         foreach ($data as $row) {
+            $randomDate = fake()->dateTimeBetween('-6 months', 'now');
+
             DB::table('m_pelaporan')->insert([
                 ...$row,
                 'pelaporan_gambar' => $randomImages(),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at' => $randomDate,
+                'updated_at' => $randomDate,
             ]);
         }
     }

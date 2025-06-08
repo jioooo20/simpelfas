@@ -48,12 +48,12 @@
 
             <!-- Filter Tahun -->
             <div class="relative">
-                <select id="yearFilter"
+                <select id="analisisYearFilter"
                         class="appearance-none w-24 bg-white border border-gray-300 text-gray-700 py-2 pl-3 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
                     @forelse ($availableYears as $year)
                         <option value="{{ $year }}" @if ($year == $latestYear) selected @endif>{{ $year }}</option>
                     @empty
-                        <option>{{ date('Y') }}</option>
+                        <option>N/A</option>
                     @endforelse
                 </select>
             </div> <!-- End of Filter Tahun -->
@@ -74,7 +74,7 @@
 
         <!-- List Performa -->
         <div class="space-y-3 h-80 md:h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-            @foreach ($facilitiesPerformance as $facility)
+            @forelse ($facilitiesPerformance as $facility)
                 <!-- Card Fasilitas -->
                 <div
                     class="bg-white border border-gray-200 p-4 rounded-lg flex justify-between items-start hover:shadow-sm transition-shadow duration-150">
@@ -107,7 +107,21 @@
                         <p class="text-xs text-gray-500 -mt-1">Skor</p>
                     </div> <!-- End of Skor -->
                 </div> <!-- End of Card Fasilitas -->
-            @endforeach
+            @empty
+                {{-- [BARU] Tampilan jika tidak ada data performa --}}
+                <div class="flex items-center justify-center h-full text-center text-gray-500">
+                    <div class="p-6">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1.5-1.5m1.5 1.5l1.5-1.5m0 0l-1.5-1.5m1.5 1.5l1.5 1.5m-16.5-3.375h16.5"/>
+                        </svg>
+                        <h4 class="mt-2 text-sm font-semibold text-gray-700">Data Performa Belum Tersedia</h4>
+                        <p class="mt-1 text-xs">Data akan muncul di sini setelah ada cukup laporan dan feedback untuk
+                            dianalisis.</p>
+                    </div>
+                </div>
+            @endforelse
         </div> <!-- End of List Performa -->
     </div> <!-- End of Performa Fasilitas -->
 </div> <!-- End of main content -->
@@ -139,20 +153,41 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const allTrendsData = @json($reportTrendData);
-            const yearFilter = document.getElementById('yearFilter');
-            const ctxReportTrend = document.getElementById('reportTrendChart').getContext('2d');
-            const reportLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const analisisYearFilter = document.getElementById('analisisYearFilter');
+            const chartElement = document.getElementById('reportTrendChart');
+
+            // Cek jika elemen-elemen penting ada di halaman
+            if (!analisisYearFilter || !chartElement) {
+                return;
+            }
+
             const legendContainer = document.getElementById('legend-container');
             const legendTrigger = document.getElementById('legend-trigger');
             const legendPopover = document.getElementById('legend-popover');
 
+            // [PERUBAHAN UTAMA] Tampilan jika data kosong dibuat lebih baik
             if (!allTrendsData || Object.keys(allTrendsData).length === 0) {
-                const chartContainer = document.getElementById('reportTrendChart').parentElement;
-                chartContainer.innerHTML = '<div class="flex items-center justify-center h-full"><p class="text-center text-gray-500">Tidak ada data tren untuk ditampilkan.</p></div>';
+                const chartContainer = chartElement.parentElement;
+                // Tambahkan class flex untuk centering
+                chartContainer.classList.add('flex', 'items-center', 'justify-center');
+                // Ganti konten dengan pesan yang lebih informatif
+                chartContainer.innerHTML = `
+                    <div class="text-center text-gray-500 px-4">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1.5-1.5m1.5 1.5l1.5-1.5m0 0l-1.5-1.5m1.5 1.5l1.5 1.5m-16.5-3.375h16.5" />
+                        </svg>
+                        <h4 class="mt-2 text-sm font-semibold text-gray-700">Data Tren Belum Cukup</h4>
+                        <p class="mt-1 text-xs">Grafik akan muncul di sini setelah ada riwayat laporan yang cukup untuk dianalisis.</p>
+                    </div>
+                `;
                 return;
-
             }
 
+            // Jika data ada, lanjutkan eksekusi kode chart...
+            const ctxReportTrend = chartElement.getContext('2d');
+            const reportLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+            // ... (sisa kode Anda untuk logika pop-up, inisialisasi, dan update chart tetap sama persis) ...
             legendTrigger.addEventListener('click', (event) => {
                 event.stopPropagation();
                 legendPopover.classList.toggle('hidden');
@@ -164,22 +199,14 @@
                 }
             });
 
-
             const getSuggestedMaxY = (data) => {
                 const maxDataPoint = Math.max(...(data.laporanMasuk || []), ...(data.laporanSelesai || []));
-
-                if (maxDataPoint === 0) {
-                    return 5;
-                }
-
-                if (maxDataPoint < 20) {
-                    return maxDataPoint + 1;
-                }
-
+                if (maxDataPoint === 0) return 5;
+                if (maxDataPoint < 20) return maxDataPoint + 1;
                 return Math.ceil((maxDataPoint * 1.1) / 10) * 10;
             };
 
-            const initialYear = yearFilter.value;
+            const initialYear = analisisYearFilter.value;
             const initialData = allTrendsData[initialYear] || {laporanMasuk: [], laporanSelesai: []};
 
             const reportTrendChart = new Chart(ctxReportTrend, {
@@ -223,9 +250,7 @@
                         }
                     },
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: {display: false},
                         tooltip: {
                             backgroundColor: '#1f2937',
                             titleColor: '#ffffff',
@@ -242,7 +267,6 @@
                 }
             });
 
-            // --- Logika Interaktif ---
             legendPopover.addEventListener('click', (e) => {
                 const target = e.target.closest('li');
                 if (!target) return;
@@ -253,10 +277,9 @@
                 reportTrendChart.update();
             });
 
-            yearFilter.addEventListener('change', function () {
+            analisisYearFilter.addEventListener('change', function () {
                 const selectedYear = this.value;
                 const newData = allTrendsData[selectedYear] || {laporanMasuk: [], laporanSelesai: []};
-
                 reportTrendChart.data.datasets[0].data = newData.laporanMasuk;
                 reportTrendChart.data.datasets[1].data = newData.laporanSelesai;
                 reportTrendChart.options.scales.y.max = getSuggestedMaxY(newData);

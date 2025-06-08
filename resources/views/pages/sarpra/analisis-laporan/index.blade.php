@@ -24,30 +24,45 @@
                  class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-col justify-between"
                  data-rating="{{ $kepuasan }}">
                 <p class="text-gray-500 text-sm mb-2">Kepuasan Pengguna</p>
-                <!-- Skor Kepuasan Pengguna -->
+
                 <div class="flex items-center gap-2">
-                    <h2 class="text-xl font-semibold text-yellow-500">
+                    {{-- Diberi ID agar warnanya bisa diubah oleh JavaScript --}}
+                    <h2 id="satisfaction-score" class="text-xl font-semibold">
                         {{ number_format($kepuasan, 2, ',', '.') }}
                     </h2>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-green-500" fill="none"
-                         viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/>
-                    </svg>
-                </div> <!-- End Skor Kepuasan Pengguna -->
 
-                <!-- Bintang Kepuasan Pengguna -->
+                    {{-- Kontainer untuk menampung tiga ikon (hanya satu yang akan tampil) --}}
+                    <div id="satisfaction-icon-container">
+                        {{-- Ikon Senyum (Happy) --}}
+                        <svg id="icon-happy" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 hidden text-green-500"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/>
+                        </svg>
+                        {{-- Ikon Netral (Neutral) - dengan mulut datar --}}
+                        <svg id="icon-neutral" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 hidden text-yellow-500"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M9 14h6M9 10h.01M15 10h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/>
+                        </svg>
+                        {{-- Ikon Sedih (Sad) --}}
+                        <svg id="icon-sad" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 hidden text-red-500"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/>
+                        </svg>
+                    </div>
+                </div>
+
                 <div id="kepuasan-stars-container-js-logic" class="flex text-yellow-400 mt-1">
-                    {{-- Blade akan merender 5 SVG bintang di sini TANPA logika kelas dinamis --}}
                     @for ($i = 1; $i <= 5; $i++)
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                             class="w-5 h-5 fill-current star-item" {{-- Tambahkan kelas 'star-item' --}}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-current star-item"
                              viewBox="0 0 24 24">
                             <path
                                 d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                         </svg>
                     @endfor
-                </div> <!-- End Bintang Kepuasan Pengguna -->
+                </div>
             </div> <!-- End Kepuasan Pengguna Card -->
 
             <!-- Waktu Respon -->
@@ -180,49 +195,89 @@
 
             (function StarRatingSystem() {
                 const kepuasanCard = document.getElementById('kepuasan-pengguna-card-js-logic');
-
-                if (!kepuasanCard) {
-                    return;
-                }
+                if (!kepuasanCard) return;
 
                 const ratingValueString = kepuasanCard.dataset.rating;
                 const ratingValue = parseFloat(ratingValueString);
-                const starsContainer = kepuasanCard.querySelector('#kepuasan-stars-container-js-logic');
 
                 if (isNaN(ratingValue)) {
-                    console.error('Rating Bintang: Nilai rating tidak valid atau tidak ditemukan:', ratingValueString);
+                    console.error('Rating: Nilai tidak valid:', ratingValueString);
+                    const starsContainer = kepuasanCard.querySelector('#kepuasan-stars-container-js-logic');
                     if (starsContainer) {
                         starsContainer.innerHTML = '<span class="text-xs text-gray-400">Rating tidak tersedia.</span>';
                     }
                     return;
                 }
 
-                if (starsContainer) {
-                    applyStarStyling(ratingValue, starsContainer);
-                }
+                // Panggil kedua fungsi: satu untuk bintang, satu untuk ikon.
+                applyStarStyling(ratingValue, kepuasanCard);
+                updateSatisfactionIconAndColor(ratingValue, kepuasanCard);
 
+                /**
+                 * Ini adalah fungsi Anda yang sudah benar untuk styling bintang.
+                 * Saya hanya sesuaikan sedikit logika 'hasFraction' agar lebih standar.
+                 */
                 function applyStarStyling(kepuasanScore, containerElement) {
+                    const starsContainer = containerElement.querySelector('#kepuasan-stars-container-js-logic');
+                    if (!starsContainer) return;
+
                     const totalStars = 5;
-                    const fullStars = Math.floor(kepuasanScore);
-                    const hasFraction = (kepuasanScore - fullStars) >= 0.01;
-                    const starElements = containerElement.querySelectorAll('svg.star-item');
+                    const starElements = starsContainer.querySelectorAll('svg.star-item');
 
                     if (starElements.length !== totalStars) {
                         console.error('Rating Bintang: Jumlah elemen bintang tidak sesuai:', starElements.length);
                         return;
                     }
 
+                    const fullStars = Math.floor(kepuasanScore);
+                    // Menggunakan >= 0.5 untuk deteksi setengah bintang yang lebih akurat
+                    const hasHalfStar = (kepuasanScore - fullStars) >= 0.5;
+
                     starElements.forEach((svgElement, index) => {
                         const starNumber = index + 1;
+                        // Reset style yang mungkin ditambahkan
                         svgElement.classList.remove('opacity-50', 'text-gray-300');
 
-                        if (starNumber <= fullStars) {
-                        } else if (starNumber === fullStars + 1 && hasFraction) {
-                            svgElement.classList.add('opacity-50');
-                        } else {
-                            svgElement.classList.add('text-gray-300');
+                        if (starNumber > fullStars) {
+                            if (starNumber === fullStars + 1 && hasHalfStar) {
+                                // Ini adalah bintang "setengah", buat semi-transparan
+                                svgElement.classList.add('opacity-50');
+                            } else {
+                                // Ini adalah bintang kosong, ganti warnanya jadi abu-abu
+                                svgElement.classList.add('text-gray-300');
+                            }
                         }
+                        // Untuk bintang penuh, tidak perlu aksi, karena warna kuning didapat dari parent div
                     });
+                }
+
+                /**
+                 * [FUNGSI BARU] Fungsi ini ditambahkan untuk mengurus ikon dan warna skor.
+                 */
+                function updateSatisfactionIconAndColor(score, container) {
+                    const scoreEl = container.querySelector('#satisfaction-score');
+                    const iconHappy = container.querySelector('#icon-happy');
+                    const iconNeutral = container.querySelector('#icon-neutral');
+                    const iconSad = container.querySelector('#icon-sad');
+
+                    // Pastikan semua elemen ada sebelum melanjutkan
+                    if (!scoreEl || !iconHappy || !iconNeutral || !iconSad) return;
+
+                    // Reset semua class warna dan sembunyikan semua ikon
+                    scoreEl.classList.remove('text-green-500', 'text-yellow-500', 'text-red-500');
+                    [iconHappy, iconNeutral, iconSad].forEach(icon => icon.classList.add('hidden'));
+
+                    // Terapkan class berdasarkan skor
+                    if (score >= 3.5) {
+                        scoreEl.classList.add('text-green-500');
+                        iconHappy.classList.remove('hidden');
+                    } else if (score >= 2.5) {
+                        scoreEl.classList.add('text-yellow-500');
+                        iconNeutral.classList.remove('hidden');
+                    } else {
+                        scoreEl.classList.add('text-red-500');
+                        iconSad.classList.remove('hidden');
+                    }
                 }
             })();
         });
