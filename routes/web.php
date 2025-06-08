@@ -51,13 +51,20 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:2')->prefix('sarpra')->group(function (): void {
         Route::get('/', [SarpraController::class, 'dasbor'])->name('sarpra');
         Route::get('/laporan-kerusakan-fasilitas', [SarpraController::class, 'laporan_kerusakan_fasilitas'])->name('sarpra.laporan-kerusakan-fasilitas');
+        Route::get('/rekomendasi-prioritas-perbaikan', [SarpraController::class, 'rekomendasi_prioritas_perbaikan'])->name('sarpra.rekomendasi-prioritas-perbaikan');
         Route::get('/statistik-fasilitas', [SarpraController::class, 'statistikFasilitas'])->name('statistik-fasilitas');
-        Route::get('/frekuensi-perbaikan', [SarpraController::class, 'frekuensiPerbaikan'])->name('frekuensi-perbaikan');
-        Route::get('/kepuasan-pengguna', [SarpraController::class, 'kepuasanPengguna'])->name('kepuasan-pengguna');
-        Route::get('/perencanaan-pemeliharaan', [SarpraController::class, 'perencanaanPemeliharaan'])->name('perencanaan-pemeliharaan');
+        Route::get('/feedback', [SarpraController::class, 'count-total'])->name('feedback.index');
     });
     Route::middleware('role:3')->prefix('teknisi')->group(function (): void {
         Route::get('/', [TeknisiController::class, 'perbaikan'])->name('teknisi');
+        Route::group(['prefix' => 'perbaikan'], function (): void {
+            Route::get('/detail', [TeknisiController::class, 'perbaikanShow'])->name('detail-perbaikan');
+            Route::post('/update', [TeknisiController::class, 'update'])->name('update-perbaikan');
+        });
+        Route::group(['prefix' => 'riwayat-perbaikan'], function (): void {
+            Route::get('/', [TeknisiController::class, 'riwayat'])->name('riwayat-perbaikan');
+            Route::get('/detail', [TeknisiController::class, 'riwayatShow'])->name('riwayat-perbaikan-detail');
+        });
     });
     Route::middleware('role:4,5,6')->prefix('users')->group(function (): void {
         Route::get('/', [UsersController::class, 'index'])->name('users');

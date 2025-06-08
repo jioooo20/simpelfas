@@ -37,6 +37,22 @@
                         <td class="text-gray-600 px-4 py-5">{{ $laporan->fasilitas_label }}</td>
                     </tr> <!-- End of Lokasi -->
 
+                    <!-- Skala Kerusakan -->
+                    <tr class="bg-white border-b py-5">
+                        <th class="text-left align-top font-semibold text-gray-800 px-4 py-5">Skala Kerusakan</th>
+                        <td class="text-gray-600 px-4 py-5">
+                            {{ $skalaLabels[$skor['Skala_Kerusakan']] ?? 'Tidak Tersedia' }}
+                        </td>
+                    </tr>
+
+                    <!-- Frekuensi Penggunaan -->
+                    <tr class="bg-base-200 border-b py-5">
+                        <th class="text-left align-top font-semibold text-gray-800 px-4 py-5">Frekuensi Penggunaan</th>
+                        <td class="text-gray-600 px-4 py-5">
+                            {{ $frekuensiLabels[$skor['Frekuensi_Penggunaan']] ?? 'Tidak Tersedia' }}
+                        </td>
+                    </tr>
+
                     <!-- Deskripsi Laporan -->
                     <tr class="bg-white border-b py-5">
                         <th class="text-left align-top font-semibold text-gray-800 px-4 py-5">Laporan</th>

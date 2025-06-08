@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('t_status_pelaporan', function (Blueprint $table) {
             $table->id('status_pelaporan_id');
             $table->unsignedBigInteger('pelaporan_id')->index();
-            $table->enum('status_pelaporan', ['Menunggu','Diterima', 'Diproses', 'Selesai'])->default('Menunggu');
+            $table->enum('status_pelaporan', ['Menunggu','Diterima', 'Diproses', 'Selesai', 'Ditolak'])->default('Menunggu');
             $table->timestamps();
 
             $table->foreign('pelaporan_id')->references('pelaporan_id')->on('m_pelaporan');

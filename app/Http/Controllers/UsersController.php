@@ -11,10 +11,6 @@ use Illuminate\Validation\ValidationException;
 use App\Repositories\FasilitasRepository;
 use App\Repositories\PelaporanRepository;
 use App\Http\Requests\StorePelaporanRequest;
-use App\Models\SkorAltModel;
-use App\Models\KriteriaModel;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class UsersController extends Controller
 {
@@ -36,153 +32,6 @@ class UsersController extends Controller
     {
         return view('pages.users.status-laporan.index');
     }
-    public function UmpanBalik()
-    {
-        $userId = auth()->id();
-
-        $perbaikan = PelaporanModel::with(['fasilitas', 'statusPelaporan' => function ($query) {
-            $query->orderBy('created_at');
-        }])->where('user_id', $userId)->get();
-
-        $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
-        
-        $perbaikan->transform(function ($item) use ($fasilitasOptions) {
-            $item['fasilitas_label'] = $fasilitasOptions[$item->fasilitas_id]['label'] ?? null;
-            return $item;
-        });
-
-        return view('pages.users.feedback.index', compact('perbaikan'));
-    }
-
-    public function UmpanBalik_Create($perbaikan_id) {
-        $laporan = PelaporanModel::with('fasilitas.barang')->findOrFail($perbaikan_id);
-        $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
-        $laporan->fasilitas_label = $fasilitasOptions[$laporan->fasilitas_id]['label'] ?? null;
-
-        return view('pages.users.feedback.create')->with('laporan', $laporan);
-    }
-
-   public function store(Request $request)
-{
-    $validated = $request->validate([
-        'pelaporan_id' => 'required|exists:m_pelaporan,pelaporan_id',
-        'feedback_text' => 'nullable|string|max:1000',
-        'rating' => 'nullable|integer|min:1|max:5',
-    ]);
-
-    DB::table('m_feedback')->insert([
-        'pelaporan_id' => $validated['pelaporan_id'],
-        'feedback_text' => $validated['feedback_text'] ?? null,
-        'rating' => $validated['rating'] ?? null,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
-
-    // Update tanggal ditangani di pelaporan jika belum ada
-    DB::table('m_pelaporan')
-        ->where('pelaporan_id', $validated['pelaporan_id'])
-        ->whereNull('tanggal_ditangani')
-        ->update(['tanggal_ditangani' => now()]);
-
-    return redirect()->route('users.feedback')->with('success', 'Feedback berhasil disimpan!');
-}
-
-
-
-    public function laporanDetail()
-    {
-        return view('pages.users.status-laporan.laporan-detail-laporan');
-    }
-
-//    public function storePelaporan(StorePelaporanRequest $request, PelaporanRepository $repo): JsonResponse
-//    {
-//        try {
-//            $gambarPaths = $this->validateImage($request);
-//
-//            $repo->StorePelaporan([
-//                'fasilitas_id' => $request->input('lokasi'),
-//                'deskripsi' => $request->input('deskripsi'),
-//                'gambar' => $gambarPaths,
-//            ]);
-//
-//            return response()->json([
-//                'success' => true,
-//                'message' => 'Laporan berhasil dikirim.'
-//            ]);
-//        } catch (ValidationException $e) {
-//            return response()->json([
-//                'success' => false,
-//                'errors' => $e->validator->errors()
-//            ], 422);
-//        } catch (\Exception $e) {
-//            Log::error('Gagal menyimpan pelaporan: ' . $e->getMessage());
-//            return response()->json([
-//                'success' => false,
-//                'message' => 'Terjadi kesalahan. Silakan coba lagi nanti.'
-//            ], 500);
-//        }
-//    }
-
-//    public function storePelaporan(StorePelaporanRequest $request, PelaporanRepository $repo): JsonResponse
-//    {
-//        try {
-//            $gambarPaths = $this->validateImage($request);
-//
-//            $pelaporan = $repo->StorePelaporan([
-//                'fasilitas_id' => $request->input('lokasi'),
-//                'deskripsi' => $request->input('deskripsi'),
-//                'gambar' => $gambarPaths,
-//            ]);
-//
-//            // Nilai bobot konversi
-//            $skalaBobot = [
-//                'Ringan' => 1,
-//                'Sedang' => 2,
-//                'Berat'  => 3,
-//            ];
-//
-//
-//            $frekuensiBobot = [
-//                'Jarang' => 1,
-//                'Sedang' => 2,
-//                'Sering' => 3,
-//            ];
-//
-//            // Ambil ID kriteria dari DB
-//            $kriteriaSkala = \App\Models\KriteriaModel::where('kriteria_kode', 'skala')->first();
-//            $kriteriaFrekuensi = \App\Models\KriteriaModel::where('kriteria_kode', 'frekuensi')->first();
-//
-//            // Simpan skor alternatif
-//            \App\Models\SkorAltModel::create([
-//                'pelaporan_id' => $pelaporan->pelaporan_id,
-//                'kriteria_id' => $kriteriaSkala->kriteria_id,
-//                'nilai_skor' => $skalaBobot[$request->input('skala')],
-//            ]);
-//
-//            \App\Models\SkorAltModel::create([
-//                'pelaporan_id' => $pelaporan->pelaporan_id,
-//                'kriteria_id' => $kriteriaFrekuensi->kriteria_id,
-//                'nilai_skor' => $frekuensiBobot[$request->input('frekuensi')],
-//            ]);
-//
-//            return response()->json([
-//                'success' => true,
-//                'message' => 'Laporan berhasil dikirim.'
-//            ]);
-//
-//        } catch (ValidationException $e) {
-//            return response()->json([
-//                'success' => false,
-//                'errors' => $e->validator->errors()
-//            ], 422);
-//        } catch (\Exception $e) {
-//            Log::error('Gagal menyimpan pelaporan: ' . $e->getMessage());
-//            return response()->json([
-//                'success' => false,
-//                'message' => 'Terjadi kesalahan. Silakan coba lagi nanti.'
-//            ], 500);
-//        }
-//    }
 
     public function storePelaporan(StorePelaporanRequest $request): JsonResponse
     {
@@ -214,50 +63,6 @@ class UsersController extends Controller
         }
     }
 
-    private function createPelaporan($request, $gambarPaths)
-    {
-        return $this->pelaporanRepo->StorePelaporan([
-            'fasilitas_id' => $request->input('lokasi'),
-            'deskripsi' => $request->input('deskripsi'),
-            'gambar' => $gambarPaths,
-        ]);
-    }
-
-    protected function validateImage(Request $request): ?array
-    {
-        $gambarPaths = [];
-
-        if ($request->hasFile('foto')) {
-            try {
-                foreach ($request->file('foto') as $file) {
-                    $imageInfo = getimagesize($file);
-                    if ($imageInfo === false) {
-                        throw ValidationException::withMessages(['foto' => 'Salah satu file bukan gambar yang valid.']);
-                    }
-
-                    $width = $imageInfo[0];
-                    $height = $imageInfo[1];
-
-                    if ($width > 5000 || $height > 5000) {
-                        throw ValidationException::withMessages(['foto' => 'Resolusi salah satu gambar melebihi 5000x5000 piksel.']);
-                    }
-
-                    $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-                    $path = $file->storeAs('pelaporan/menunggu', $filename, 'public');
-                    $gambarPaths[] = $path;
-                }
-
-                return $gambarPaths;
-
-            } catch (Exception $e) {
-                Log::error($e);
-                throw ValidationException::withMessages(['foto' => 'Gagal memproses gambar, silakan coba lagi.']);
-            }
-        }
-
-        return null;
-    }
-
     public function getLokasiOptions(): JsonResponse
     {
         $lokasiList = $this->fasilitasRepo->getLokasiOptions();
@@ -275,18 +80,94 @@ class UsersController extends Controller
         $laporan = $this->pelaporanRepo->getLaporanDetailById($id);
         $latestStatus = $laporan->statusPelaporan->first();
 
-        // Anggap gambar-gambar ini disimpan sebagai JSON di DB
+        $skor = $this->pelaporanRepo->getSkorKriteriaByPelaporanId($laporan->pelaporan_id);
+
         $gambar = [
             'Gambar Laporan' => json_decode($laporan->pelaporan_gambar ?? '[]'),
             'Gambar Perbaikan' => json_decode($laporan->gambar_perbaikan ?? '[]'),
             'Gambar Selesai' => json_decode($laporan->gambar_selesai ?? '[]'),
         ];
 
-        return view('pages.users.status-laporan.laporan-detail-modal', [
+        return view('pages.users.status-laporan.laporan-detail', [
             'laporan' => $laporan,
             'status' => $latestStatus ? $latestStatus->status_pelaporan : 'Belum Ada Status',
             'gambar' => $gambar,
+            'skor' => $skor,
+            'frekuensiLabels' => $this->getFrekuensiLabels(),
+            'skalaLabels' => $this->getSkalaLabels(),
         ]);
     }
 
+    private function createPelaporan($request, $gambarPaths)
+    {
+        return $this->pelaporanRepo->StorePelaporan([
+            'fasilitas_id' => $request->input('lokasi'),
+            'deskripsi' => $request->input('deskripsi'),
+            'gambar' => $gambarPaths,
+        ]);
+    }
+
+    private function getFrekuensiLabels(): array
+    {
+        return [
+            1 => 'Jarang',
+            2 => 'Sedang',
+            3 => 'Sering',
+        ];
+    }
+
+    private function getSkalaLabels(): array
+    {
+        return [
+            1 => 'Ringan',
+            2 => 'Sedang',
+            3 => 'Berat',
+        ];
+    }
+
+    protected function validateImage(Request $request): ?array
+    {
+        $gambarPaths = [];
+
+        if ($request->hasFile('foto')) {
+            try {
+                $totalSize = 0; // total ukuran dalam KB
+
+                foreach ($request->file('foto') as $file) {
+                    $totalSize += $file->getSize() / 1024; // convert dari byte ke KB
+
+                    $imageInfo = getimagesize($file);
+                    if ($imageInfo === false) {
+                        throw ValidationException::withMessages(['foto' => 'Salah satu file bukan gambar yang valid.']);
+                    }
+
+                    $width = $imageInfo[0];
+                    $height = $imageInfo[1];
+
+                    if ($width > 5000 || $height > 5000) {
+                        throw ValidationException::withMessages(['foto' => 'Resolusi salah satu gambar melebihi 5000x5000 piksel.']);
+                    }
+                }
+
+                if ($totalSize > 10240) {
+                    throw ValidationException::withMessages(['foto' => 'Total ukuran gambar tidak boleh lebih dari 10MB.']);
+                }
+
+                // Jika lolos semua validasi, simpan file
+                foreach ($request->file('foto') as $file) {
+                    $filename = uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('pelaporan/menunggu', $filename, 'public');
+                    $gambarPaths[] = $path;
+                }
+
+                return $gambarPaths;
+
+            } catch (Exception $e) {
+                Log::error($e);
+                throw ValidationException::withMessages(['foto' => 'Gagal memproses gambar, silakan coba lagi.']);
+            }
+        }
+
+        return null;
+    }
 }
