@@ -34,6 +34,12 @@ class UserTable extends Component
     {
         $this->resetPage();
     }
+
+    public function gotoPage($page)
+    {
+        $this->setPage($page);
+    }
+
     public function editUser($userId)
     {
         try {

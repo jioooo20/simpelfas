@@ -5,7 +5,7 @@
         <div class="flex flex-col md:flex-row justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-base-content text-center md:text-left">Pengelolaan Pengguna</h1>
             <div class="flex gap-3">
-                <button class="bg-green-500 text-white btn btn-outline btn-sm flex items-center gap-2">
+                <button class="bg-green-500 text-white btn btn-outline btn-sm flex items-center gap-2" onclick="modal_import_user.showModal()">
                     <i class="fas fa-file-excel"></i>Impor Data Pengguna
                 </button>
                 <button class="btn btn-primary text-white btn-sm flex items-center gap-2" onclick="modal_add_user.showModal()">
@@ -24,6 +24,7 @@
         </div>
     </div>
     @include('pages.admin.manage-user.add')
+    @include('pages.admin.manage-user.import_user')
 @endsection
 
 

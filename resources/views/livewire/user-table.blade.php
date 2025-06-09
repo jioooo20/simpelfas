@@ -128,11 +128,9 @@
             @endphp
 
             @for ($page = $startPage; $page <= $endPage; $page++)
-                <a href="{{ $table->url($page) }}">
-                    <button class="join-item btn btn-sm {{ $table->currentPage() == $page ? 'btn-active' : '' }}">
-                        {{ $page }}
-                    </button>
-                </a>
+                <button wire:click="gotoPage({{ $page }})" class="join-item btn btn-sm {{ $table->currentPage() == $page ? 'btn-active' : '' }}">
+                    {{ $page }}
+                </button>
             @endfor
         </div>
     </div>
@@ -176,7 +174,7 @@
                             <select wire:model="role_id" class="select select-bordered w-full">
                                 <option value="">Pilih Hak Akses</option>
                                 @foreach ($roles as $role)
-                                    <option value="{{ $role->id }}">{{ $role->role_nama }}</option>
+                                    <option value="{{ $role->role_id }}">{{ $role->role_nama }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -185,7 +183,7 @@
                     <div class="mt-6 flex justify-end gap-2">
                         <button type="button" wire:click="$set('showEditModal', false)"
                             class="btn btn-sm btn-ghost">Batal</button>
-                        <button type="submit" class="btn btn-sm btn-primary">Simpan</button>
+                        <button type="submit" class="btn btn-sm btn-primary text-white">Simpan</button>
                     </div>
                 </form>
             </div>

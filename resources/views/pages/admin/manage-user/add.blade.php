@@ -50,7 +50,7 @@
             </div>
             <div class="modal-action">
                 <button type="button" class="btn btn-sm" onclick="modal_add_user.close()">Batal</button>
-                <button type="submit" class="btn btn-sm btn-primary">Simpan</button>
+                <button type="submit" class="btn btn-sm btn-primary text-white">Simpan</button>
             </div>
         </form>
     </div>
