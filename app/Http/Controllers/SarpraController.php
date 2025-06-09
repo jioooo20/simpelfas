@@ -4,6 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Repositories\FasilitasRepository;
 use Illuminate\Http\Request;
+use App\Models\PelaporanModel;
+use App\Models\PerbaikanModel;
+use App\Models\FasilitasModel;
+use App\Models\StatusPelaporanModel;
+use App\Models\StatusPerbaikanModel;
+use App\Models\FeedbackModel;
+use Illuminate\Support\Facades\DB;
 use App\Repositories\PelaporanRepository;
 use App\Repositories\FeedbackRepository;
 use Illuminate\Support\Collection;
@@ -23,7 +30,77 @@ class SarpraController extends Controller
 
     public function dasbor()
     {
-        return view('pages.sarpra.dasbor.index');
+        // Total fasilitas
+        $totalFasilitas = FasilitasModel::count();
+
+        // Total laporan
+        $totalLaporan = PelaporanModel::count();
+
+        // Total perbaikan
+        $totalPerbaikan = PerbaikanModel::count();
+
+        // Laporan menunggu verifikasi (status Menunggu)
+        $laporanMenungguVerifikasi = StatusPelaporanModel::where('status_pelaporan', 'Menunggu')->count();
+
+        // Laporan menunggu penugasan (status Diterima)
+        $laporanMenungguPenugasan = StatusPelaporanModel::where('status_pelaporan', 'Diterima')->count();
+
+        // Perbaikan dalam proses
+        $perbaikanProses = StatusPerbaikanModel::where('perbaikan_status', 'Diproses')->count();
+
+        // Perbaikan selesai bulan ini
+        $perbaikanSelesaiBulanIni = StatusPerbaikanModel::where('perbaikan_status', 'Selesai')
+            ->whereMonth('updated_at', now()->month)
+            ->whereYear('updated_at', now()->year)
+            ->count();
+
+        // Fasilitas berdasarkan status
+        $fasilitasPerStatus = FasilitasModel::select('fasilitas_status', DB::raw('count(*) as total'))
+            ->groupBy('fasilitas_status')
+            ->orderByRaw("
+            CASE fasilitas_status
+                WHEN 'Baik' THEN 1
+                WHEN 'Rusak' THEN 2
+                WHEN 'Dalam Perbaikan' THEN 3
+                ELSE 4
+            END
+            ")
+            ->get();
+
+        // Laporan per bulan (6 bulan terakhir)
+        $laporanPerBulan = PelaporanModel::select(
+                DB::raw('MONTH(created_at) as bulan'),
+                DB::raw('YEAR(created_at) as tahun'),
+                DB::raw('count(*) as total')
+            )
+            ->where('created_at', '>=', now()->subMonths(6))
+            ->groupBy(DB::raw('YEAR(created_at), MONTH(created_at)'))
+            ->orderBy('tahun')
+            ->orderBy('bulan')
+            ->get();
+
+        // Rating rata-rata feedback
+        $ratingRataRata = FeedbackModel::avg('rating') ?? 0;
+
+        // Laporan terbaru
+        $laporanTerbaru = PelaporanModel::with(['user', 'fasilitas.barang', 'fasilitas.ruang'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('pages.sarpra.dasbor.index', compact(
+            'totalFasilitas',
+            'totalLaporan',
+            'totalPerbaikan',
+            'laporanMenungguVerifikasi',
+            'laporanMenungguPenugasan',
+            'perbaikanProses',
+            'perbaikanSelesaiBulanIni',
+            'fasilitasPerStatus',
+            'laporanPerBulan',
+            'ratingRataRata',
+            'laporanTerbaru'
+        ));
     }
 
     public function laporan_kerusakan_fasilitas()
