@@ -199,23 +199,39 @@
 
                 const ratingValueString = kepuasanCard.dataset.rating;
                 const ratingValue = parseFloat(ratingValueString);
+                const starsContainer = kepuasanCard.querySelector('#kepuasan-stars-container-js-logic');
+                const scoreEl = kepuasanCard.querySelector('#satisfaction-score');
+                const iconContainer = kepuasanCard.querySelector('#satisfaction-icon-container');
 
+                // Cek jika nilai tidak valid (bukan angka)
                 if (isNaN(ratingValue)) {
                     console.error('Rating: Nilai tidak valid:', ratingValueString);
-                    const starsContainer = kepuasanCard.querySelector('#kepuasan-stars-container-js-logic');
-                    if (starsContainer) {
-                        starsContainer.innerHTML = '<span class="text-xs text-gray-400">Rating tidak tersedia.</span>';
-                    }
+                    if (scoreEl) scoreEl.textContent = 'Error';
+                    if (starsContainer) starsContainer.innerHTML = '<span class="text-xs text-red-500">Data tidak valid.</span>';
+                    if (iconContainer) iconContainer.style.display = 'none';
                     return;
                 }
 
-                // Panggil kedua fungsi: satu untuk bintang, satu untuk ikon.
-                applyStarStyling(ratingValue, kepuasanCard);
-                updateSatisfactionIconAndColor(ratingValue, kepuasanCard);
+                // [PERUBAHAN UTAMA] Tangani kasus jika belum ada feedback (skor = 0)
+                if (ratingValue === 0) {
+                    // Ubah skor menjadi 'N/A' dengan warna netral
+                    scoreEl.textContent = 'N/A';
+                    scoreEl.className = 'text-xl font-semibold text-gray-500';
+
+                    // Sembunyikan ikon wajah
+                    iconContainer.style.display = 'none';
+
+                    // Ganti bintang dengan pesan informatif
+                    starsContainer.innerHTML = '<span class="text-xs text-gray-400">Belum ada feedback</span>';
+
+                } else {
+                    // Jika ada skor (ratingValue > 0), jalankan logika seperti biasa
+                    applyStarStyling(ratingValue, kepuasanCard);
+                    updateSatisfactionIconAndColor(ratingValue, kepuasanCard);
+                }
 
                 /**
-                 * Ini adalah fungsi Anda yang sudah benar untuk styling bintang.
-                 * Saya hanya sesuaikan sedikit logika 'hasFraction' agar lebih standar.
+                 * Fungsi untuk styling bintang
                  */
                 function applyStarStyling(kepuasanScore, containerElement) {
                     const starsContainer = containerElement.querySelector('#kepuasan-stars-container-js-logic');
@@ -224,35 +240,27 @@
                     const totalStars = 5;
                     const starElements = starsContainer.querySelectorAll('svg.star-item');
 
-                    if (starElements.length !== totalStars) {
-                        console.error('Rating Bintang: Jumlah elemen bintang tidak sesuai:', starElements.length);
-                        return;
-                    }
+                    if (starElements.length !== totalStars) return;
 
                     const fullStars = Math.floor(kepuasanScore);
-                    // Menggunakan >= 0.5 untuk deteksi setengah bintang yang lebih akurat
                     const hasHalfStar = (kepuasanScore - fullStars) >= 0.5;
 
                     starElements.forEach((svgElement, index) => {
                         const starNumber = index + 1;
-                        // Reset style yang mungkin ditambahkan
                         svgElement.classList.remove('opacity-50', 'text-gray-300');
 
                         if (starNumber > fullStars) {
                             if (starNumber === fullStars + 1 && hasHalfStar) {
-                                // Ini adalah bintang "setengah", buat semi-transparan
                                 svgElement.classList.add('opacity-50');
                             } else {
-                                // Ini adalah bintang kosong, ganti warnanya jadi abu-abu
                                 svgElement.classList.add('text-gray-300');
                             }
                         }
-                        // Untuk bintang penuh, tidak perlu aksi, karena warna kuning didapat dari parent div
                     });
                 }
 
                 /**
-                 * [FUNGSI BARU] Fungsi ini ditambahkan untuk mengurus ikon dan warna skor.
+                 * Fungsi untuk mengubah ikon dan warna skor
                  */
                 function updateSatisfactionIconAndColor(score, container) {
                     const scoreEl = container.querySelector('#satisfaction-score');
@@ -260,14 +268,11 @@
                     const iconNeutral = container.querySelector('#icon-neutral');
                     const iconSad = container.querySelector('#icon-sad');
 
-                    // Pastikan semua elemen ada sebelum melanjutkan
                     if (!scoreEl || !iconHappy || !iconNeutral || !iconSad) return;
 
-                    // Reset semua class warna dan sembunyikan semua ikon
                     scoreEl.classList.remove('text-green-500', 'text-yellow-500', 'text-red-500');
                     [iconHappy, iconNeutral, iconSad].forEach(icon => icon.classList.add('hidden'));
 
-                    // Terapkan class berdasarkan skor
                     if (score >= 3.5) {
                         scoreEl.classList.add('text-green-500');
                         iconHappy.classList.remove('hidden');

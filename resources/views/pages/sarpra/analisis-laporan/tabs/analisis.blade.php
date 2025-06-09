@@ -70,7 +70,7 @@
     <!-- Performa Fasilitas -->
     <div class="w-full lg:w-1/2 bg-white p-6 rounded-xl shadow-lg">
         <h4 class="text-lg font-bold text-gray-800 mb-1">Performa Fasilitas</h4>
-        <p class="text-xs text-gray-500 mb-6">Skor gabungan per item berdasarkan laporan, kepuasan, dan maintenance</p>
+        <p class="text-xs text-gray-500 mb-6">Skor gabungan per item berdasarkan laporan, kepuasan, dan interval</p>
 
         <!-- List Performa -->
         <div class="space-y-3 h-80 md:h-[350px] overflow-y-auto pr-2 custom-scrollbar">
