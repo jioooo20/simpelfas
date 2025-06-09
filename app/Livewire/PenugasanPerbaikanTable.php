@@ -80,8 +80,7 @@ class PenugasanPerbaikanTable extends Component
     }    
       
     public function getPerbaikanData()
-    {
-        // Ambil status pelaporan terbaru untuk setiap pelaporan_id
+    { 
         $latestStatuses = DB::table('t_status_pelaporan as sp1')
             ->select('sp1.pelaporan_id', 'sp1.status_pelaporan', 'sp1.created_at')
             ->whereRaw('sp1.created_at = (
@@ -95,10 +94,15 @@ class PenugasanPerbaikanTable extends Component
 
         $orderedIds = $latestStatuses->pluck('pelaporan_id')->toArray();
 
+
         $query = PelaporanModel::with([
             'fasilitas.barang',
             'fasilitas.ruang.lantai.gedung',
             'user',
+            'perbaikan.latestStatusPerbaikan', // Tambahkan relasi ke status perbaikan terbaru
+            'statusPelaporan' => function($query) {
+                $query->latest(); // Ambil status pelaporan terbaru
+            },
         ])->whereIn('pelaporan_id', $orderedIds);
 
         // Search filter
@@ -135,8 +139,22 @@ class PenugasanPerbaikanTable extends Component
                 $query->whereIn('pelaporan_id', $filteredIds);
             } else {
                 // Ambil data dari t_status_perbaikan untuk status selain 'Diterima'
-                $query->whereHas('perbaikan.statusPerbaikan', function($subQ) {
-                    $subQ->where('perbaikan_status', $this->statusFilter);
+                $query->where(function($q) {
+                    $q->whereHas('perbaikan.statusPerbaikan', function($subQ) {
+                        $subQ->where('perbaikan_status', $this->statusFilter);
+                    });
+                    // Jika tidak ada di status perbaikan, cek di status pelaporan
+                    // (hanya jika status pelaporan adalah 'Diproses' atau 'Selesai')
+                    if (in_array($this->statusFilter, ['Diproses', 'Selesai'])) {
+                        $q->orWhereHas('statusPelaporan', function($subQ) {
+                            $subQ->where('status_pelaporan', $this->statusFilter)
+                                ->whereRaw('created_at = (
+                                    SELECT MAX(created_at) 
+                                    FROM t_status_pelaporan 
+                                    WHERE pelaporan_id = m_pelaporan.pelaporan_id
+                                )');
+                        });
+                    }
                 });
             }
         }
@@ -165,7 +183,10 @@ class PenugasanPerbaikanTable extends Component
                 'fasilitas.ruang.lantai.gedung',
                 'user',
                 'perbaikan.perbaikanPetugas.user',
-                'perbaikan.statusPerbaikan'
+                'perbaikan.latestStatusPerbaikan',
+                'statusPelaporan' => function($query) {
+                    $query->latest(); // Ambil status pelaporan terbaru
+                }
             ])->find($pelaporanId);
 
             if (!$this->selectedPerbaikan) {
@@ -297,7 +318,10 @@ class PenugasanPerbaikanTable extends Component
                 'fasilitas.ruang.lantai.gedung',
                 'user',
                 'perbaikan.perbaikanPetugas.user',
-                'perbaikan.statusPerbaikan'
+                'perbaikan.latestStatusPerbaikan',
+                'statusPelaporan' => function($query) {
+                    $query->latest(); // Ambil status pelaporan terbaru
+                }
             ])->find($pelaporanId);
 
             if (!$this->selectedPerbaikan) {
@@ -320,11 +344,19 @@ class PenugasanPerbaikanTable extends Component
     }    
     
     
+    /**
+     * Get the CSS class for status badge color
+     * 
+     * @param string $status
+     * @return string
+     */
     public function getStatusBadgeColor($status)
     {
         return match($status) {
             'Diproses' => 'badge-info',
             'Selesai' => 'badge-success',
+            'Diterima' => 'badge-warning',
+            'Menunggu' => 'badge-secondary',
             default => 'badge-ghost'
         };
     }    
