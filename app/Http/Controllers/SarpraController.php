@@ -60,8 +60,7 @@ class SarpraController extends Controller
                 'fasilitasBerisiko' => $this->getFormattedFasilitasBerisiko(),
 
                 // data tab perencanaan
-                'statistikKerusakan' => $this->pelaporanRepository->getStatistikLaporanPerBulan(),
-                'statistikKerusakanHarian' => $this->pelaporanRepository->getStatistikLaporanPerHari(),
+                'rekomendasiMaintenance' => $this->mapPerformanceToRecommendation($this->prepareFacilitiesPerformanceData()),
             ]
         );
     }
@@ -214,6 +213,34 @@ class SarpraController extends Controller
         }
 
         return collect($performanceData)->sortBy('score')->values()->all();
+    }
+
+    private function mapPerformanceToRecommendation(array $facilitiesPerformance): array
+    {
+        // Gunakan collect() dan map() untuk transformasi data
+        return collect($facilitiesPerformance)->map(function ($facility) {
+
+            // Logika untuk menentukan label aksi berdasarkan status
+            switch ($facility['status']) {
+                case 'Berisiko':
+                    $facility['action_label'] = 'Tindakan Segera';
+                    break;
+                case 'Waspada':
+                    $facility['action_label'] = 'Perlu Dijadwalkan';
+                    break;
+                case 'Cukup':
+                    $facility['action_label'] = 'Observasi Rutin';
+                    break;
+                case 'Baik':
+                    $facility['action_label'] = 'Kondisi Optimal';
+                    break;
+                default:
+                    $facility['action_label'] = 'Periksa';
+            }
+
+            return $facility; // Kembalikan data fasilitas yang sudah dimodifikasi
+
+        })->all();
     }
 
     protected array $statusColors = [
