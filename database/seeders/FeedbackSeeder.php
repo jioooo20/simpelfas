@@ -14,11 +14,8 @@ class FeedbackSeeder extends Seeder
      */
     public function run(): void
     {
-        // Hapus data lama agar tidak duplikat saat seeding ulang
         DB::table('m_feedback')->delete();
 
-        // 1. Ambil semua laporan yang statusnya sudah "Selesai"
-        // Kita juga ambil waktu kapan status "Selesai" itu dibuat
         $laporanSelesai = DB::table('t_status_pelaporan')
             ->where('status_pelaporan', 'Selesai')
             ->get(['pelaporan_id', 'created_at as waktu_selesai']);
@@ -31,16 +28,13 @@ class FeedbackSeeder extends Seeder
         $feedbackToInsert = [];
 
         foreach ($laporanSelesai as $l) {
-            // 2. Tidak semua laporan selesai diberi feedback (80% kemungkinan diberi feedback)
             if (!fake()->boolean(80)) {
-                continue; // Lanjut ke laporan berikutnya
+                continue;
             }
 
-            // 3. Buat rating acak, dengan kecenderungan memberi rating bagus
             $rating = fake()->randomElement([2, 3, 3, 4, 4, 4, 5, 5, 5, 5]);
             $feedbackText = null;
 
-            // 4. Buat teks feedback yang sesuai dengan rating
             if ($rating >= 4) {
                 $feedbackText = fake()->randomElement([
                     'Perbaikan sangat cepat dan hasilnya memuaskan. Terima kasih banyak!',
@@ -62,7 +56,6 @@ class FeedbackSeeder extends Seeder
                 ]);
             }
 
-            // 5. Buat waktu feedback secara acak, SETELAH laporan selesai
             $waktuSelesai = Carbon::parse($l->waktu_selesai);
             $waktuFeedback = $waktuSelesai->copy()->addHours(rand(1, 48))->addMinutes(rand(0, 59));
 
@@ -75,7 +68,6 @@ class FeedbackSeeder extends Seeder
             ];
         }
 
-        // Masukkan semua data feedback yang sudah dibuat ke database
         DB::table('m_feedback')->insert($feedbackToInsert);
     }
 }
