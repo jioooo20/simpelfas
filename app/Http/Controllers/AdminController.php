@@ -110,41 +110,39 @@ class AdminController extends Controller
 
             foreach ($rows as $index => $row) {
                 $rowNumber = $index + 2; // +2 because we removed header and arrays are 0-indexed
-                
+
                 // Skip empty rows
                 if (empty(array_filter($row))) {
                     continue;
                 }
-                
+
                 $roleId = $row[0] ?? null;
                 $identitas = $row[1] ?? null;
                 $nama = $row[2] ?? null;
                 $email = $row[3] ?? null;
                 $password = $row[4] ?? null;
-                
+
                 // Validate required fields
                 if (empty($roleId) || empty($identitas) || empty($nama) || empty($email) || empty($password)) {
                     $errors[] = "Baris {$rowNumber}: Data tidak lengkap";
                     $errorCount++;
                     continue;
                 }
-                
+
                 // Check duplicate identitas
                 $existingIdentitas = UserModel::where('identitas', $identitas)->first();
                 if ($existingIdentitas) {
-                    $errors[] = "Baris {$rowNumber}: Identitas '{$identitas}' sudah digunakan";
-                    $errorCount++;
-                    continue;
+                    return redirect()->route('admin.user')
+                        ->with('error', "Baris {$rowNumber}: Identitas '{$identitas}' sudah digunakan. Proses import dihentikan.");
                 }
-                
+
                 // Check duplicate email
                 $existingEmail = UserModel::where('email', $email)->first();
                 if ($existingEmail) {
-                    $errors[] = "Baris {$rowNumber}: Email '{$email}' sudah digunakan";
-                    $errorCount++;
-                    continue;
+                    return redirect()->route('admin.user')
+                        ->with('error', "Baris {$rowNumber}: Email '{$email}' sudah digunakan. Proses import dihentikan.");
                 }
-                
+
                 // Validate role exists
                 $roleExists = RoleModel::where('role_id', $roleId)->exists();
                 if (!$roleExists) {
@@ -152,14 +150,14 @@ class AdminController extends Controller
                     $errorCount++;
                     continue;
                 }
-                
+
                 // Validate email format
                 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $errors[] = "Baris {$rowNumber}: Format email tidak valid";
                     $errorCount++;
                     continue;
                 }
-                
+
                 try {
                     UserModel::create([
                         'role_id' => $roleId,
@@ -174,21 +172,8 @@ class AdminController extends Controller
                     $errorCount++;
                 }
             }
-
-            $message = "Import selesai. {$successCount} user berhasil ditambahkan";
-            if ($errorCount > 0) {
-                $message .= ", {$errorCount} user gagal ditambahkan";
-                if (!empty($errors)) {
-                    $message .= ". Error: " . implode('; ', array_slice($errors, 0, 5));
-                    if (count($errors) > 5) {
-                        $message .= " dan " . (count($errors) - 5) . " error lainnya";
-                    }
-                }
-            }
-
             return redirect()->route('admin.user')
-                ->with($errorCount > 0 ? 'warning' : 'success', $message);
-
+                ->with('success', 'Berhasil mengimpor ' . $successCount . ' data');
         } catch (\Exception $e) {
             return redirect()->route('admin.user')
                 ->with('error', 'Gagal membaca file: ' . $e->getMessage());

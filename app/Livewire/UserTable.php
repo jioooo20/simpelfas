@@ -19,6 +19,8 @@ class UserTable extends Component
     public $email;
     public $identitas;
     public $role_id;
+    public $password;
+    public $password_confirmation;
 
     public $confirmingUserDeletion = false;
     public $userToDelete = null;
@@ -28,6 +30,12 @@ class UserTable extends Component
         'email' => 'required|email',
         'identitas' => 'nullable|string',
         'role_id' => 'required|exists:m_role,role_id',
+        'password' => 'nullable|min:5|confirmed',
+    ];
+
+    protected $messages = [
+        'password.confirmed' => 'Password dan konfirmasi password tidak sama.',
+        'password.min' => 'Password minimal 5 karakter.',
     ];
 
     public function updatingSearch()
@@ -59,8 +67,11 @@ class UserTable extends Component
             $this->email = $user->email;
             $this->identitas = $user->identitas;
             $this->role_id = $user->role_id;
+            $this->password = '';
+            $this->password_confirmation = '';
 
             $this->showEditModal = true;
+            $this->dispatch('modalOpened');
         } catch (\Exception $e) {
             $this->dispatch('showErrorToast', 'Error loading user: ' . $e->getMessage());
         }
@@ -68,6 +79,12 @@ class UserTable extends Component
 
     public function updateUser()
     {
+        // Custom validation for password confirmation
+        if (!empty($this->password) && $this->password !== $this->password_confirmation) {
+            $this->dispatch('showErrorToast', 'Password dan konfirmasi password tidak sama.');
+            return;
+        }
+
         $this->validate();
 
         try {
@@ -98,12 +115,19 @@ class UserTable extends Component
                 return;
             }
 
-            $user->update([
+            $updateData = [
                 'nama' => $this->nama,
                 'email' => $this->email,
                 'identitas' => $this->identitas,
                 'role_id' => $this->role_id,
-            ]);
+            ];
+
+            // Only update password if provided
+            if (!empty($this->password)) {
+                $updateData['password'] = bcrypt($this->password);
+            }
+
+            $user->update($updateData);
 
             $this->dispatch('showSuccessToast', 'Pengguna berhasil diperbarui.');
             $this->showEditModal = false;
@@ -152,6 +176,8 @@ class UserTable extends Component
         $this->email = '';
         $this->identitas = '';
         $this->role_id = '';
+        $this->password = '';
+        $this->password_confirmation = '';
     }
 
     public function render()
