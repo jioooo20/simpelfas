@@ -72,6 +72,8 @@ class PelaporanRepository
 
     public function getFormattedLaporanData()
     {
+        $userId = auth()->id();
+
         $laporan = PelaporanModel::with([
             'fasilitas.ruang.lantai.gedung',
             'fasilitas.barang',
@@ -79,20 +81,19 @@ class PelaporanRepository
                 $query->latest('created_at');
             }
         ])
+            ->where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
 
         return $laporan->map(function ($item) {
             $latestStatus = $item->statusPelaporan->first();
             $fasilitas = $item->fasilitas;
-            if ($fasilitas && $fasilitas->ruang && $fasilitas->ruang->lantai && $fasilitas->ruang->lantai->gedung && $fasilitas->barang) {
-                $fasilitasLabel =
-                    $fasilitas->ruang->ruang_nama . ' - ' .
-                    $fasilitas->barang->barang_nama . ' - ' .
-                    $fasilitas->barang->barang_kode;
-            } else {
-                $fasilitasLabel = 'Informasi Fasilitas Tidak Lengkap';
-            }
+
+            $fasilitasLabel = data_get($fasilitas, 'ruang.ruang_nama') && data_get($fasilitas, 'barang.barang_nama')
+                ? data_get($fasilitas, 'ruang.ruang_nama') . ' - ' .
+                data_get($fasilitas, 'barang.barang_nama') . ' - ' .
+                data_get($fasilitas, 'barang.barang_kode')
+                : 'Informasi Fasilitas Tidak Lengkap';
 
             return [
                 'id' => $item->pelaporan_id,
