@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/rekomendasi-prioritas-perbaikan', [SarpraController::class, 'rekomendasi_prioritas_perbaikan'])->name('sarpra.rekomendasi-prioritas-perbaikan');
         Route::get('/statistik-fasilitas', [SarpraController::class, 'statistikFasilitas'])->name('statistik-fasilitas');
         Route::get('/feedback', [SarpraController::class, 'count-total'])->name('feedback.index');
+        Route::get('/penugasan-perbaikan', [SarpraController::class, 'penugasan_perbaikan'])->name('penugasan-perbaikan');
     });
     Route::middleware('role:3')->prefix('teknisi')->group(function (): void {
         Route::get('/', [TeknisiController::class, 'perbaikan'])->name('teknisi');

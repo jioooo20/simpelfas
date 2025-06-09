@@ -35,6 +35,11 @@ class SarpraController extends Controller
     {
         return view('pages.sarpra.rekomendasi-prioritas-perbaikan.index');
     }
+  
+    public function penugasan_perbaikan()
+    {
+        return view('pages.sarpra.penugasan-perbaikan.index');
+    }
 
     public function statistikFasilitas()
     {
