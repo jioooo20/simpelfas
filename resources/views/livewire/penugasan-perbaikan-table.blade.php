@@ -15,6 +15,7 @@
             <select wire:model.live="statusFilter" class="select select-bordered w-full lg:w-48">
                 <option value="">Semua Status</option>
                 <option value="Diterima">Menunggu Penugasan</option>
+                <option value="Menunggu">Menunggu Teknisi</option>
                 <option value="Diproses">Diproses</option>
                 <option value="Selesai">Selesai</option>
             </select>
@@ -259,11 +260,13 @@
                             Pilih Teknisi yang Akan Ditugaskan <span class="text-red-500">*</span>
                         </h3>
                         <div class="mt-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-3 bg-gray-50 rounded-lg">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-3 bg-gray-50 rounded-lg">
                                 @foreach ($teknisiList as $teknisi)
-                                    <label class="flex items-center space-x-3 p-3 rounded-lg border bg-white hover:bg-blue-50 cursor-pointer">
-                                        <input type="checkbox" wire:model="selectedTeknisi" value="{{ $teknisi->user_id }}"
-                                            class="checkbox checkbox-primary">
+                                    <label
+                                        class="flex items-center space-x-3 p-3 rounded-lg border bg-white hover:bg-blue-50 cursor-pointer">
+                                        <input type="checkbox" wire:model="selectedTeknisi"
+                                            value="{{ $teknisi->user_id }}" class="checkbox checkbox-primary">
                                         <div class="flex-1">
                                             <div class="font-medium text-gray-800">{{ $teknisi->nama }}</div>
                                             <div class="text-sm text-gray-500">{{ $teknisi->email }}</div>
@@ -295,7 +298,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 {{-- Action Buttons --}}
                 <div class="flex justify-end mt-6">
                     <button wire:click="closeAssignModal" class="btn btn-outline mr-3">
@@ -324,7 +327,36 @@
                         <i class="bi bi-x text-xl"></i>
                     </button>
                 </div>
-
+                {{-- Kode Perbaikan --}}
+                @if ($selectedPerbaikan->perbaikan)
+                    <div class="card bg-base-100 shadow-lg mb-6">
+                        <div class="card-body">
+                            <h3 class="card-title text-lg bg-base-200 p-3 -mx-6 -mt-6 rounded-t-lg">
+                                <i class="bi bi-upc-scan"></i>
+                                Kode Perbaikan
+                            </h3>
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center">
+                                    <span
+                                        class="text-2xl font-bold text-primary">{{ $selectedPerbaikan->perbaikan->perbaikan_kode }}</span>
+                                    <span class="badge badge-primary ml-3">
+                                        {{ $selectedPerbaikan->perbaikan->statusPerbaikan->perbaikan_status ?? 'Menunggu' }}
+                                    </span>
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    <span>Dibuat:
+                                        {{ $selectedPerbaikan->perbaikan->created_at->format('d/m/Y H:i') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="alert alert-info mb-6">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Belum ada kode perbaikan yang dibuat. Perbaikan akan dibuat saat penugasan teknisi
+                            dilakukan.</span>
+                    </div>
+                @endif
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {{-- Facility & Location --}}
                     <div class="card bg-base-100 shadow-lg">

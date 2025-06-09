@@ -12,6 +12,7 @@ use App\Models\StatusPerbaikanModel;
 use App\Models\StatusPelaporanModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class PenugasanPerbaikanTable extends Component
 {
@@ -40,7 +41,6 @@ class PenugasanPerbaikanTable extends Component
     protected $listeners = 
     [
         'refreshTable' => '$refresh',
-        'updateStats' => 'emitStatsUpdate'
     ];
 
     public function mount()
@@ -59,13 +59,11 @@ class PenugasanPerbaikanTable extends Component
     public function updatedSearch()
     {
         $this->resetPage();
-        $this->emitStatsUpdate();
     }
 
     public function updatedStatusFilter()
     {
         $this->resetPage();
-        $this->emitStatsUpdate();
     }
 
     public function updatedTeknisiFilter()
@@ -79,7 +77,6 @@ class PenugasanPerbaikanTable extends Component
         $this->statusFilter = '';
         $this->teknisiFilter = '';
         $this->resetPage();
-        $this->emitStatsUpdate();
     }    
       
     public function getPerbaikanData()
@@ -92,7 +89,7 @@ class PenugasanPerbaikanTable extends Component
                 FROM t_status_pelaporan sp2
                 WHERE sp2.pelaporan_id = sp1.pelaporan_id
             )')
-            ->whereIn('sp1.status_pelaporan', ['Diterima', 'Diproses', 'Selesai'])
+            ->whereIn('sp1.status_pelaporan', ['Diterima', 'Menunggu' , 'Diproses', 'Selesai'])
             ->orderBy('sp1.created_at', 'desc')
             ->get();
 
@@ -123,17 +120,25 @@ class PenugasanPerbaikanTable extends Component
 
         // Filter status berdasarkan status terakhir
         if (!empty($this->statusFilter)) {
-            $filteredIds = DB::table('t_status_pelaporan as sp1')
-                ->select('sp1.pelaporan_id')
-                ->whereRaw('sp1.created_at = (
-                    SELECT MAX(sp2.created_at)
-                    FROM t_status_pelaporan sp2
-                    WHERE sp2.pelaporan_id = sp1.pelaporan_id
-                )')
-                ->where('sp1.status_pelaporan', $this->statusFilter)
-                ->pluck('pelaporan_id')
-                ->toArray();
-            $query->whereIn('pelaporan_id', $filteredIds);
+            // Jika statusFilter adalah 'Diterima', kita perlu mengambil semua pelaporan yang memiliki status 'Diterima'
+            if ($this->statusFilter == 'Diterima') {
+                $filteredIds = DB::table('t_status_pelaporan as sp1')
+                    ->select('sp1.pelaporan_id')
+                    ->whereRaw('sp1.created_at = (
+                        SELECT MAX(sp2.created_at)
+                        FROM t_status_pelaporan sp2
+                        WHERE sp2.pelaporan_id = sp1.pelaporan_id
+                    )')
+                    ->where('sp1.status_pelaporan', $this->statusFilter)
+                    ->pluck('pelaporan_id')
+                    ->toArray();
+                $query->whereIn('pelaporan_id', $filteredIds);
+            } else {
+                // Ambil data dari t_status_perbaikan untuk status selain 'Diterima'
+                $query->whereHas('perbaikan.statusPerbaikan', function($subQ) {
+                    $subQ->where('perbaikan_status', $this->statusFilter);
+                });
+            }
         }
 
         // Filter teknisi
@@ -250,12 +255,12 @@ class PenugasanPerbaikanTable extends Component
                 $statusPerbaikan = StatusPerbaikanModel::where('perbaikan_id', $perbaikanLaporan->perbaikan_id)->first();
                 if ($statusPerbaikan) {
                     $statusPerbaikan->update([
-                        'perbaikan_status' => 'Diproses'
+                        'perbaikan_status' => 'Menunggu'
                     ]);
                 } else {
                     StatusPerbaikanModel::create([
                         'perbaikan_id' => $perbaikanLaporan->perbaikan_id,
-                        'perbaikan_status' => 'Diproses'
+                        'perbaikan_status' => 'Menunggu'
                     ]);
                 }
                 // Update status pelaporan
@@ -276,7 +281,6 @@ class PenugasanPerbaikanTable extends Component
             $this->dispatch('showSuccessToast', $message);
             $this->closeAssignModal();
             $this->resetPage();
-            $this->emitStatsUpdate();
 
         } catch (\Exception $e) {
             DB::rollBack();
