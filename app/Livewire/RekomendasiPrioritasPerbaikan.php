@@ -475,6 +475,7 @@ class RekomendasiPrioritasPerbaikan extends Component
 
         foreach ($roles as $roleId => $roleName) {
             $data = DB::table('t_fasilitas as f')
+                ->where('f.fasilitas_status', '=', 'Rusak') // Filter by facility status
                 ->leftJoin('m_pelaporan as p', 'p.fasilitas_id', '=', 'f.fasilitas_id')
                 ->leftJoin('m_user as u', function($join) use ($roleId) {
                     $join->on('u.user_id', '=', 'p.user_id')
