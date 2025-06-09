@@ -5,14 +5,25 @@
             <button onclick="document.getElementById('view_laporan_image_modal').close()" class="btn btn-sm btn-circle hover:bg-red-400 hover:text-white" type="button"><i class="fa fa-xmark"></i></button>
         </div>
         <div class="mt-4">
-            <img src="https://placehold.co/600x400" alt="Foto Bukti"
-                class="w-full rounded-lg">
+            <img id="foto_laporan_img" src="https://placehold.co/600x400" alt="Foto Bukti" class="w-full rounded-lg max-h-96 object-contain">
         </div>
     </div>
 </dialog>
 
 @push('skrip')
     <script>
+        // Fungsi untuk membuka modal dan menampilkan foto
+        function openImageModal(fotoPath) {
+            const modal = document.getElementById('view_laporan_image_modal');
+            const img = document.getElementById('foto_laporan_img');
+            if (fotoPath) {
+                img.src = `${window.location.origin}/storage/${fotoPath}`;
+            } else {
+                img.src = 'https://placehold.co/600x400?text=Foto+Tidak+Tersedia';
+            }
+            modal.showModal();
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Script untuk menutup modal saat mengklik area luar
             const viewLaporanModal = document.getElementById('view_laporan_image_modal');
