@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PerbaikanModel;
 use Illuminate\Http\Request;
 
 class TeknisiController extends Controller
@@ -11,9 +12,11 @@ class TeknisiController extends Controller
         return view('pages.teknisi.perbaikan.index');
     }
 
-    public function perbaikanShow()
+    public function perbaikanShow($id)
     {
-        return view('pages.teknisi.perbaikan.detail');
+        // Verifikasi bahwa perbaikan ada sebelum menampilkan halaman
+        $perbaikan = PerbaikanModel::findOrFail($id);
+        return view('pages.teknisi.perbaikan.detail', compact('perbaikan'));
     }
 
     public function riwayat()

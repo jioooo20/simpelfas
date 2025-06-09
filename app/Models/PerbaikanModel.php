@@ -30,15 +30,40 @@ class PerbaikanModel extends Model
     }
     
     /**
+     * Get the status perbaikan for this perbaikan.
+     */
+    public function statusPerbaikan()
+    {
+        return $this->hasOne(StatusPerbaikanModel::class, 'perbaikan_id', 'perbaikan_id');
+    }
+    
+    /**
+     * Get the latest status perbaikan for this perbaikan.
+     */
+    public function latestStatusPerbaikan()
+    {
+        return $this->hasOne(StatusPerbaikanModel::class, 'perbaikan_id', 'perbaikan_id')
+                    ->latest();
+    }
+    
+    /**
+     * Get all assigned technicians for this perbaikan.
+     */
+    public function perbaikanPetugas()
+    {
+        return $this->hasMany(PerbaikanPetugasModel::class, 'perbaikan_id', 'perbaikan_id');
+    }
+    
+    /**
      * Get the user who is assigned to the perbaikan through pelaporan.
      */
     public function user()
     {
         return $this->hasOneThrough(
-            User::class,
+            UserModel::class,
             PelaporanModel::class,
             'pelaporan_id', // Foreign key on PelaporanModel
-            'id', // Foreign key on User
+            'user_id', // Foreign key on UserModel
             'pelaporan_id', // Local key on PerbaikanModel
             'user_id' // Local key on PelaporanModel
         );

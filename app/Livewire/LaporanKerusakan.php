@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\FasilitasModel;
+use App\Models\PerbaikanModel;
 use App\Models\SkorAltModel;
 use Livewire\Component;
 use Livewire\WithPagination;

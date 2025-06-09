@@ -162,6 +162,17 @@
                         <span class="sidebar-text text-[0.925rem]">Analisis & Laporan</span>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('penugasan-perbaikan') }}"
+                       class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group
+                                {{ request()->routeIs('penugasan-perbaikan') ? 'bg-sky-100 text-sky-700 font-semibold' : '' }}">
+                        <i class="bi bi-clipboard-check-fill
+                                  {{ request()->routeIs('penugasan-perbaikan') ? 'text-sky-600' : 'text-gray-500' }}
+                                  group-hover:text-sky-600 text-lg w-6 text-center">
+                        </i>
+                        <span class="sidebar-text text-[0.925rem]">Penugasan Perbaikan</span>
+                    </a>
+                </li>
             @endif
 
             {{-- teknisi --}}
