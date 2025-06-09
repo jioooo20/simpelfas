@@ -7,19 +7,19 @@
             @csrf
             <div class="form-control mb-3">
                 <label class="label">
-                    <span class="label-text">Nama Lengkap</span>
+                    <span class="label-text">Nama Lengkap<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                 </label>
                 <input type="text" name="nama" class="input input-bordered" maxlength="50" required />
             </div>
             <div class="form-control mb-3">
                 <label class="label">
-                    <span class="label-text">Identitas (NIM / NIP)</span>
+                    <span class="label-text">Identitas (NIM / NIP)<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                 </label>
                 <input type="text" name="identitas" class="input input-bordered" maxlength="20" required />
             </div>
             <div class="form-control mb-3">
                 <label class="label">
-                    <span class="label-text">Email</span>
+                    <span class="label-text">Email<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                 </label>
                 <input type="email" name="email" class="input input-bordered"
                     title="Masukkan alamat email yang valid" oninput="validateEmail(this)" required maxlength="60" />
@@ -29,7 +29,7 @@
             </div>
             <div class="form-control mb-3">
                 <label class="label">
-                    <span class="label-text">Password</span>
+                    <span class="label-text">Password<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                 </label>
                 <input type="password" id="password" name="password" class="input input-bordered" minlength="5"
                     title="Password harus minimal 5 karakter" required />
@@ -39,7 +39,7 @@
             </div>
             <div class="form-control mb-3">
                 <label class="label">
-                    <span class="label-text">Hak Akses</span>
+                    <span class="label-text">Hak Akses<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                 </label>
                 <select name="role_id" class="select select-bordered w-full" required>
                     <option disabled selected>Pilih hak akses</option>
