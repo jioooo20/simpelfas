@@ -2,62 +2,60 @@
 @section('judul', 'Pengelolaan Pengguna')
 @section('content')
     <div class="container mx-auto px-4 py-4">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-base-content text-center md:text-left">Pengelolaan Pengguna</h1>
-            <div class="flex gap-3">
-                <button class="bg-green-500 text-white btn btn-outline btn-sm flex items-center gap-2" onclick="modal_import_user.showModal()">
-                    <i class="fas fa-file-excel"></i>Impor Data Pengguna
-                </button>
-                <button class="btn btn-primary text-white btn-sm flex items-center gap-2" onclick="modal_add_user.showModal()">
-                    <i class="fas fa-user-plus"></i>Tambah Pengguna
-                </button>
-
-            </div>
-        </div>
-
-        {{-- kotak --}}
         <div class="bg-base-100 shadow-md border rounded-xl p-6">
             {{-- table --}}
             <div class="overflow-x-auto">
                 <livewire:user-table />
-
+            </div>
         </div>
     </div>
-    @include('pages.admin.manage-user.add')
-    @include('pages.admin.manage-user.import_user')
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Livewire.on('showSuccessToast', (message) => {
+                Toastify({
+                    text: `<div class="flex items-center gap-3">
+                              <i class="bi bi-check-circle-fill text-xl"></i>
+                              <span>${message}</span>
+                           </div>`,
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                    className: "rounded-lg shadow-md",
+                    stopOnFocus: true,
+                    escapeMarkup: false,
+                    style: {
+                        padding: "12px 20px",
+                        fontWeight: "500",
+                        minWidth: "300px"
+                    },
+                    onClick: function() {}
+                }).showToast();
+            });
+
+            Livewire.on('showErrorToast', (message) => {
+                Toastify({
+                    text: `<div class="flex items-center gap-3">
+                              <i class="bi bi-exclamation-circle-fill text-xl"></i>
+                              <span>${message}</span>
+                           </div>`,
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    className: "rounded-lg shadow-md",
+                    stopOnFocus: true,
+                    escapeMarkup: false,
+                    style: {
+                        padding: "12px 20px",
+                        fontWeight: "500",
+                        minWidth: "300px"
+                    },
+                    onClick: function() {}
+                }).showToast();
+            });
+        });
+    </script>
 @endsection
 
-
-
-
-        <!-- Stats boxes -->
-        {{-- <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-base-100 shadow-sm rounded-lg p-4 border">
-                <div class="flex items-center gap-3">
-                    <i class="bi bi-people text-xl"></i>
-                    <div>Total admins</div>
-                </div>
-                <div class="text-3xl font-bold mt-2">841</div>
-            </div>
-            <div class="bg-base-100 shadow-sm rounded-lg p-4 border">
-                <div class="flex items-center gap-3">
-                    <i class="bi bi-building text-xl"></i>
-                    <div>Organizations</div>
-                </div>
-                <div class="text-3xl font-bold mt-2">23</div>
-            </div>
-            <div class="bg-base-100 shadow-sm rounded-lg p-4 border">
-                <div class="flex items-center gap-3">
-                    <i class="bi bi-circle-fill text-emerald-600 text-sm"></i>
-                    <div>Active</div>
-                </div>
-                <div class="text-3xl font-bold mt-2 text-emerald-600">782</div>
-            </div>
-            <div class="bg-base-100 shadow-sm rounded-lg p-4 border">
-                <div class="flex items-center gap-3">
-                    <i class="bi bi-circle-fill text-amber-500 text-sm"></i>
-                    <div>Inactive</div>
-                </div>
-                <div class="text-3xl font-bold mt-2 text-amber-500">64</div>
-            </div>
-        </div> --}}
