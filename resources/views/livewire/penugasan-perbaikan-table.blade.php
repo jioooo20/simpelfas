@@ -14,7 +14,8 @@
         <div class="relative">
             <select wire:model.live="statusFilter" class="select select-bordered w-full lg:w-48">
                 <option value="">Semua Status</option>
-                <option value="Diterima">Menunggu Pen
+                <option value="Diterima">Menunggu Penugasan</option>
+                <option value="Menunggu">Menunggu Teknisi</option>
                 <option value="Diproses">Diproses</option>
                 <option value="Selesai">Selesai</option>
             </select>
@@ -53,10 +54,22 @@
                 @endphp
                 @forelse ($perbaikanData as $index => $pelaporan)
                     @php
+                        // Ambil status perbaikan terbaru
+                        $currentStatus = 'Diterima';
+                        if ($pelaporan->perbaikan && $pelaporan->perbaikan->latestStatusPerbaikan) {
+                            $currentStatus = $pelaporan->perbaikan->latestStatusPerbaikan->perbaikan_status;
+                        } elseif ($pelaporan->statusPelaporan && $pelaporan->statusPelaporan->first()) {
+                            $currentStatus = $pelaporan->statusPelaporan->first()->status_pelaporan;
+                        }
+                        // Pengelompokan: hanya tampilkan satu laporan per fasilitas
                         if (in_array($pelaporan->fasilitas_id, $shownFasilitas)) {
                             continue;
                         }
                         $shownFasilitas[] = $pelaporan->fasilitas_id;
+                        // Filter status jika filter aktif
+                        if ($statusFilter && $currentStatus !== $statusFilter) {
+                            continue;
+                        }
                         $lokasi = '';
                         if ($pelaporan->fasilitas && $pelaporan->fasilitas->ruang) {
                             $lokasi =
@@ -67,7 +80,6 @@
                                 $pelaporan->fasilitas->ruang->ruang_nama;
                         }
                         $assignedTechnicians = '';
-                        $currentStatus = 'Diterima';
                         $perbaikanKode = '';
                         if ($pelaporan->perbaikan) {
                             $assignedTechnicians = $pelaporan->perbaikan->perbaikanPetugas
@@ -183,8 +195,9 @@
                         <td colspan="10" class="text-center py-8">
                             <div class="flex flex-col items-center gap-2">
                                 <i class="bi bi-inbox text-4xl text-gray-400"></i>
-                                <span class="text-gray-500">Tidak ada laporan yang perlu ditugaskan ditemukan</span>
-                                <p class="text-sm text-gray-400">Silakan sesuaikan filter pencarian Anda</p>
+                                <span class="text-gray-500">
+                                    Tidak ada data dengan status "{{ $statusFilter }}" ditemukan
+                                </span>
                             </div>
                         </td>
                     </tr>
@@ -386,7 +399,7 @@
                         <span>Belum ada kode perbaikan yang dibuat. Perbaikan akan dibuat saat penugasan teknisi
                             dilakukan.</span>
                     </div>
-                            @endif
+                @endif
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {{-- Facility & Location --}}
         <div class="card bg-base-100 shadow-lg">
@@ -606,6 +619,37 @@
 
     {{-- Close Button --}}
     <div class="flex justify-end mt-6">
+        @if ($selectedPerbaikan->perbaikan && $selectedPerbaikan->perbaikan->latestStatusPerbaikan)
+            @php
+                $currentStatus = $selectedPerbaikan->perbaikan->latestStatusPerbaikan->perbaikan_status;
+                // Ambil status pelaporan terbaru dengan first() karena sudah diurutkan DESC
+                $laporanStatus = $selectedPerbaikan->statusPelaporan->first()->status_pelaporan ?? null;
+                // Tombol hanya aktif jika status perbaikan 'Selesai' dan status pelaporan BUKAN 'Selesai'
+                $isDisabled = !($currentStatus == 'Selesai' && $laporanStatus != 'Selesai');
+                $buttonClass = !$isDisabled ? 'btn-success' : 'btn-info';
+                $disabledClass = $isDisabled ? 'opacity-60 cursor-not-allowed' : '';
+            @endphp
+            <button 
+                wire:click="{{ $isDisabled ? '' : 'markAsCompleted('.$selectedPerbaikan->pelaporan_id.')' }}" 
+                class="btn {{ $buttonClass }} mr-3 {{ $disabledClass }}"
+                {{ $isDisabled ? 'disabled' : '' }}
+                title="
+                    @if($laporanStatus == 'Selesai' && $currentStatus != 'Selesai')
+                        Status pelaporan sudah selesai, status perbaikan belum selesai
+                    @elseif($currentStatus == 'Selesai' && $laporanStatus == 'Selesai')
+                        Laporan sudah selesai
+                    @elseif($currentStatus != 'Selesai')
+                        Laporan harus dalam status Selesai
+                    @endif
+                "
+            >
+                <i class="bi bi-check-circle-fill mr-1"></i> Laporan Selesai
+            </button>
+        @else
+            <button class="btn btn-info mr-3 opacity-60 cursor-not-allowed" disabled title="Data perbaikan tidak tersedia">
+                <i class="bi bi-check-circle-fill mr-1"></i> Laporan Selesai
+            </button>
+        @endif
         <button wire:click="closeDetailModal" class="btn btn-outline">
             <i class="bi bi-x mr-1"></i> Tutup
         </button>
