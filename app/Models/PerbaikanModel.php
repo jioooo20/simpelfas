@@ -34,7 +34,7 @@ class PerbaikanModel extends Model
      */
     public function statusPerbaikan()
     {
-        return $this->hasOne(StatusPerbaikanModel::class, 'perbaikan_id', 'perbaikan_id');
+        return $this->hasMany(StatusPerbaikanModel::class, 'perbaikan_id', 'perbaikan_id');
     }
     
     /**

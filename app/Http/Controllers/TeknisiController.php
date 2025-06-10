@@ -24,8 +24,17 @@ class TeknisiController extends Controller
         return view('pages.teknisi.riwayat-perbaikan.index');
     }
 
-    public function riwayatShow()
+    public function riwayatShow(Request $request)
     {
-        return view('pages.teknisi.riwayat-perbaikan.detail');
+        $perbaikanId = $request->query('id');
+        
+        // Jika ID tidak diberikan, gunakan dummy data
+        if (!$perbaikanId) {
+            return view('pages.teknisi.riwayat-perbaikan.detail', ['perbaikan' => null]);
+        }
+        
+        // Temukan perbaikan atau kembalikan halaman dengan data kosong jika tidak ditemukan
+        $perbaikan = PerbaikanModel::find($perbaikanId);
+        return view('pages.teknisi.riwayat-perbaikan.detail', ['perbaikan' => $perbaikan]);
     }
 }

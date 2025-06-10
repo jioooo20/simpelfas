@@ -79,45 +79,43 @@
                 </tr>
             </thead>
             <tbody>
+                @php
+                $no = 0;
+                @endphp
                 @forelse ($riwayatPerbaikan as $index => $item)
                     <tr>
-                        <td class="text-center">{{ $index + 1 }}</td>
-                        <td class="text-start">{{ $item['kode_perbaikan'] }}</td>
-                        <td>{{ $item['deskripsi_masalah'] }} di {{ $item['gedung_nama'] }} {{ $item['ruang_nama'] }}
+                        <td class="text-center">{{ ++$no }}</td>
+                        <td class="text-start">{{ $item->latestCode ?? $item->perbaikan->perbaikan_kode }}</td>
+                        <td>{{ $item->perbaikan->pelaporan->pelaporan_deskripsi }} di {{ $item->perbaikan->pelaporan->fasilitas->ruang->lantai->gedung->gedung_nama }} {{ $item->perbaikan->pelaporan->fasilitas->ruang->lantai->lantai_nama }}
                         </td>
-                        <td class="">{{ date('d M Y', strtotime($item['tanggal_selesai'] ?? $item['updated_at'])) }}</td>
+                        <td class="">
+                            <p>
+                                {{ date('d M Y', strtotime($item['tanggal_selesai'] ?? $item['updated_at'])) }}
+                            </p>
+                            <p>
+                                {{ date('H:i', strtotime($item['tanggal_selesai'] ?? $item['updated_at'])) }}
+                            </p>
+                        </td>
                         <td class="">
                             <span class="px-3 py-1 rounded-full">
-                                {{ $item['teknisi_nama'] ?? '-' }}
+                                {{ $item->perbaikan->perbaikanPetugas->pluck('user.nama')->join(', ') }}
                             </span>
                         </td>
                         <td class="">
-                            @php
-                                $warnaBadge = match ($item['status']) {
-                                    'Selesai' => 'bg-green-500',
-                                    'Dibatalkan' => 'bg-red-500',
-                                    default => 'bg-gray-400',
-                                };
-
-                                $statusText = match ($item['status']) {
-                                    'Selesai' => 'Selesai',
-                                    'Dibatalkan' => 'Dibatalkan',
-                                    default => ucfirst($item['status']),
-                                };
-                            @endphp
-
-                            <span class="badge text-white px-3 py-1 rounded-full {{ $warnaBadge }}">
-                                {{ $statusText }}
+                            <span class="badge text-white px-3 py-1 rounded-full bg-green-500">
+                                {{ $item->perbaikan_status }}
                             </span>
                         </td>
-                        <td class="text-center flex items-center justify-center gap-4">
-                            <a href="{{ route('riwayat-perbaikan-detail') }}" class="flex items-center gap-1 justify-center">
-                                <i class="fas fa-eye text-primary"></i>
-                            </a>
-                            <button class="flex items-center gap-1 justify-center text-green-500" 
-                                onclick="window.print()">
-                                <i class="fas fa-print"></i>
-                            </button>
+                        <td class="h-full">
+                            <div class="flex items-center justify-center gap-2">
+                                <button wire:click="goToDetail('{{ $item->perbaikan->perbaikan_id }}')" class="flex items-center gap-1 justify-center">
+                                    <i class="fas fa-eye text-primary"></i>
+                                </button>
+                                <button class="flex items-center gap-1 justify-center text-green-500" 
+                                    onclick="window.print()">
+                                    <i class="fas fa-print"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 @empty
