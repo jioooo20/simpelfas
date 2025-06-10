@@ -17,28 +17,39 @@
         <p class="text-xs text-gray-500 mb-6">Fasilitas dengan interval perbaikan pendek</p>
         <div class="space-y-3 overflow-y-auto max-h-72 pr-2">
 
-            <!-- List Fasilitas Berisiko -->
             @forelse ($fasilitasBerisiko as $fasilitas)
-                <!-- Kolom Kanan: Informasi Fasilitas -->
+                {{-- Di dalam loop ini, $fasilitas sekarang dianggap sebagai array --}}
+
                 <div class="bg-red-50 border border-red-200 p-4 rounded-lg flex justify-between items-center">
                     <div class="flex-1 min-w-0 pr-4">
-                        <h5 class="font-semibold text-sm text-gray-800 truncate"
-                            title="{{ $fasilitas->item_name }} {{ $fasilitas->item_code ? '['.$fasilitas->item_code.']' : '' }}">
-                            {{ $fasilitas->item_name }} {{ $fasilitas->item_code ? '['.$fasilitas->item_code.']' : '' }}
-                        </h5>
+                        {{-- [DIUBAH] Judul dan kode barang kini dibungkus dalam flex container --}}
+                        <div class="flex items-center">
+                            <h5 class="font-semibold text-sm text-gray-800 truncate"
+                                title="{{ $fasilitas['item_name'] }}">
+                                {{ $fasilitas['item_name'] }}
+                            </h5>
+
+                            {{-- Tag untuk Kode Barang (hanya tampil jika ada dan bukan 'N/A') --}}
+                            @if (!empty($fasilitas['item_code']) && $fasilitas['item_code'] !== 'N/A')
+                                <span class="ml-2 flex-shrink-0 px-1.5 py-0.5 bg-white text-red-700 border border-red-200 rounded text-xs font-mono">
+                                    {{ $fasilitas['item_code'] }}
+                                </span>
+                            @endif
+                        </div>
 
                         <p class="text-xs text-gray-500 truncate mt-1"
-                           title="{{ $fasilitas->building }}, {{ $fasilitas->room }}, {{ $fasilitas->floor }}">
-                            {{ $fasilitas->building }} &bull; {{ $fasilitas->room }} &bull; {{ $fasilitas->floor }}
+                           title="{{ $fasilitas['building'] }}, {{ $fasilitas['room'] }}, {{ $fasilitas['floor'] }}">
+                            {{ $fasilitas['building'] }} &bull;
+                            {{ $fasilitas['room'] }} &bull; {{ $fasilitas['floor'] }}
                         </p>
 
                         <p class="text-xs text-red-700 font-semibold mt-2">
-                            {{ $fasilitas->jumlah_laporan }} laporan &mdash; {{ $fasilitas->interval_rata_rata_hari }}
+                            {{ $fasilitas['jumlah_laporan'] }} laporan
+                            &mdash; {{ $fasilitas['interval_rata_rata_hari'] }}
                             hari interval
                         </p>
-                    </div> <!-- End Kolom Kiri: Informasi Fasilitas -->
+                    </div>
 
-                    <!-- Kolom Kanan: Tombol Aksi -->
                     <div class="flex-shrink-0">
                         <button
                             class="inline-flex items-center bg-red-100 hover:bg-red-200 transition-colors text-red-600 text-xs font-semibold px-3 py-1.5 rounded-md">
@@ -50,8 +61,8 @@
                             </svg>
                             <span>Perlu Perhatian</span>
                         </button>
-                    </div> <!-- End Tombol Aksi -->
-                </div> <!-- End Fasilitas Berisiko Card -->
+                    </div>
+                </div>
             @empty
                 <!-- Pesan jika tidak ada fasilitas berisiko -->
                 <div class="rounded-lg border border-green-200 bg-green-50 p-5">
@@ -134,21 +145,43 @@
                             scales: {
                                 x: {
                                     beginAtZero: true,
-                                    title: { display: true, text: 'Jumlah Laporan (Semakin Kanan, Semakin Sering)', font: { size: 11 }, color: '#6b7280' },
-                                    ticks: { color: '#6b7280', callback: function(value) { if (Math.floor(value) === value) return value; } }
+                                    title: {
+                                        display: true,
+                                        text: 'Jumlah Laporan (Semakin Kanan, Semakin Sering)',
+                                        font: {size: 11},
+                                        color: '#6b7280'
+                                    },
+                                    ticks: {
+                                        color: '#6b7280', callback: function (value) {
+                                            if (Math.floor(value) === value) return value;
+                                        }
+                                    }
                                 },
                                 y: {
                                     beginAtZero: true,
-                                    title: { display: true, text: 'Interval Kerusakan (Hari) - Semakin Rendah, Semakin Cepat Rusak', font: { size: 11 }, color: '#6b7280' },
-                                    ticks: { color: '#6b7280', callback: function(value) { if (Math.floor(value) === value) return value; } }
+                                    title: {
+                                        display: true,
+                                        text: 'Interval Kerusakan (Hari) - Semakin Rendah, Semakin Cepat Rusak',
+                                        font: {size: 11},
+                                        color: '#6b7280'
+                                    },
+                                    ticks: {
+                                        color: '#6b7280', callback: function (value) {
+                                            if (Math.floor(value) === value) return value;
+                                        }
+                                    }
                                 }
                             },
                             plugins: {
-                                legend: { display: false },
+                                legend: {display: false},
                                 tooltip: {
                                     callbacks: {
-                                        title: function(context) { return context[0].raw.label; },
-                                        label: function(context) { return `Jumlah: ${context.raw.x} laporan, Interval: ${context.raw.y} hari`; }
+                                        title: function (context) {
+                                            return context[0].raw.label;
+                                        },
+                                        label: function (context) {
+                                            return `Jumlah: ${context.raw.x} laporan, Interval: ${context.raw.y} hari`;
+                                        }
                                     }
                                 }
                             }

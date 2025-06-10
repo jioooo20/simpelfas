@@ -75,19 +75,26 @@
         <!-- List Performa -->
         <div class="space-y-3 h-80 md:h-[350px] overflow-y-auto pr-2 custom-scrollbar">
             @forelse ($facilitiesPerformance as $facility)
-                <!-- Card Fasilitas -->
                 <div
                     class="bg-white border border-gray-200 p-4 rounded-lg flex justify-between items-start hover:shadow-sm transition-shadow duration-150">
-                    <!-- Info Fasilitas -->
                     <div class="flex-grow">
-                        <div class="flex items-start justify-between mb-2">
-                            <div>
-                                <h5 class="font-semibold text-sm text-gray-800 leading-tight">{{ $facility['title'] }}</h5>
-                                <p class="text-xs text-gray-500">{{ $facility['subtitle'] }}</p>
-                            </div>
+                        {{-- [PERUBAHAN] Judul dan kode barang kini dibungkus untuk dijadikan tag --}}
+                        <div class="flex items-center mb-2">
+                            <h5 class="font-semibold text-sm text-gray-900 truncate shrink"
+                                title="{{ $facility['title'] }}">
+                                {{ $facility['title'] }}
+                            </h5>
+                            {{-- Tag untuk Kode Barang --}}
+                            <span class="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs font-mono">
+                        {{ $facility['item_code'] ?? 'N/A' }}
+                    </span>
                         </div>
-                        <div class="text-xs pt-4 rounded-md">
-                            <div class="text-gray-600 bg-gray-50 p-2">
+                        {{-- Lokasi kini berada di bawah wrapper judul/kode --}}
+                        <p class="text-xs text-gray-500">{{ $facility['subtitle'] }}</p>
+
+                        {{-- Bar Statistik --}}
+                        <div class="text-xs pt-3 mt-3 border-t">
+                            <div class="text-gray-600 bg-gray-50 p-2 rounded-md">
                                 <span>{{ $facility['reports'] }} laporan</span>
                                 <span class="mx-1.5">&bull;</span>
                                 <span>{{ $facility['satisfaction'] }}/5 kepuasan</span>
@@ -95,20 +102,18 @@
                                 <span>{{ $facility['interval'] }} hari interval</span>
                             </div>
                         </div>
-                    </div> <!-- End of Info Fasilitas -->
-
-                    <!-- Skor -->
+                    </div>
                     <div class="text-center pl-4">
                         <span
                             class="{{ $statusColors[$facility['status_color']]['bg'] }} {{ $statusColors[$facility['status_color']]['text'] }} text-xs font-semibold px-2 py-0.5 rounded-md w-20 inline-block mb-2">
                             {{ $facility['status'] }}
                         </span>
-                        <p class="text-2xl font-bold text-gray-800">{{ $facility['score'] }}</p>
-                        <p class="text-xs text-gray-500 -mt-1">Skor</p>
-                    </div> <!-- End of Skor -->
-                </div> <!-- End of Card Fasilitas -->
+                        <p class="text-2xl font-bold text-gray-800 mt-2">{{ $facility['score'] }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Skor</p>
+                    </div>
+                </div>
             @empty
-                {{-- [BARU] Tampilan jika tidak ada data performa --}}
+                {{-- Tampilan jika tidak ada data performa --}}
                 <div class="flex items-center justify-center h-full text-center text-gray-500">
                     <div class="p-6">
                         <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -122,7 +127,7 @@
                     </div>
                 </div>
             @endforelse
-        </div> <!-- End of List Performa -->
+        </div>
     </div> <!-- End of Performa Fasilitas -->
 </div> <!-- End of main content -->
 
@@ -165,12 +170,9 @@
             const legendTrigger = document.getElementById('legend-trigger');
             const legendPopover = document.getElementById('legend-popover');
 
-            // [PERUBAHAN UTAMA] Tampilan jika data kosong dibuat lebih baik
             if (!allTrendsData || Object.keys(allTrendsData).length === 0) {
                 const chartContainer = chartElement.parentElement;
-                // Tambahkan class flex untuk centering
                 chartContainer.classList.add('flex', 'items-center', 'justify-center');
-                // Ganti konten dengan pesan yang lebih informatif
                 chartContainer.innerHTML = `
                     <div class="text-center text-gray-500 px-4">
                         <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -183,11 +185,9 @@
                 return;
             }
 
-            // Jika data ada, lanjutkan eksekusi kode chart...
             const ctxReportTrend = chartElement.getContext('2d');
             const reportLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-            // ... (sisa kode Anda untuk logika pop-up, inisialisasi, dan update chart tetap sama persis) ...
             legendTrigger.addEventListener('click', (event) => {
                 event.stopPropagation();
                 legendPopover.classList.toggle('hidden');
