@@ -80,13 +80,24 @@ class UsersController extends Controller
     {
         $laporan = $this->pelaporanRepo->getLaporanDetailById($id);
         $latestStatus = $laporan->statusPelaporan->first();
-
         $skor = $this->pelaporanRepo->getSkorKriteriaByPelaporanId($laporan->pelaporan_id);
+        $gambarPerbaikan = [];
+        $gambarSelesai = [];
+        if ($laporan->perbaikan && $laporan->perbaikan->statusPerbaikan) {
+            foreach ($laporan->perbaikan->statusPerbaikan as $statusPerbaikan) {
+                if ($statusPerbaikan->perbaikan_status === 'Diproses') {
+                    $gambarPerbaikan = json_decode($statusPerbaikan->perbaikan_gambar ?? '[]', true);
+                } elseif ($statusPerbaikan->perbaikan_status === 'Selesai') {
+                    $gambarSelesai = json_decode($statusPerbaikan->perbaikan_gambar ?? '[]', true);
+                }
+            }
+        }
 
+        // Susun array gambar final
         $gambar = [
-            'Gambar Laporan' => json_decode($laporan->pelaporan_gambar ?? '[]'),
-            'Gambar Perbaikan' => json_decode($laporan->gambar_perbaikan ?? '[]'),
-            'Gambar Selesai' => json_decode($laporan->gambar_selesai ?? '[]'),
+            'Gambar Laporan' => json_decode($laporan->pelaporan_gambar ?? '[]', true),
+            'Gambar Perbaikan' => $gambarPerbaikan,
+            'Gambar Selesai' => $gambarSelesai,
         ];
 
         return view('pages.users.status-laporan.laporan-detail', [

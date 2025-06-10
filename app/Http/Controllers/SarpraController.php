@@ -313,7 +313,6 @@ class SarpraController extends Controller
 
             $performanceData[] = [
                 'title' => $detail->item_name,
-                // [PENAMBAHAN] Tambahkan item_code di sini
                 'item_code' => $detail->item_code ?? null,
                 'subtitle' => $detail->building . ', ' . $detail->floor . ', ' . $detail->room,
                 'reports' => $dataSkor['jumlah_laporan'],

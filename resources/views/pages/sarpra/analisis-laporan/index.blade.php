@@ -119,7 +119,6 @@
             <div data-tab="Perencanaan"
                  class="tab-panel hidden">@include('pages.sarpra.analisis-laporan.tabs.perencanaan')</div>
         </div> <!-- End Tab Contents -->
-
     </div>
 @endsection
 @push('skrip')
