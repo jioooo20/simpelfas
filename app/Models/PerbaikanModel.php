@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class PerbaikanModel extends Model
 {
     use HasFactory;
-    
+
     protected $table = 't_perbaikan';
     protected $primaryKey = 'perbaikan_id';
     public $incrementing = true;
-    
+
     protected $fillable = [
         'pelaporan_id',
         'perbaikan_kode',
@@ -20,7 +20,7 @@ class PerbaikanModel extends Model
         'created_at',
         'updated_at'
     ];
-    
+
     /**
      * Get the pelaporan that owns the perbaikan.
      */
@@ -28,15 +28,15 @@ class PerbaikanModel extends Model
     {
         return $this->belongsTo(PelaporanModel::class, 'pelaporan_id', 'pelaporan_id');
     }
-    
+
     /**
      * Get the status perbaikan for this perbaikan.
      */
     public function statusPerbaikan()
     {
-        return $this->hasOne(StatusPerbaikanModel::class, 'perbaikan_id', 'perbaikan_id');
+        return $this->hasMany(StatusPerbaikanModel::class, 'perbaikan_id', 'perbaikan_id');
     }
-    
+
     /**
      * Get the latest status perbaikan for this perbaikan.
      */
@@ -45,7 +45,7 @@ class PerbaikanModel extends Model
         return $this->hasOne(StatusPerbaikanModel::class, 'perbaikan_id', 'perbaikan_id')
                     ->latest();
     }
-    
+
     /**
      * Get all assigned technicians for this perbaikan.
      */
@@ -53,7 +53,7 @@ class PerbaikanModel extends Model
     {
         return $this->hasMany(PerbaikanPetugasModel::class, 'perbaikan_id', 'perbaikan_id');
     }
-    
+
     /**
      * Get the user who is assigned to the perbaikan through pelaporan.
      */

@@ -107,15 +107,18 @@ class PelaporanRepository
 
     public function getLaporanDetailById($id): PelaporanModel
     {
+        // Tambahkan 'perbaikan.statusPerbaikan' untuk memuat semua data yang kita butuhkan
         $laporan = PelaporanModel::with([
             'fasilitas.ruang.lantai.gedung',
             'fasilitas.barang',
             'statusPelaporan' => function ($q) {
                 $q->latest('created_at');
-            }
+            },
+            'perbaikan.statusPerbaikan', // <-- [PERUBAHAN] Eager load relasi perbaikan dan statusnya
+            'feedback',
         ])->findOrFail($id);
 
-        // Buat label fasilitas
+        // Bagian kode untuk membuat fasilitas_label tetap sama
         $fasilitas = $laporan->fasilitas;
         $label = '-';
         if ($fasilitas && $fasilitas->ruang
@@ -125,8 +128,7 @@ class PelaporanRepository
             $label = $fasilitas->ruang->lantai->gedung->gedung_nama . ' - ' .
                 $fasilitas->ruang->lantai->lantai_nama . ' - ' .
                 $fasilitas->ruang->ruang_nama . ' - ' .
-                $fasilitas->barang->barang_nama . ' - ' .
-                $fasilitas->barang->barang_kode;
+                $fasilitas->barang->barang_nama; // Kode barang bisa ditambahkan jika perlu
         }
         $laporan->fasilitas_label = $label;
 

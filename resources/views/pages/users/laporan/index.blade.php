@@ -290,39 +290,48 @@
         </div> <!-- End of Card Body -->
     </div> <!-- End of Main Card -->
 
-    <!-- Modal Konfirmasi Kirim -->
     <div id="konfirmasiKirimModal"
-         class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
-        <!-- Modal Content -->
-        <div class="w-11/12 max-w-lg md:w-1/3 bg-white rounded-lg shadow-xl p-6 md:p-8">
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="modal-title"
+         aria-describedby="modal-description"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none">
 
-            <!-- Judul Modal -->
-            <h2 class="text-xl md:text-2xl font-semibold text-gray-800 mb-4">
-                Konfirmasi Pengiriman
-            </h2> <!-- End of Judul Modal -->
+        <div
+            class="w-11/12 max-w-md bg-white rounded-2xl shadow-xl transform transition-all duration-300 ease-in-out scale-95 opacity-0">
+            <div class="p-6 text-center">
 
-            <!-- Isi Modal -->
-            <p class="text-gray-600 mb-6">
-                Apakah Anda yakin ingin mengirim laporan ini?
-            </p> <!-- End of Isi Modal -->
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                    <svg class="h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                    </svg>
+                </div>
 
-            <!-- Tombol Aksi -->
-            <div class="flex justify-end gap-3">
-                <!-- Tombol Batal -->
-                <button id="batalKirimBtn"
-                        type="button"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-150">
-                    Batal
-                </button> <!-- End of Tombol Batal -->
-                <!-- Tombol Lanjut Kirim -->
-                <button id="lanjutKirimBtn"
-                        type="button"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-150">
-                    Ya, Kirim
-                </button> <!-- End of Tombol Lanjut Kirim -->
-            </div> <!-- End of Tombol Aksi -->
-        </div> <!-- End of Modal Content -->
-    </div> <!-- End of Modal Konfirmasi Kirim -->
+                <h2 id="modal-title" class="text-xl font-semibold text-gray-900">
+                    Konfirmasi Pengiriman
+                </h2>
+
+                <p id="modal-description" class="text-sm text-gray-500 mt-2 mb-6">
+                    Apakah Anda yakin ingin mengirim laporan ini? Tindakan ini tidak dapat dibatalkan.
+                </p>
+
+                <div class="flex justify-center gap-4">
+                    <button id="batalKirimBtn"
+                            type="button"
+                            class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-all">
+                        Batal
+                    </button>
+                    <button id="lanjutKirimBtn"
+                            type="button"
+                            class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                        Ya, Kirim
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 @endsection
 @push('skrip')
@@ -353,6 +362,7 @@
         // Modal confirmation variables
         // -----------------------------
         const konfirmasiKirimModal = document.getElementById('konfirmasiKirimModal');
+        const modalContent = konfirmasiKirimModal ? konfirmasiKirimModal.querySelector('.transform') : null;
         const batalKirimBtn = document.getElementById('batalKirimBtn');
         const lanjutKirimBtn = document.getElementById('lanjutKirimBtn');
         let currentFormToSubmit = null;
@@ -757,21 +767,36 @@
 
         function showKonfirmasiModal(formElement) {
             currentFormToSubmit = formElement;
-            if (konfirmasiKirimModal) {
-                konfirmasiKirimModal.classList.remove('hidden');
+            if (konfirmasiKirimModal && modalContent) {
+                // 1. Buat modal terlihat di DOM tapi masih transparan
+                konfirmasiKirimModal.classList.remove('pointer-events-none');
+                konfirmasiKirimModal.classList.add('opacity-100');
+
+                // 2. Aktifkan transisi untuk konten modal
+                modalContent.classList.remove('opacity-0', 'scale-95');
+                modalContent.classList.add('opacity-100', 'scale-100');
+
             } else {
-                console.error("Elemen modal 'konfirmasiKirimModal' tidak ditemukan.");
+                console.error("Elemen modal 'konfirmasiKirimModal' atau kontennya tidak ditemukan.");
             }
         }
 
         function hideKonfirmasiModal() {
-            if (konfirmasiKirimModal) {
-                konfirmasiKirimModal.classList.add('hidden');
+            if (konfirmasiKirimModal && modalContent) {
+                konfirmasiKirimModal.classList.remove('opacity-100');
+                konfirmasiKirimModal.classList.add('opacity-0');
+                modalContent.classList.remove('opacity-100', 'scale-100');
+                modalContent.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                    konfirmasiKirimModal.classList.add('pointer-events-none');
+                }, 300);
             }
             currentFormToSubmit = null;
         }
 
         function initKonfirmasiModalHandlers() {
+            if (!konfirmasiKirimModal) return;
+
             if (batalKirimBtn) {
                 batalKirimBtn.addEventListener('click', hideKonfirmasiModal);
             }
@@ -779,7 +804,6 @@
             if (lanjutKirimBtn) {
                 lanjutKirimBtn.addEventListener('click', () => {
                     const formToProcess = currentFormToSubmit;
-
                     if (formToProcess) {
                         hideKonfirmasiModal();
                         kirimForm(formToProcess);
@@ -788,6 +812,12 @@
                     }
                 });
             }
+
+            konfirmasiKirimModal.addEventListener('click', (event) => {
+                if (event.target === konfirmasiKirimModal) {
+                    hideKonfirmasiModal();
+                }
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {

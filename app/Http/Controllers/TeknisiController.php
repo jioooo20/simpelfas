@@ -14,7 +14,6 @@ class TeknisiController extends Controller
 
     public function perbaikanShow($id)
     {
-        // Verifikasi bahwa perbaikan ada sebelum menampilkan halaman
         $perbaikan = PerbaikanModel::findOrFail($id);
         return view('pages.teknisi.perbaikan.detail', compact('perbaikan'));
     }
