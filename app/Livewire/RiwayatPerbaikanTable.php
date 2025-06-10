@@ -5,8 +5,6 @@ namespace App\Livewire;
 use App\Models\PerbaikanModel;
 use App\Models\StatusPerbaikanModel;
 use App\Models\PerbaikanPetugasModel;
-use App\Models\GedungModel;
-use App\Models\RuangModel;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -19,23 +17,37 @@ class RiwayatPerbaikanTable extends Component
 
     public $search = '';
     public $selectedStatus = '';
+    public $page = 1;
 
-    protected $listeners = [
-        'refreshRiwayatPerbaikanTable' => '$refresh'
+    // Properties for sorting and pagination
+    public $sortField = 'created_at';
+    public $sortDirection = 'desc';
+    public $perPage = 10;
+    
+    // Enable deep-linking with URL parameters
+    protected $queryString = [
+        'page' => ['except' => 1],
+        'search' => ['except' => ''],
+        'selectedStatus' => ['except' => ''],
+        'sortField' => ['except' => 'created_at'],
+        'sortDirection' => ['except' => 'desc'],
+        'perPage' => ['except' => 10],
     ];
-
-    public function updatingSearch()
+    
+    // Add updatedProperty listeners to reset pagination when filters change
+    public function updatedSearch()
     {
         $this->resetPage();
     }
-
-    public function updatingSelectedStatus()
+    
+    public function updatedSelectedStatus()
     {
         $this->resetPage();
     }
-
+    
     public function render()
     {
+
         // Retrieve completed repairs with the latest status first
         $riwayatPerbaikan = StatusPerbaikanModel::with([
                 'perbaikan.pelaporan.fasilitas.ruang.lantai.gedung', 
@@ -105,26 +117,43 @@ class RiwayatPerbaikanTable extends Component
         // For real implementation, use the commented code below
         // $riwayatPerbaikan = $this->getRiwayatPerbaikanData();
 
-        return view('livewire.riwayatPerbaikan-table', compact('riwayatPerbaikan'));
+ 
+
+
+        return view('livewire.riwayatPerbaikan-table', ['riwayatPerbaikan' => $riwayatPerbaikan]);
     }
 
     // Navigation methods for pagination
     public function nextPage()
     {
-        $this->setPage($this->page + 1);
+        $this->page = $this->page + 1;
     }
 
     public function previousPage()
     {
-        $this->setPage(max($this->page - 1, 1));
+        $this->page = max($this->page - 1, 1);
     }
 
     public function gotoPage($page)
     {
-        $this->setPage($page);
+        $this->page = $page;
     }
 
-    // Filter management methods
+    /**
+     * Reset pagination to first page
+     * 
+     * @return void
+     */
+    public function resetPage()
+    {
+        $this->page = 1;
+    }
+
+    /**
+     * Reset all filters and return to first page
+     * 
+     * @return void
+     */
     public function resetFilters()
     {
         $this->selectedStatus = '';
@@ -132,26 +161,45 @@ class RiwayatPerbaikanTable extends Component
         $this->resetPage();
     }
 
+    /**
+     * Clear status filter and return to first page
+     * 
+     * @return void
+     */
     public function clearStatusFilter()
     {
         $this->selectedStatus = '';
         $this->resetPage();
     }
 
+    /**
+     * Clear search filter and return to first page
+     * 
+     * @return void
+     */
     public function clearSearch()
     {
         $this->search = '';
         $this->resetPage();
     }
 
+    /**
+     * Set status filter and return to first page
+     * 
+     * @param string $status Status to filter by
+     * @return void
+     */
     public function setStatusFilter($status)
     {
         $this->selectedStatus = $status;
         $this->resetPage();
     }
 
+
     public function goToDetail($perbaikanId)
     {
         return redirect()->route('detail-riwayat-perbaikan', ['id' => $perbaikanId]);
     }
+
+    
 }

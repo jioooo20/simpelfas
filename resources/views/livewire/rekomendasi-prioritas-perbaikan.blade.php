@@ -4,6 +4,7 @@
         <div class="flex flex-col">
             <h3 class="text-lg font-semibold text-gray-900">Rekomendasi Prioritas Perbaikan</h3>
             <p class="text-gray-500 text-sm mt-1">Tabel skor alternatif laporan perbaikan berdasarkan kriteria</p>
+            <p class="text-gray-500 text-sm mt-1">Pastikan data yang akan diolah sudah diterima pada menu <a href="{{route('sarpra.laporan-kerusakan-fasilitas')}}" class="text-blue-500">Laporan Kerusakan Fasilitas</a></p>
             <p class="text-gray-400 text-xs mt-1">Total data: {{ $laporanData->total() }} laporan</p>
         </div>
         <div>

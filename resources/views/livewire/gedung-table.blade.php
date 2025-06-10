@@ -99,7 +99,7 @@
                     <div class="space-y-4">
                         <div class="form-control">
                             <label class="label">
-                                <span class="label-text">Kode Gedung</span>
+                                <span class="label-text">Kode Gedung<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                             </label>
                             <input type="text" wire:model="gedung_kode" placeholder="Masukkan kode gedung"
                                 class="input input-bordered w-full">
@@ -108,7 +108,7 @@
 
                         <div class="form-control">
                             <label class="label">
-                                <span class="label-text">Nama Gedung</span>
+                                <span class="label-text">Nama Gedung<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                             </label>
                             <input type="text" wire:model="gedung_nama" placeholder="Masukkan nama gedung"
                                 class="input input-bordered w-full">
@@ -127,7 +127,7 @@
 
                     <div class="mt-6 flex justify-end gap-2">
                         <button type="button" wire:click="closeModal" class="btn btn-sm btn-ghost">Batal</button>
-                        <button type="submit" class="btn btn-sm btn-primary" wire:loading.attr="disabled">
+                        <button type="submit" class="btn btn-sm btn-primary text-white" wire:loading.attr="disabled">
                             <span wire:loading.class="hidden"
                                 wire:target="save">{{ $isEditing ? 'Perbarui' : 'Simpan' }}</span>
                             <span wire:loading wire:target="save">

@@ -87,7 +87,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                    <a href="{{ route('laporan.index') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                         <div class="w-6 text-center">
                             <i
                                 class="fa-solid fa-chart-simple group-hover:text-primary transition-transform duration-200"></i>
@@ -221,7 +221,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                    <a href="{{ route('users.feedback') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                         <i
                             class="fa-solid fa-comments w-6 text-center group-hover:text-primary transition-transform duration-200"></i>
                         <span class="sidebar-text">Umpan Balik</span>

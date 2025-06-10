@@ -14,43 +14,60 @@ class FeedbackSeeder extends Seeder
      */
     public function run(): void
     {
+        DB::table('m_feedback')->delete();
 
-        DB::table('m_feedback')->insert([
-            [
-                'pelaporan_id' => 1, // Merujuk pada pelaporan AC (PLR0001)
-                'feedback_text' => 'AC sudah kembali dingin, terima kasih atas respon cepatnya!',
-                'rating' => 5, // Rating dari 1-5
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'pelaporan_id' => 2, // Merujuk pada pelaporan meja pecah (PLR0002)
-                'feedback_text' => 'Meja sudah diganti, namun prosesnya memakan waktu cukup lama.',
-                'rating' => 3,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'pelaporan_id' => 3, // Merujuk pada pelaporan proyektor (PLR0003)
-                'feedback_text' => 'Proyektor berfungsi kembali setelah diperbaiki. Mantap!',
-                'rating' => 4,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'pelaporan_id' => 4, // Merujuk pada pelaporan kursi (PLR0004)
-                'feedback_text' => null, // Feedback bisa saja tidak ada teksnya
-                'rating' => 2, // Mungkin perbaikan kurang memuaskan
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'pelaporan_id' => 5, // Merujuk pada pelaporan papan tulis (PLR0005)
-                'feedback_text' => 'Papan tulis sudah bersih dan spidol sudah tersedia. Terima kasih.',
-                'rating' => 5,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
+        $laporanSelesai = DB::table('t_status_pelaporan')
+            ->where('status_pelaporan', 'Selesai')
+            ->get(['pelaporan_id', 'created_at as waktu_selesai']);
+
+        if ($laporanSelesai->isEmpty()) {
+            $this->command->info('Tidak ada laporan yang berstatus "Selesai", seeder feedback dilewati.');
+            return;
+        }
+
+        $feedbackToInsert = [];
+
+        foreach ($laporanSelesai as $l) {
+            if (!fake()->boolean(80)) {
+                continue;
+            }
+
+            $rating = fake()->randomElement([2, 3, 3, 4, 4, 4, 5, 5, 5, 5]);
+            $feedbackText = null;
+
+            if ($rating >= 4) {
+                $feedbackText = fake()->randomElement([
+                    'Perbaikan sangat cepat dan hasilnya memuaskan. Terima kasih banyak!',
+                    'Sudah berfungsi normal kembali seperti semula. Mantap!',
+                    'Respon cepat dan pengerjaan rapi.',
+                    'Terima kasih, masalah sudah teratasi dengan baik.',
+                ]);
+            } elseif ($rating === 3) {
+                $feedbackText = fake()->randomElement([
+                    'Sudah oke, tapi prosesnya agak lama.',
+                    'Berfungsi, tapi sepertinya masih ada sedikit masalah.',
+                    'Cukup baik.',
+                ]);
+            } else { // Rating 1 atau 2
+                $feedbackText = fake()->randomElement([
+                    'Perbaikannya tidak tuntas, masalah muncul lagi.',
+                    'Masih rusak, hanya sementara beres.',
+                    'Sangat tidak memuaskan, butuh waktu sangat lama.',
+                ]);
+            }
+
+            $waktuSelesai = Carbon::parse($l->waktu_selesai);
+            $waktuFeedback = $waktuSelesai->copy()->addHours(rand(1, 48))->addMinutes(rand(0, 59));
+
+            $feedbackToInsert[] = [
+                'pelaporan_id' => $l->pelaporan_id,
+                'feedback_text' => fake()->boolean(90) ? $feedbackText : null, // 10% rating tanpa teks
+                'rating' => $rating,
+                'created_at' => $waktuFeedback,
+                'updated_at' => $waktuFeedback,
+            ];
+        }
+
+        DB::table('m_feedback')->insert($feedbackToInsert);
     }
 }

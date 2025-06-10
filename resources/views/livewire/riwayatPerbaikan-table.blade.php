@@ -6,7 +6,7 @@
                 <i class="bi bi-search text-gray-500"></i>
             </span>
             <input wire:model.live.debounce.300ms="search" type="text"
-                placeholder="Cari kode, masalah, lokasi, atau teknisi..."
+                placeholder="Cari kode, masalah, atau teknisi..."
                 class="w-full h-10 pl-10 pr-4 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-400" />
             @if ($search)
                 <button wire:click="clearSearch"
@@ -31,10 +31,7 @@
                     <a wire:click="setStatusFilter('Selesai')"
                         class="{{ $selectedStatus === 'Selesai' ? 'bg-base-200' : '' }}">Selesai</a>
                 </li>
-                <li>
-                    <a wire:click="setStatusFilter('Dibatalkan')"
-                        class="{{ $selectedStatus === 'Dibatalkan' ? 'bg-base-200' : '' }}">Dibatalkan</a>
-                </li>
+                {{-- Dibatalkan filter removed as per RiwayatPerbaikanTable.php --}}
             </ul>
         </div>
     </div>
@@ -78,6 +75,7 @@
                     <th class="text-center">Aksi</th>
                 </tr>
             </thead>
+
             <tbody>
                 @php
                 $no = 0;
@@ -96,12 +94,14 @@
                                 {{ date('H:i', strtotime($item['tanggal_selesai'] ?? $item['updated_at'])) }}
                             </p>
                         </td>
+            
                         <td class="">
                             <span class="px-3 py-1 rounded-full">
                                 {{ $item->perbaikan->perbaikanPetugas->pluck('user.nama')->join(', ') }}
                             </span>
                         </td>
                         <td class="">
+
                             <span class="badge text-white px-3 py-1 rounded-full bg-green-500">
                                 {{ $item->perbaikan_status }}
                             </span>
@@ -120,7 +120,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center py-4">Tidak ada riwayat perbaikan fasilitas ditemukan.</td>
+                        <td colspan="7" class="text-center py-4">Tidak ada riwayat perbaikan fasilitas dengan status Selesai yang ditemukan.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -136,7 +136,7 @@
             </div>
             <div class="join">
                 @php
-                    $startPage = max($riwayatPerbaikan->currentPage() - 1, 1);
+                    $startPage = max($page - 1, 1);
                     $endPage = min($startPage + 2, $riwayatPerbaikan->lastPage());
 
                     if ($endPage - $startPage < 2) {
@@ -144,12 +144,10 @@
                     }
                 @endphp
 
-                @for ($page = $startPage; $page <= $endPage; $page++)
-                    <a href="#" wire:click.prevent="gotoPage({{ $page }})">
-                        <button class="join-item btn btn-sm {{ $riwayatPerbaikan->currentPage() == $page ? 'btn-active' : '' }}">
-                            {{ $page }}
-                        </button>
-                    </a>
+                @for ($i = $startPage; $i <= $endPage; $i++)
+                    <button wire:click="gotoPage({{ $i }})" class="join-item btn btn-sm {{ $page == $i ? 'btn-active' : '' }}">
+                        {{ $i }}
+                    </button>
                 @endfor
             </div>
         </div>
