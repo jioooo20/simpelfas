@@ -109,7 +109,7 @@
                     <div class="space-y-4">
                         <div class="form-control">
                             <label class="label">
-                                <span class="label-text">Gedung</span>
+                                <span class="label-text">Gedung<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                             </label>
                             <select wire:model.live="gedung_id" class="select select-bordered w-full">
                                 <option value="">-- Pilih Gedung --</option>
@@ -125,7 +125,7 @@
 
                         <div class="form-control">
                             <label class="label">
-                                <span class="label-text">Kode Lantai</span>
+                                <span class="label-text">Kode Lantai<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                             </label>
                             <div class="flex gap-2">
                                 <div class="relative w-3/12">
@@ -158,7 +158,7 @@
 
                         <div class="form-control">
                             <label class="label">
-                                <span class="label-text">Nama Lantai</span>
+                                <span class="label-text">Nama Lantai<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                             </label>
                             <input type="text" wire:model="lantai_nama" placeholder="Masukkan nama lantai"
                                 class="input input-bordered w-full">
@@ -181,7 +181,7 @@
 
                     <div class="mt-6 flex justify-end gap-2">
                         <button type="button" wire:click="closeModal" class="btn btn-sm btn-ghost">Batal</button>
-                        <button type="submit" class="btn btn-sm btn-primary" wire:loading.attr="disabled">
+                        <button type="submit" class="btn btn-sm btn-primary text-white" wire:loading.attr="disabled">
                             {{ $isEditing ? 'Simpan Perubahan' : 'Simpan' }}
                         </button>
                     </div>

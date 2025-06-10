@@ -69,7 +69,7 @@
                     <tr class="text-center">
                         <th class="w-[4rem]">No</th>
                         <th class="w-[15%] text-left">Kode Laporan</th>
-                        <th class="w-[40%] text-left">Laporan</th>
+                        <th class="w-[40%] text-left">Fasilitas</th>
                         <th class="w-[20%]">Tanggal</th>
                         <th class="w-[20%]">Status</th>
                         <th class="w-[16%]">Aksi</th>
@@ -86,10 +86,9 @@
                             <!-- Kode Laporan -->
                             <td class="text-left" x-text="laporan.kode"></td>
 
-                            <!-- Batasi panjang teks judul -->
-                            <td class="truncate whitespace-nowrap overflow-hidden max-w-xs" :title="laporan.judul"
-                                x-text="laporan.judul.length > 100 ? laporan.judul.slice(0, 100) + '…' : laporan.judul">
-                            </td>
+                            <!-- Fasilitas -->
+                            <td class="whitespace-nowrap overflow-hidden text-ellipsis max-w-xs"
+                                :title="laporan.fasilitas" x-text="laporan.fasilitas"></td>
 
                             <!-- Tanggal -->
                             <td class="text-center" x-text="laporan.tanggal"></td>
@@ -221,11 +220,11 @@
                 },
                 filteredLaporan() {
                     const result = this.laporan
-                        .map((item, index) => ({ ...item, index }))
+                        .map((item, index) => ({...item, index}))
                         .filter(item => {
                             const searchText = this.search.toLowerCase();
                             const searchWords = searchText.split(' ').filter(Boolean);
-                            const searchTarget = `${item.kode} ${item.judul} ${item.tanggal} ${item.status} ${item.index + 1}`.toLowerCase();
+                            const searchTarget = `${item.kode} ${item.fasilitas} ${item.tanggal} ${item.status} ${item.index + 1}`.toLowerCase();
                             const matchSearch = searchWords.every(word => searchTarget.includes(word));
                             const matchFilter = this.filter === '' || item.status === this.filter;
                             return matchSearch && matchFilter;
@@ -290,9 +289,11 @@
                         this.page = Math.floor((this.page + total) / 2);
                     }
                 },
+
                 badgeStyle(status) {
                     return {
                         'Menunggu': 'bg-amber-100 text-amber-800 border border-amber-200',
+                        'Diterima': 'bg-emerald-100 text-emerald-800 border border-emerald-200',
                         'Diproses': 'bg-blue-100 text-blue-800 border border-blue-200',
                         'Selesai': 'bg-green-100 text-green-800 border border-green-200',
                         'Ditolak': 'bg-red-100 text-red-800 border border-red-200',
@@ -301,6 +302,7 @@
                 badgeIcon(status) {
                     return {
                         'Menunggu': '<i class=\'bi bi-hourglass\'></i>',
+                        'Diterima': '<i class =\'bi bi-check2-circle\'></i>',
                         'Diproses': '<i class=\'bi bi-gear\'></i>',
                         'Selesai': '<i class=\'bi bi-check-circle\'></i>',
                         'Ditolak': '<i class=\'bi bi-x-circle\'></i>',

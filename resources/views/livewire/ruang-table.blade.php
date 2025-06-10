@@ -118,7 +118,7 @@
                     <div class="space-y-4">
                         <div class="form-control">
                             <label class="label">
-                                <span class="label-text">Gedung</span>
+                                <span class="label-text">Gedung<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                             </label>
                             <select wire:model.live="filterGedungId" class="select select-bordered w-full">
                                 <option value="">-- Pilih Gedung --</option>
@@ -131,7 +131,7 @@
 
                         <div class="form-control">
                             <label class="label">
-                                <span class="label-text">Lantai</span>
+                                <span class="label-text">Lantai<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                             </label>
                             <select wire:model="lantai_id" class="select select-bordered w-full" {{ empty($filterGedungId) ? 'disabled' : '' }}>
                                 <option value="">-- Pilih Lantai --</option>
@@ -144,7 +144,7 @@
 
                         <div class="form-control">
                             <label class="label">
-                                <span class="label-text">Kode Ruangan</span>
+                                <span class="label-text">Kode Ruangan<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                             </label>
                             <input type="text" wire:model="ruang_kode" placeholder="Masukkan kode ruangan"
                                 class="input input-bordered w-full">
@@ -153,7 +153,7 @@
 
                         <div class="form-control">
                             <label class="label">
-                                <span class="label-text">Nama Ruangan</span>
+                                <span class="label-text">Nama Ruangan<span class="text-red-500 text-sm" title="Wajib diisi"> *</span></span>
                             </label>
                             <input type="text" wire:model="ruang_nama" placeholder="Masukkan nama ruangan"
                                 class="input input-bordered w-full">

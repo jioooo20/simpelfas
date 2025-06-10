@@ -21,6 +21,11 @@ class DatabaseSeeder extends Seeder
             BarangSeeder::class,
             FasilitasSeeder::class,
             KriteriaSeeder::class,
+            PelaporanSeeder::class,
+            StatusPelaporanSeeder::class,
+            AltSkorSeeder::class,
+//            TempSeeder::class,
+            FeedbackSeeder::class,
         ]);
     }
 }

@@ -39,4 +39,9 @@ class PelaporanModel extends Model
     {
         return $this->hasOne(StatusPelaporanModel::class, 'pelaporan_id', 'pelaporan_id');
     }
+
+    public function perbaikan(): BelongsTo
+    {
+        return $this->belongsTo(PerbaikanModel::class, 'pelaporan_id', 'pelaporan_id');
+    }
 }
