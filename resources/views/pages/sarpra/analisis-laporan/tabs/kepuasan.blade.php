@@ -38,10 +38,19 @@
 
                         {{-- Kolom Kiri: Info Fasilitas & Rating --}}
                         <div class="flex-1 min-w-0 pr-3">
-                            <h5 class="font-semibold text-sm text-gray-700 truncate"
-                                title="{{ $facility->item_name }} {{ $facility->item_code ? '['.$facility->item_code.']' : '' }}">
-                                {{ $facility->item_name }} {{ $facility->item_code ? '['.$facility->item_code.']' : '' }}
-                            </h5>
+                            <div class="flex items-center">
+                                <h5 class="text-sm font-semibold text-gray-900 truncate"
+                                    title="{{ $facility->item_name }}">
+                                    {{ $facility->item_name }}
+                                </h5>
+                                {{-- [DIUBAH] Kode barang menjadi 'tag' --}}
+                                @if($facility->item_code)
+                                    <span class="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs font-mono">
+                                      {{ $facility->item_code }}
+                                    </span>
+                                @endif
+                            </div>
+
                             <p class="text-xs text-gray-500 truncate"
                                title="{{ $facility->room }}, {{ $facility->floor }}, {{ $facility->building }}">
                                 {{ $facility->room }} &bull; {{ $facility->floor }}
@@ -122,7 +131,7 @@
                     </div>
                 `;
                 // Sembunyikan filter jika tidak ada data
-                if(yearFilter) yearFilter.parentElement.classList.add('hidden');
+                if (yearFilter) yearFilter.parentElement.classList.add('hidden');
                 return;
             }
 
@@ -139,7 +148,7 @@
                 const monthsToShow = isCurrentYear ? now.getMonth() + 1 : 12;
                 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
                 const finalLabels = monthNames.slice(0, monthsToShow);
-                const finalData = Array.from({ length: monthsToShow }, (_, i) => {
+                const finalData = Array.from({length: monthsToShow}, (_, i) => {
                     const monthKey = String(i + 1).padStart(2, '0');
                     return ratingsMap.get(monthKey) || 0;
                 });
@@ -183,7 +192,7 @@
                                         }
                                     }
                                 },
-                                x: { grid: { display: false } }
+                                x: {grid: {display: false}}
                             }
                         }
                     });

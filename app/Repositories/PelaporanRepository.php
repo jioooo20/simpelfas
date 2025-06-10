@@ -269,18 +269,36 @@ class PelaporanRepository
 
     public function getStatistikIntervalPerFasilitas(): Collection
     {
-        return PelaporanModel::query()
+        // Langkah 1: Subquery untuk mendapatkan semua laporan yang statusnya 'Selesai',
+        // beserta waktu kapan laporan dibuat dan kapan diselesaikan.
+        $laporanSelesai = PelaporanModel::query()
+            ->join('t_status_pelaporan as s', 'm_pelaporan.pelaporan_id', '=', 's.pelaporan_id')
+            ->where('s.status_pelaporan', 'Selesai')
+            ->select(
+                'm_pelaporan.fasilitas_id',
+                'm_pelaporan.created_at as waktu_dibuat',
+                's.created_at as waktu_selesai'
+            )
+            ->orderBy('fasilitas_id')
+            ->orderBy('waktu_dibuat');
+
+        $intervalPerLaporan = DB::query()
+            ->fromSub($laporanSelesai, 'lapsel')
             ->select(
                 'fasilitas_id',
-                // Menggunakan CASE untuk menangani jika laporan hanya ada 1
-                DB::raw('ROUND(
-                    CASE
-                        WHEN COUNT(pelaporan_id) > 1
-                        THEN DATEDIFF(MAX(created_at), MIN(created_at)) / (COUNT(pelaporan_id) - 1)
-                        ELSE 0
-                    END
-                ) AS average_interval_days')
+                'waktu_dibuat',
+                'waktu_selesai',
+                DB::raw('LAG(waktu_selesai, 1) OVER (PARTITION BY fasilitas_id ORDER BY waktu_dibuat) as waktu_selesai_sebelumnya')
+            );
+
+        return DB::query()
+            ->fromSub($intervalPerLaporan, 'interval_data')
+            ->select(
+                'fasilitas_id',
+                DB::raw('ROUND(AVG(DATEDIFF(waktu_dibuat, waktu_selesai_sebelumnya))) as average_interval_days')
             )
+            ->whereNotNull('waktu_selesai_sebelumnya')
+            ->whereColumn('waktu_dibuat', '>', 'waktu_selesai_sebelumnya')
             ->groupBy('fasilitas_id')
             ->get();
     }

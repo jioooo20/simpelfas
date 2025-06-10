@@ -33,10 +33,16 @@
                     <div class="flex justify-between items-center">
                         <div class="flex-1 min-w-0 pr-4">
                             <div class="flex items-center">
+                                {{-- Judul kini hanya menampilkan nama --}}
                                 <p class="text-sm font-semibold text-gray-900 truncate"
                                    title="{{ $rekomendasi['title'] }}">
                                     {{ $rekomendasi['title'] }}
                                 </p>
+
+                                {{-- [BARU] Kode barang menjadi 'tag' terpisah --}}
+                                <span class="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs font-mono">
+                                    {{ $rekomendasi['item_code'] }}
+                                </span>
                             </div>
                             <p class="text-xs text-gray-500 mt-1 truncate" title="{{ $rekomendasi['subtitle'] }}">
                                 {{ $rekomendasi['subtitle'] }}

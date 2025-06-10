@@ -6,7 +6,6 @@ use App\Models\RoleModel;
 use App\Models\UserModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\PelaporanModel;
@@ -74,7 +73,7 @@ class AdminController extends Controller
         $fasilitas = FasilitasModel::all();
         $user = UserModel::all();
         $status = StatusPelaporanModel::all();
-        
+
         // Grafik Tren Laporan (jumlah laporan per bulan)
         $laporanPerBulan = PelaporanModel::select(
             DB::raw("DATE_FORMAT(created_at, '%Y-%m') as bulan"),

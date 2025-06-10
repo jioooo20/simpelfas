@@ -112,7 +112,7 @@ class SarpraController extends Controller
     {
         return view('pages.sarpra.rekomendasi-prioritas-perbaikan.index');
     }
-  
+
     public function penugasan_perbaikan()
     {
         return view('pages.sarpra.penugasan-perbaikan.index');
@@ -212,35 +212,64 @@ class SarpraController extends Controller
 
     private function hitungSkorPerFasilitas(): array
     {
+        // Mengambil semua data yang dibutuhkan
         $laporan = $this->pelaporanRepository->getStatistikLaporanPerFasilitas()->keyBy('fasilitas_id');
         $interval = $this->pelaporanRepository->getStatistikIntervalPerFasilitas()->keyBy('fasilitas_id');
         $rating = $this->feedbackRepository->getFacilityRatings()->keyBy('fasilitas_id');
-        $fasilitasIds = $rating->keys();
+
+        // [PERBAIKAN 1] Sumber ID Fasilitas digabung dari semua data agar tidak ada yang terlewat.
+        $fasilitasIds = $laporan->keys()
+            ->merge($interval->keys())
+            ->merge($rating->keys())
+            ->unique();
+
+        // Menghitung nilai Min/Max untuk normalisasi
         $maxLaporan = $laporan->max('jumlah_laporan') ?? 1;
         $minLaporan = $laporan->min('jumlah_laporan') ?? 1;
         $maxInterval = $interval->max('average_interval_days') ?? 1;
         $minInterval = $interval->min('average_interval_days') ?? 1;
-        $maxRating = $rating->max('rata_rata_rating') ?? 5;
-        $minRating = $rating->min('rata_rata_rating') ?? 0;
+        $maxRating = 5; // Max rating selalu 5
+        $minRating = 0; // Min rating selalu 0
 
         $hasil = [];
 
         foreach ($fasilitasIds as $id) {
-            $jumlahLaporan = $laporan[$id]->jumlah_laporan ?? 0;
-            $intervalHari = $interval[$id]->average_interval_days ?? 0;
-            $rataRating = $rating[$id]->rata_rata_rating;
-            $skorLaporan = $maxLaporan == $minLaporan ? 1 : 1 - (($jumlahLaporan - $minLaporan) / ($maxLaporan - $minLaporan));
-            $skorRating = $maxRating == $minRating ? 1 : ($rataRating - $minRating) / ($maxRating - $minRating);
+            // Mengambil data untuk setiap metrik dengan fallback '?? 0'
+            $jumlahLaporan = $laporan->get($id)->jumlah_laporan ?? 0;
+            $intervalHari = $interval->get($id)->average_interval_days ?? 0;
 
+            // [PERBAIKAN 2] Akses rating diberi '?? 0' untuk kasus fasilitas tanpa rating.
+            $rataRating = $rating->get($id)->rata_rata_rating ?? 0;
+
+            // Normalisasi Skor Laporan (semakin banyak laporan, semakin rendah skor)
+            $skorLaporan = $maxLaporan == $minLaporan ? 1 : 1 - (($jumlahLaporan - $minLaporan) / ($maxLaporan - $minLaporan));
+
+            // Normalisasi Skor Rating (semakin tinggi rating, semakin tinggi skor)
+            // Jika tidak ada rating (nilai 0), skornya juga akan 0.
+            $skorRating = ($rataRating - $minRating) / ($maxRating - $minRating);
+
+            // Normalisasi Skor Interval (semakin lama interval, semakin tinggi skor)
             $skorInterval = 0;
             if ($jumlahLaporan <= 1) {
+                // Jika laporan hanya 1 atau 0, interval tidak relevan, beri skor sempurna.
                 $skorInterval = 1.0;
             } else {
-                $skorInterval = $maxInterval == $minInterval ? 1 : ($intervalHari - $minInterval) / ($maxInterval - $minInterval);
+                // Jika ada laporan > 1 tapi tidak ada interval (karena belum selesai), skor intervalnya 0.
+                if ($intervalHari == 0) {
+                    $skorInterval = 0;
+                } else {
+                    $skorInterval = $maxInterval == $minInterval ? 1 : ($intervalHari - $minInterval) / ($maxInterval - $minInterval);
+                }
             }
 
+            // Pastikan tidak ada skor negatif
+            $skorLaporan = max(0, $skorLaporan);
+            $skorRating = max(0, $skorRating);
+            $skorInterval = max(0, $skorInterval);
+
+            // Menghitung total skor dengan pembobotan
             $totalSkorFloat = ($skorLaporan * 0.4 + $skorRating * 0.3 + $skorInterval * 0.3) * 100;
-            $totalSkor = round($totalSkorFloat, 0, PHP_ROUND_HALF_UP);
+            $totalSkor = round($totalSkorFloat);
 
             $hasil[] = [
                 'fasilitas_id' => $id,
@@ -284,6 +313,8 @@ class SarpraController extends Controller
 
             $performanceData[] = [
                 'title' => $detail->item_name,
+                // [PENAMBAHAN] Tambahkan item_code di sini
+                'item_code' => $detail->item_code ?? null,
                 'subtitle' => $detail->building . ', ' . $detail->floor . ', ' . $detail->room,
                 'reports' => $dataSkor['jumlah_laporan'],
                 'satisfaction' => (float) $dataSkor['rata_rata_rating'],
@@ -299,10 +330,8 @@ class SarpraController extends Controller
 
     private function mapPerformanceToRecommendation(array $facilitiesPerformance): array
     {
-        // Gunakan collect() dan map() untuk transformasi data
         return collect($facilitiesPerformance)->map(function ($facility) {
 
-            // Logika untuk menentukan label aksi berdasarkan status
             switch ($facility['status']) {
                 case 'Berisiko':
                     $facility['action_label'] = 'Tindakan Segera';
@@ -320,7 +349,7 @@ class SarpraController extends Controller
                     $facility['action_label'] = 'Periksa';
             }
 
-            return $facility; // Kembalikan data fasilitas yang sudah dimodifikasi
+            return $facility;
 
         })->all();
     }
