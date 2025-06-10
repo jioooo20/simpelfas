@@ -35,13 +35,22 @@ class PelaporanModel extends Model
         return $this->belongsTo(FasilitasModel::class, 'fasilitas_id', 'fasilitas_id');
     }
 
-    public function statusPelaporan(): HasOne
+    public function statusPelaporan(): HasMany
     {
-        return $this->hasOne(StatusPelaporanModel::class, 'pelaporan_id', 'pelaporan_id');
+        return $this->hasMany(StatusPelaporanModel::class, 'pelaporan_id', 'pelaporan_id');
     }
 
-    public function perbaikan(): BelongsTo
+    public function skorAlternatif()
     {
-        return $this->belongsTo(PerbaikanModel::class, 'pelaporan_id', 'pelaporan_id');
+        return $this->hasMany(SkorAltModel::class, 'pelaporan_id', 'pelaporan_id');
     }
+    public function perbaikan()
+{
+    return $this->hasOne(PerbaikanModel::class, 'pelaporan_id', 'pelaporan_id');
+}
+
+public function feedback()
+{
+    return $this->hasOne(FeedbackModel::class, 'pelaporan_id', 'pelaporan_id');
+}
 }

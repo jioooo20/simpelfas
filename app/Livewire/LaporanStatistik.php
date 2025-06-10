@@ -8,6 +8,7 @@ use App\Models\PelaporanModel;
 use App\Models\FasilitasModel;
 use App\Models\UserModel;
 use App\Models\StatusPelaporanModel;
+use Illuminate\Support\Facades\DB;
 
 class LaporanStatistik extends Component
 {
@@ -17,7 +18,8 @@ class LaporanStatistik extends Component
         $this->resetPage();
     }
 
-    public function render()
+
+   public function render()
 {
     $table = PelaporanModel::query()
             ->with([
@@ -25,16 +27,20 @@ class LaporanStatistik extends Component
                 'user',
                 'statusPelaporan' => function($query) {
                     $query->latest()->limit(1);
+                },
+                'skorAlternatif',
+                'feedback' => function($query) {
+                    $query->select('pelaporan_id', 'rating');
                 }
             ])
             ->when($this->search, function ($query) {
                 $query->whereHas('user', function ($q) {
                     $q->where('nama', 'like', '%' . $this->search . '%');
                 })
-                ->orWhere('judul_laporan', 'like', '%' . $this->search . '%')
-                ->orWhere('deskripsi_laporan', 'like', '%' . $this->search . '%')
+                ->orWhere('pelaporan_kode', 'like', '%' . $this->search . '%')
+                ->orWhere('pelaporan_deskripsi', 'like', '%' . $this->search . '%')
                 ->orWhereHas('fasilitas.barang', function ($q) {
-                    $q->where('nama', 'like', '%' . $this->search . '%');
+                    $q->where('barang_nama', 'like', '%' . $this->search . '%');
                 });
             })
             ->orderBy('created_at', 'desc')
