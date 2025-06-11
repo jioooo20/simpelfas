@@ -47,8 +47,78 @@ class RiwayatPerbaikanTable extends Component
     
     public function render()
     {
-        // Get completed repairs from database
-        $riwayatPerbaikan = $this->getRiwayatPerbaikanData();
+
+        // Retrieve completed repairs with the latest status first
+        $riwayatPerbaikan = StatusPerbaikanModel::with([
+                'perbaikan.pelaporan.fasilitas.ruang.lantai.gedung', 
+                'perbaikan.perbaikanPetugas.user',
+                // Explicitly load all status history ordered by most recent first
+                'perbaikan.statusPerbaikan' => function($query) {
+                    $query->orderBy('created_at', 'desc');
+                }
+            ])
+            ->whereIn('perbaikan_status', ['Selesai'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->unique(function ($item) {
+                // Extract the base code without suffix numbers/letters
+                $kode = $item->perbaikan->perbaikan_kode;
+                return preg_replace('/-\d+[A-Z]*$/i', '', $kode);
+            });
+            
+        // Enhance each item with a latestCode property
+        foreach ($riwayatPerbaikan as $item) {
+            // Get the base code (e.g., PBR-001 from PBR-001-1)
+            $baseCode = preg_replace('/-\d+[A-Z]*$/i', '', $item->perbaikan->perbaikan_kode);
+            
+            // Find all repair records with the same base code
+            $relatedCodes = PerbaikanModel::where('perbaikan_kode', 'LIKE', $baseCode.'%')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->pluck('perbaikan_kode')
+                ->toArray();
+                
+            // Get the latest code (first one since we sorted by created_at desc)
+            $latestCode = !empty($relatedCodes) ? $relatedCodes[0] : $item->perbaikan->perbaikan_kode;
+            
+            $item->latestCode = $latestCode;
+        }
+
+        // Then apply search filter if provided
+        if ($this->search) {
+            $search = strtolower(trim($this->search));
+            $riwayatPerbaikan = $riwayatPerbaikan->filter(function ($item) use ($search) {
+                // Search in multiple fields including technician names
+                return str_contains(strtolower($item->latestCode), $search)
+                    || str_contains(strtolower($item->perbaikan->perbaikan_kode), $search)
+                    || str_contains(strtolower($item->perbaikan->pelaporan->pelaporan_deskripsi), $search)
+                    || str_contains(strtolower($item->perbaikan->pelaporan->fasilitas->ruang->lantai->gedung->gedung_nama), $search)
+                    || str_contains(strtolower($item->perbaikan->pelaporan->fasilitas->ruang->ruang_nama), $search)
+                    || str_contains(strtolower($item->perbaikan->perbaikanPetugas->pluck('user.nama')->join(', ')), $search);
+            });
+        }
+
+        return view('livewire.riwayatPerbaikan-table', compact('riwayatPerbaikan'));
+
+        // Then apply search filter if provided
+        if ($this->search) {
+            $search = strtolower(trim($this->search));
+            $riwayatPerbaikan = $riwayatPerbaikan->filter(function ($item) use ($search) {
+                // Search in multiple fields including technician names
+                return str_contains(strtolower($item['kode_perbaikan']), $search)
+                    || str_contains(strtolower($item['deskripsi_masalah']), $search)
+                    || str_contains(strtolower($item['lokasi']), $search)
+                    || str_contains(strtolower($item['gedung_nama']), $search)
+                    || str_contains(strtolower($item['ruang_nama']), $search)
+                    || str_contains(strtolower($item['teknisi_nama']), $search);
+            });
+        }
+
+        // For real implementation, use the commented code below
+        // $riwayatPerbaikan = $this->getRiwayatPerbaikanData();
+
+ 
+
 
         return view('livewire.riwayatPerbaikan-table', ['riwayatPerbaikan' => $riwayatPerbaikan]);
     }
@@ -125,174 +195,11 @@ class RiwayatPerbaikanTable extends Component
         $this->resetPage();
     }
 
-    /**
-     * Get completed repair history data from database
-     * 
-     * This method fetches repair records with 'Selesai' status,
-     * groups them by repair code to avoid duplicates,
-     * and applies any search or role-based filters.
-     * 
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
-     */
-    protected function getRiwayatPerbaikanData()
+
+    public function goToDetail($perbaikanId)
     {
-        // Start building the query - only get repairs with 'Selesai' status
-        $query = PerbaikanModel::query()
-            ->select([
-                'perbaikan_id',
-                'perbaikan_kode',
-                'perbaikan_deskripsi',
-                'pelaporan_id',
-                'created_at',
-                'updated_at'
-            ])
-            ->with([
-                'pelaporan',
-                'pelaporan.fasilitas',
-                'pelaporan.fasilitas.ruang',
-                'pelaporan.fasilitas.ruang.lantai',
-                'pelaporan.fasilitas.ruang.lantai.gedung',
-                'pelaporan.fasilitas.barang',
-                'perbaikanPetugas.user',
-                'latestStatusPerbaikan'
-            ])
-            ->whereHas('latestStatusPerbaikan', function($q) {
-                $q->where('perbaikan_status', 'Selesai');
-            });
-
-        // Apply search filter if provided
-        if ($this->search) {
-            $search = trim($this->search);
-            if (preg_match('/^fasilitas_id:(\d+)$/', $search, $matches)) {
-                $facilityId = $matches[1];
-                $query->whereHas('pelaporan', function($subq) use ($facilityId) {
-                    $subq->where('fasilitas_id', $facilityId);
-                });
-            } else {
-                $search = '%' . $search . '%';
-                $query->where(function($q) use ($search) {
-                    $q->where('perbaikan_kode', 'like', $search)
-                      ->orWhere('perbaikan_deskripsi', 'like', $search)
-                      ->orWhereHas('pelaporan', function($subq) use ($search) {
-                          $subq->where('pelaporan_deskripsi', 'like', $search);
-                      })
-                      ->orWhereHas('pelaporan.fasilitas.ruang.lantai.gedung', function($subq) use ($search) {
-                          $subq->where('gedung_nama', 'like', $search);
-                      })
-                      ->orWhereHas('pelaporan.fasilitas.ruang', function($subq) use ($search) {
-                          $subq->where('ruang_nama', 'like', $search);
-                      })
-                      ->orWhereHas('perbaikanPetugas.user', function($subq) use ($search) {
-                          $subq->where('nama', 'like', $search);
-                      });
-                });
-            }
-        }
-
-        // Apply role-based filters for technicians
-        $user = Auth::user();
-        if ($user && $user->role_id == 3) { // Role 3 is for technicians
-            $query->whereHas('perbaikanPetugas', function($q) use ($user) {
-                $q->where('user_id', $user->id);
-            });
-        }
-
-        // Define sort options
-        $sortField = $this->sortField ?? 'created_at';
-        $sortDirection = $this->sortDirection ?? 'desc';
-        
-        $allPerbaikanData = $query->orderBy($sortField, $sortDirection)->get();
-        $groupedByPrefix = $allPerbaikanData->groupBy(function($item) {
-            return $this->getKodePerbaikanPrefix($item->perbaikan_kode);
-        })->map(function($group) {
-            // Ambil item terakhir (terbaru) berdasarkan created_at
-            return $group->sortByDesc('created_at')->first();
-        })->values();
-        
-        // Tambahkan filter status di sini
-        if ($this->selectedStatus) {
-            $groupedByPrefix = $groupedByPrefix->filter(function($item) {
-                // Ambil status terbaru dari relasi latestStatusPerbaikan
-                $latestStatus = $item->latestStatusPerbaikan ? $item->latestStatusPerbaikan->perbaikan_status : 'Menunggu';
-                return $latestStatus === $this->selectedStatus;
-            })->values();
-        } else {
-            // Jika tidak ada filter status khusus, tetap filter hanya yang 'Selesai'
-            $groupedByPrefix = $groupedByPrefix->filter(function($item) {
-                $latestStatus = $item->latestStatusPerbaikan ? $item->latestStatusPerbaikan->perbaikan_status : 'Menunggu';
-                return $latestStatus === 'Selesai';
-            })->values();
-        }
-
-        // Setup pagination
-        $perPage = $this->perPage ?? 10;
-        
-        $perbaikanData = new \Illuminate\Pagination\LengthAwarePaginator(
-            $groupedByPrefix->forPage($this->page, $perPage),
-            $groupedByPrefix->count(),
-            $perPage,
-            $this->page,
-            ['path' => request()->url(), 'query' => request()->query()]
-        );
-        
-        // Format data untuk view
-        return collect($perbaikanData->items())->map(function($item) use ($allPerbaikanData) {
-            $pelaporan = $item->pelaporan;
-            $fasilitas = $pelaporan->fasilitas ?? null;
-            $gedung = $fasilitas && $fasilitas->ruang && $fasilitas->ruang->lantai ? $fasilitas->ruang->lantai->gedung : null;
-            $ruang = $fasilitas ? $fasilitas->ruang : null;
-            
-            // Ambil semua teknisi dari relasi perbaikanPetugas
-            $teknisiCollection = $item->perbaikanPetugas->map(function($petugas) {
-                return $petugas->user ?? null;
-            })->filter()->values();
-            
-            // Ambil status terbaru dari relasi latestStatusPerbaikan
-            $status = $item->latestStatusPerbaikan ? $item->latestStatusPerbaikan->perbaikan_status : 'Menunggu';
-            
-            $additionalRepairs = 0;
-            if ($fasilitas) {
-                $additionalRepairs = $allPerbaikanData->filter(function($repairItem) use ($fasilitas, $item) {
-                    return $repairItem->pelaporan && $repairItem->pelaporan->fasilitas_id == $fasilitas->fasilitas_id && $repairItem->perbaikan_id != $item->perbaikan_id;
-                })->count();
-            }
-            
-            return [
-                'id' => $item->perbaikan_id,
-                'kode_perbaikan' => $item->perbaikan_kode,
-                'deskripsi_masalah' => $pelaporan->pelaporan_deskripsi ?? $item->perbaikan_deskripsi,
-                'gedung_nama' => $gedung->gedung_nama ?? '-',
-                'ruang_nama' => $ruang->ruang_nama ?? '-',
-                'tanggal_selesai' => $item->latestStatusPerbaikan->created_at ?? $item->updated_at,
-                'tanggal_lapor' => $item->created_at,
-                'updated_at' => $item->updated_at,
-                'status' => $status,
-                'teknisi_id' => $teknisiCollection->isNotEmpty() ? $teknisiCollection->first()->id : null,
-                'teknisi_nama' => $teknisiCollection->isNotEmpty() ? $teknisiCollection->first()->nama : '-',
-                'jumlah_teknisi' => $teknisiCollection->count(),
-                'fasilitas_id' => $fasilitas->fasilitas_id ?? null,
-                'fasilitas_nama' => $fasilitas->barang->barang_nama ?? '-',
-                'additional_repairs' => $additionalRepairs
-            ];
-        });
+        return redirect()->route('detail-riwayat-perbaikan', ['id' => $perbaikanId]);
     }
 
-    /**
-     * Mendapatkan prefix dari kode perbaikan
-     * 
-     * Ekstrak bagian awal kode untuk mengelompokkan perbaikan yang serupa
-     * Format kode perbaikan biasanya seperti: PR-123-456 atau PR-123
-     * Kita ekstrak bagian PR-123 untuk grouping
-     * 
-     * @param string $code
-     * @return string
-     */
-    private function getKodePerbaikanPrefix($code)
-    {
-        // Ekstrak bagian awal kode sampai dengan angka terakhir dari kode utama
-        if (preg_match('/^([A-Z]+-\d+)/', $code, $matches)) {
-            return $matches[1];
-        }
-        return $code;
-    }
+    
 }

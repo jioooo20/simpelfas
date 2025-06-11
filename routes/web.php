@@ -85,7 +85,7 @@ Route::middleware('auth')->group(function () {
         });
         Route::group(['prefix' => 'riwayat-perbaikan'], function (): void {
             Route::get('/', [TeknisiController::class, 'riwayat'])->name('riwayat-perbaikan');
-            Route::get('/detail', [TeknisiController::class, 'riwayatShow'])->name('riwayat-perbaikan-detail');
+            Route::get('/detail', [TeknisiController::class, 'riwayatShow'])->name('detail-riwayat-perbaikan');
         });
     });
     Route::middleware('role:4,5,6')->prefix('users')->group(function (): void {
