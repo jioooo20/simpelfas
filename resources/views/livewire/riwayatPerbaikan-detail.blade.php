@@ -78,7 +78,10 @@
                 </div>
             </div>
         </div>
-    </div>    <!-- Dokumentasi Foto -->    <div class="mt-8">
+    </div>    
+    
+    <!-- Dokumentasi Foto -->    
+    <div class="mt-8">
         <h2 class="text-xl font-bold mb-4">Dokumentasi Foto</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             {{-- Selalu tampilkan card untuk status Dilaporkan --}}
@@ -103,9 +106,6 @@
                     <p class="text-sm text-gray-500">
                         {{ $dilaporkanImage['tanggal'] ?? $historyInfo[0]['tanggal'] ?? now()->format('d/m/Y H:i') }}
                     </p>
-                    <p class="text-sm">
-                        {{ $dilaporkanImage['keterangan'] ?? 'Dokumentasi saat kerusakan dilaporkan' }}
-                    </p>
                 </div>
             </div>
             
@@ -121,7 +121,7 @@
                         <div class="card-body pt-2">
                             <h3 class="card-title text-md">Foto {{ $image['status'] }}</h3>
                             <p class="text-sm text-gray-500">{{ $image['tanggal'] }}</p>
-                            <p class="text-sm">{{ $image['keterangan'] }}</p>
+                            {{-- <p class="text-sm">{{ $image['keterangan'] }}</p> --}}
                         </div>
                     </div>
                 @endif
@@ -134,46 +134,49 @@
             @endif
         </div>
     </div>
+
     <!-- Histori update perbaikan -->
-    <div class="mt-8">
+    <!-- Histori update perbaikan -->
+    <div class="mt-8 mb-10">
         <h2 class="text-xl font-bold mb-4">Histori Perbaikan</h2>
         <div class="overflow-x-auto">
             <table class="table table-zebra w-full">
                 <thead>
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Status</th>
-                        <th>Keterangan</th>
-                        <th>Oleh</th>
+                    <tr class="bg-base-200">
+                        <th class="w-1/5">Tanggal</th>
+                        <th class="w-1/5">Status</th>
+                        <th class="w-3/5">Keterangan</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($historyInfo as $history)
+                    @foreach ($historyInfo as $row)
                         <tr>
-                            <td>{{ $history['tanggal'] }}</td>
+                            <td>{{ $row['tanggal'] }}</td>
+                            @if ($row['perbaikan_status'] == 'Menunggu')
+                                <td><span class="badge badge-info text-white">{{ $row['perbaikan_status'] }}</span></td>
+                            @elseif ($row['perbaikan_status'] == 'Diproses')
+                                <td><span class="badge badge-primary text-white">{{ $row['perbaikan_status'] }}</span>
+                                </td>
+                            @elseif ($row['perbaikan_status'] == 'Selesai')
+                                <td><span class="badge badge-success text-white">{{ $row['perbaikan_status'] }}</span>
+                                </td>
+                            @else
+                                <td><span class="badge badge-neutral text-white">{{ $row['perbaikan_status'] }}</span></td>
+                            @endif
                             <td>
-                                @php
-                                    $badgeClass = match($history['status']) {
-                                        'Dilaporkan' => 'badge-ghost',
-                                        'Diverifikasi' => 'badge-info',
-                                        'Ditugaskan' => 'badge-info',
-                                        'Dalam Proses' => 'badge-warning',
-                                        'Menunggu Komponen' => 'badge-primary',
-                                        'Selesai' => 'badge-success',
-                                        'Dibatalkan' => 'badge-error',
-                                        default => 'badge-neutral'
-                                    };
-                                @endphp
-                                <span class="badge {{ $badgeClass }}">{{ $history['status'] }}</span>
+                                @if ($row['perbaikan_status'] == 'Menunggu')
+                                    <p class="">Penugasan Perbaikan Fasilitas dibuat dan menunggu teknisi untuk
+                                        melakukan perbaikan</p>
+                                @elseif ($row['perbaikan_status'] == 'Diproses')
+                                    <p class="">Teknisi sedang melakukan perbaikan</p>
+                                @elseif ($row['perbaikan_status'] == 'Selesai')
+                                    <p class="">Fasilitas telah selesai diperbaiki</p>
+                                @else
+                                    <p class="">Status perbaikan diperbarui</p>
+                                @endif
                             </td>
-                            <td>{{ $history['keterangan'] }}</td>
-                            <td>{{ $history['oleh'] }}</td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="text-center py-4">Tidak ada histori perbaikan yang tersedia.</td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
