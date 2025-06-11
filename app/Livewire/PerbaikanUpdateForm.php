@@ -33,10 +33,15 @@ class PerbaikanUpdateForm extends Component
 
     public function updatePerbaikan()
     {
-        $this->validate([
-            'status' => 'required',
-            'gambar' => 'nullable|image|max:2048',
-        ]);
+        try {
+            $this->validate([
+                'status' => 'required',
+                'gambar' => 'required|image|max:5120', // wajib upload gambar, maksimal 5MB
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->dispatch('showErrorToast', 'Gambar harus diupload dan status harus dipilih.');
+            return;
+        }
 
         $perbaikan = PerbaikanModel::find($this->perbaikanId);
         if (!$perbaikan) {
@@ -63,9 +68,13 @@ class PerbaikanUpdateForm extends Component
             return;
         }        // Simpan gambar jika ada
         $gambarPath = null;
-        if ($this->gambar) {
-            $gambarPath = $this->gambar->store('perbaikan', 'public');
-        }        
+        $gambar = $this->gambar;
+        $filename = uniqid() . '.' . $gambar->getClientOriginalExtension();
+        if ($this->status === 'Diproses') {
+                $gambarPath = $gambar->storeAs('perbaikan/menunggu', $filename, 'public');
+        } elseif ($this->status === 'Selesai') {
+                $gambarPath = $gambar->storeAs('perbaikan/selesai', $filename, 'public');
+        }
         
         // Update hanya di tabel t_status_perbaikan
         // Cari semua perbaikan dengan kode yang mirip (prefix)
