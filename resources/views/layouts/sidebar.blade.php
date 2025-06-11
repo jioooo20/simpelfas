@@ -77,6 +77,15 @@
                                 <span class="sidebar-text text-md">Fasilitas Kampus</span>
                             </a>
                         </li>
+                        <li>
+                            <a href="{{ route('admin.barang') }}"
+                                class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                                <div class="w-6 text-center">
+                                    <i class="fa-solid fa-file-invoice group-hover:text-primary transition-transform duration-200"></i>
+                                </div>
+                                <span class="sidebar-text text-md">Data Barang</span>
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 <li>
@@ -89,7 +98,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
+                    <a href="{{ route('admin.laporan-kerusakan.index') }}" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                         <div class="w-6 text-center">
                             <i
                                 class="fa-solid fa-file-contract group-hover:text-primary transition-transform duration-200"></i>

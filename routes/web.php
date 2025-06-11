@@ -5,7 +5,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SarpraController;
 use App\Http\Controllers\TeknisiController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UsersController;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -51,6 +50,22 @@ Route::middleware('auth')->group(function () {
         Route::prefix('fasilitas')->group(function (): void {
             Route::get('/', [AdminController::class, 'fasilitas'])->name('admin.fasilitas');
         });
+
+        Route::prefix('barang')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\BarangController::class, 'index'])->name('admin.barang');
+            Route::get('/create', [\App\Http\Controllers\BarangController::class, 'create'])->name('admin.barang.create');
+            Route::get('/{id}', [\App\Http\Controllers\BarangController::class, 'show'])->name('admin.barang.show');
+            Route::post('/', [\App\Http\Controllers\BarangController::class, 'store'])->name('admin.barang.store');
+            Route::get('/{id}/edit', [\App\Http\Controllers\BarangController::class, 'edit'])->name('admin.barang.edit');
+            Route::put('/{id}', [\App\Http\Controllers\BarangController::class, 'update'])->name('admin.barang.update');
+            Route::delete('/{id}', [\App\Http\Controllers\BarangController::class, 'destroy'])->name('admin.barang.destroy');
+        });
+
+        Route::prefix('laporan-kerusakan')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\LaporanKerusakanController::class, 'index'])->name('admin.laporan-kerusakan.index');
+            Route::get('/{id}', [\App\Http\Controllers\LaporanKerusakanController::class, 'show'])->name('admin.laporan-kerusakan.show');
+        });
+        
     });
     Route::middleware('role:2')->prefix('sarpra')->group(function (): void {
         Route::get('/', [SarpraController::class, 'dasbor'])->name('sarpra');
