@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use App\Models\UserModel;
 
 class ProfileController extends Controller
@@ -30,15 +31,22 @@ class ProfileController extends Controller
             'nama' => 'required|string|max:50',
             'password' => 'nullable|string|min:8',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
+            'current_password' => 'required_with:password|string', // tambahkan validasi ini
+    ]);
 
         // Update nama
         $user->nama = $validatedData['nama'];
 
         // Jika ada password baru
-        if (!empty($validatedData['password'])) {
-            $user->password = bcrypt($validatedData['password']);
-        }
+        if ($request->filled('password')) {
+    if (!$request->filled('current_password')) {
+        return back()->withErrors(['current_password' => 'Password lama wajib diisi jika ingin mengubah password.'])->withInput();
+    }
+    if (!Hash::check($request->current_password, $user->password)) {
+        return back()->withErrors(['current_password' => 'Password lama salah.'])->withInput();
+    }
+    $user->password = bcrypt($validatedData['password']);
+}
 
         // Jika ada gambar profil baru
         if ($request->hasFile('profile_image')) {
