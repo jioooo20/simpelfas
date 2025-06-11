@@ -4,7 +4,19 @@
     {{--  rounded-tr-xl rounded-br-xl ring-1 ring-inset ring-gray-200 shadow-inner shadow-black/10 ini garis vertikal --}}
     <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2 my-1">
-            <span class="text-2xl judul ml-2 text-content-accent">Simpelfas</span>
+             {{-- link profile --}}
+            <a href="{{ route('profile') }}" class="flex items-center gap-2">
+                @if(Auth::user()->profile_image)
+                    <img src="{{ asset('storage/' . Auth::user()->profile_image) }}"
+                        alt="{{ Auth::user()->nama }}"
+                        class="h-10 w-10 rounded-full border-4 border-primary shadow object-cover">
+                @else
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->nama) }}&background=4338ca&color=fff"
+                        alt="{{ Auth::user()->nama }}"
+                        class="h-10 w-10 rounded-full border-4 border-primary shadow">
+                @endif
+                <span class="sidebar-text font-semibold text-lg">{{ Auth::user()->nama }}</span>
+            </a>
         </div>
         {{-- matiin dl, lg g mood --}}
         {{-- <div id="toggle-button-container" class="flex justify-end w-16">
