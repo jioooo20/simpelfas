@@ -46,6 +46,7 @@ class PenugasanPerbaikanTable extends Component
     public function mount()
     {
         $this->loadTeknisiList();
+
     }
 
     public function loadTeknisiList()
@@ -343,6 +344,73 @@ class PenugasanPerbaikanTable extends Component
         $this->selectedPerbaikan = null;
     }    
     
+    /**
+     * Mark a repair report as completed
+     * 
+     * @param int $pelaporanId
+     * @return void
+     */
+    public function markAsCompleted($pelaporanId)
+    {
+        try {
+            DB::beginTransaction();
+            
+            // Get the pelaporan record with necessary relationships
+            $pelaporan = PelaporanModel::with(['perbaikan.latestStatusPerbaikan'])->find($pelaporanId);
+            
+            if (!$pelaporan) {
+                $this->dispatch('showErrorToast', 'Data laporan tidak ditemukan');
+                return;
+            }
+            
+            if (!$pelaporan->perbaikan) {
+                $this->dispatch('showErrorToast', 'Data perbaikan tidak ditemukan');
+                return;
+            }
+            
+            // Check if current status is "Selesai"
+            $currentStatus = $pelaporan->perbaikan->latestStatusPerbaikan?->perbaikan_status ?? null;
+            if ($currentStatus !== 'Selesai') {
+                $this->dispatch('showErrorToast', 'Hanya laporan dengan status "Selesai" yang dapat dilaporkan selesai.');
+                return;
+            }
+            
+            // Get the base repair code to find related repairs
+            $perbaikanKode = $pelaporan->perbaikan->perbaikan_kode;
+            $baseKode = substr($perbaikanKode, 0, strrpos($perbaikanKode, '-'));
+            
+            // Find all repairs with similar code (prefix match)
+            $relatedPerbaikan = PerbaikanModel::where('perbaikan_kode', 'like', $baseKode . '-%')->get();
+            $completedCount = 0;
+            foreach ($relatedPerbaikan as $perbaikan) {
+                // Only update if status pelaporan terakhir belum 'Selesai'
+                $latestStatus = StatusPelaporanModel::where('pelaporan_id', $perbaikan->pelaporan_id)
+                    ->orderByDesc('created_at')
+                    ->first();
+                if ($latestStatus && $latestStatus->status_pelaporan === 'Selesai') {
+                    continue;
+                }
+                // Update status pelaporan saja
+                StatusPelaporanModel::create([
+                    'pelaporan_id' => $perbaikan->pelaporan_id,
+                    'status_pelaporan' => 'Selesai',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+                $completedCount++;
+            }
+            DB::commit();
+            $message = $completedCount > 1 
+                ? "Berhasil menyelesaikan {$completedCount} laporan perbaikan terkait" 
+                : "Laporan perbaikan berhasil diselesaikan";
+            $this->dispatch('showSuccessToast', $message);
+            $this->closeDetailModal();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error marking repair as completed: ' . $e->getMessage());
+            $this->dispatch('showErrorToast', 'Terjadi kesalahan saat menyelesaikan laporan: ' . $e->getMessage());
+        }
+    }
     
     /**
      * Get the CSS class for status badge color

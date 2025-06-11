@@ -10,6 +10,10 @@
                     <div>
                         <h3 class="font-semibold text-blue-800 mb-2">Cara Menggunakan Sistem Penugasan:</h3>
                         <ul class="text-sm text-blue-700 space-y-1">
+                            <li>• <strong>Pastikan Data</strong> yang akan diolah sudah diterima pada menu 
+                                <a
+                                    href="{{ route('sarpra.laporan-kerusakan-fasilitas') }}" class="text-blue-600 font-medium underline hover:text-blue-800 transition duration-300 ease-in-out hover:underline-offset-2">Laporan
+                                    Kerusakan Fasilitas</a>
                             <li>• <strong>Pilih fasilitas</strong> yang memerlukan perbaikan dari daftar laporan yang
                                 telah diterima</li>
                             <li>• <strong>Tugaskan teknisi</strong> dengan memilih satu atau lebih teknisi yang sesuai.</li>
