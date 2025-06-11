@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('m_skor_alt', function (Blueprint $table) {
             $table->id('skor_alt_id');
-            $table->string('skor_alt_kode', 10)->unique();
+            $table->string('skor_alt_kode', 10);
             $table->unsignedBigInteger('pelaporan_id')->index();
             $table->unsignedBigInteger('kriteria_id')->index();
-            $table->integer('nilai_skor');
+            $table->double('nilai_skor');
             $table->timestamps();
 
             $table->foreign('pelaporan_id')->references('pelaporan_id')->on('m_pelaporan');

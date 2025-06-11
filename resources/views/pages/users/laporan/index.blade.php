@@ -17,7 +17,9 @@
                     <!-- Lokasi Kerusakan -->
                     <div class="form-control w-full relative"> <!-- Lokasi Kerusakan -->
                         <label for="search-lokasi" class="label">
-                            <span class="label-text text-base text-gray-700 font-semibold">Kerusakan Fasilitas</span>
+                            <span class="label-text text-base text-gray-700 font-semibold">
+                                Kerusakan Fasilitas <span class="text-red-500 text-sm" title="Wajib diisi">*</span>
+                            </span>
                         </label>
 
                         <div class="relative">
@@ -50,7 +52,8 @@
 
                     <!-- Skala Kerusakan -->
                     <div class="space-y-3">
-                        <label class="label-text text-base text-gray-700 font-semibold">Skala Kerusakan</label>
+                        <label class="label-text text-base text-gray-700 font-semibold">Skala Kerusakan
+                            <span class="text-red-500 text-sm" title="Wajib diisi">*</span></label>
                         <div id="radio-group" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <!-- Ringan -->
                             <label class="relative cursor-pointer">
@@ -134,7 +137,8 @@
 
                     <!-- Frekuensi Penggunaan -->
                     <div class="space-y-3">
-                        <label class="label-text text-base text-gray-700 font-semibold">Frekuensi Penggunaan</label>
+                        <label class="label-text text-base text-gray-700 font-semibold">Frekuensi Penggunaan
+                            <span class="text-red-500 text-sm" title="Wajib diisi">*</span></label>
                         <div id="radio-group" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
                             <!-- Jarang -->
@@ -221,7 +225,8 @@
                     <!-- Deskripsi Kerusakan -->
                     <div class="grid gap-2">
                         <label for="deskripsi" class="label-text text-base text-gray-700 font-semibold">Deskripsi
-                            Kerusakan</label>
+                            Kerusakan <span class="text-red-500 text-sm" title="Wajib diisi">*</span>
+                        </label>
                         <textarea
                             id="deskripsi"
                             name="deskripsi"
@@ -251,7 +256,8 @@
                                 <p class="mb-2 text-sm text-gray-500">
                                     <span class="font-semibold">Klik untuk upload</span> atau drag and drop
                                 </p>
-                                <p class="text-xs text-gray-500">PNG, JPG atau JPEG (Maks. 10MB)</p>
+                                <p class="text-xs text-gray-500">Upload hingga 3 file (PNG, JPG, JPEG), total ukuran
+                                    maksimal 10 MB</p>
                                 <p id="foto-counter" class="text-xs text-gray-500 italic mt-1">
                                     (Opsional, tapi sangat disarankan untuk mempercepat proses perbaikan)
                                 </p>
@@ -284,11 +290,49 @@
         </div> <!-- End of Card Body -->
     </div> <!-- End of Main Card -->
 
+    <div id="konfirmasiKirimModal"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="modal-title"
+         aria-describedby="modal-description"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none">
 
-    <!-- Modal Zoom Foto -->
-    <div id="zoomModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <img id="zoomedImage" src="" class="max-w-full max-h-full rounded-lg shadow-lg"/>
-    </div> <!-- End of Modal Zoom Foto -->
+        <div
+            class="w-11/12 max-w-md bg-white rounded-2xl shadow-xl transform transition-all duration-300 ease-in-out scale-95 opacity-0">
+            <div class="p-6 text-center">
+
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                    <svg class="h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                    </svg>
+                </div>
+
+                <h2 id="modal-title" class="text-xl font-semibold text-gray-900">
+                    Konfirmasi Pengiriman
+                </h2>
+
+                <p id="modal-description" class="text-sm text-gray-500 mt-2 mb-6">
+                    Apakah Anda yakin ingin mengirim laporan ini? Tindakan ini tidak dapat dibatalkan.
+                </p>
+
+                <div class="flex justify-center gap-4">
+                    <button id="batalKirimBtn"
+                            type="button"
+                            class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-all">
+                        Batal
+                    </button>
+                    <button id="lanjutKirimBtn"
+                            type="button"
+                            class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                        Ya, Kirim
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 @push('skrip')
     <script>
@@ -315,6 +359,15 @@
         const previewGrid = document.getElementById('preview-grid');
 
         // -----------------------------
+        // Modal confirmation variables
+        // -----------------------------
+        const konfirmasiKirimModal = document.getElementById('konfirmasiKirimModal');
+        const modalContent = konfirmasiKirimModal ? konfirmasiKirimModal.querySelector('.transform') : null;
+        const batalKirimBtn = document.getElementById('batalKirimBtn');
+        const lanjutKirimBtn = document.getElementById('lanjutKirimBtn');
+        let currentFormToSubmit = null;
+
+        // -----------------------------
         // File upload configuration variables
         // -----------------------------
 
@@ -333,7 +386,7 @@
         let uploadedFiles = [];
 
         // -----------------------------
-        // Lokasi: Dropdown handling
+        // Lokasi: UI helpers
         // -----------------------------
 
         function showDropdown() {
@@ -345,33 +398,107 @@
             activeIndex = -1;
         }
 
-        function renderOptions(filter) {
-            optionsList.innerHTML = '';
-            const terms = filter.toLowerCase().split(/\s+/).filter(Boolean);
+        // -----------------------------
+        // Lokasi: Filter helpers
+        // -----------------------------
 
-            currentOptions = locations.filter(loc => {
-                const searchable = `${loc.label} ${loc.search || ''}`.toLowerCase();
-                return terms.every(term => searchable.includes(term));
+        function parseFilter(filter = '') {
+            return filter.toLowerCase().split(/\s+/).filter(Boolean);
+        }
+
+        function getFilteredLocations(filter, locations) {
+            const terms = parseFilter(filter);
+
+            return locations.filter(loc => {
+                if (!terms.length && filter === '') return true;
+                if (!terms.length && filter !== '') return false;
+
+                const searchable = `${loc.label} ${loc.search || ''} ${loc.statusText || ''}`.toLowerCase();
+
+                return terms.every(term =>
+                    searchable.includes(term) ||
+                    searchable.split(/[\s\-]+/).some(word => word.startsWith(term))
+                );
             });
+        }
 
-            if (!currentOptions.length) {
-                notFound.classList.remove('hidden');
+        // -----------------------------
+        // Lokasi: Option element helpers
+        // -----------------------------
+
+        function createStatusBadge(statusCode = '', statusText = '') {
+            if (!statusText || statusCode === 'BAIK') return null;
+
+            const badge = document.createElement('span');
+            badge.textContent = statusText;
+            badge.className = 'px-2 py-0.5 text-xs font-semibold rounded-full flex-shrink-0';
+
+            if (statusCode === 'RUSAK') {
+                badge.classList.add('bg-red-100', 'text-red-800');
+            } else if (statusCode === 'DALAM PERBAIKAN') {
+                badge.classList.add('bg-blue-100', 'text-blue-800');
             } else {
-                notFound.classList.add('hidden');
-                currentOptions.slice(0, 8).forEach((loc, i) => {
-                    const li = document.createElement('li');
-                    li.textContent = loc.label;
-                    li.className = "px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors";
-                    li.dataset.index = i;
-                    li.onclick = () => selectOption(i);
-                    optionsList.appendChild(li);
-                });
+                badge.classList.add('bg-gray-100', 'text-gray-800');
             }
+
+            return badge;
+        }
+
+        function createOptionItem(loc, index) {
+            const li = document.createElement('li');
+            const statusCode = loc.statusCode || '';
+            const isSelectable = !(statusCode === 'RUSAK' || statusCode === 'DALAM PERBAIKAN');
+
+            let liClasses = 'px-4 py-2 transition-colors flex justify-between items-center';
+            li.dataset.originalIndex = index;
+
+            if (isSelectable) {
+                liClasses += ' hover:bg-blue-50 cursor-pointer';
+                li.onclick = () => selectOption(index);
+            } else {
+                liClasses += ' text-gray-500 cursor-not-allowed opacity-75';
+                li.onclick = event => {
+                    event.stopPropagation();
+                    console.warn(`Klik pada item yang dinonaktifkan: ${loc.label}`);
+                };
+            }
+            li.className = liClasses;
+
+            const labelTextSpan = document.createElement('span');
+            labelTextSpan.textContent = loc.label;
+            labelTextSpan.className = 'flex-grow mr-2 overflow-hidden overflow-ellipsis whitespace-nowrap';
+            li.appendChild(labelTextSpan);
+
+            const badge = createStatusBadge(statusCode, loc.statusText);
+            if (badge) li.appendChild(badge);
+
+            return li;
+        }
+
+        // -----------------------------
+        // Lokasi: Rendering & selection
+        // -----------------------------
+
+        function isOptionSelectable(index) {
+            if (!currentOptions || index < 0 || index >= currentOptions.length) {
+                return false;
+            }
+            const option = currentOptions[index];
+            if (!option) return false;
+
+            const statusCode = option.statusCode || '';
+            return !(statusCode === 'RUSAK' || statusCode === 'DALAM PERBAIKAN');
         }
 
         function selectOption(index) {
             if (index < 0 || index >= currentOptions.length) return;
+
             const selected = currentOptions[index];
+            const statusCode = selected.statusCode || '';
+            const isSelectable = !(statusCode === 'RUSAK' || statusCode === 'DALAM PERBAIKAN');
+
+            if (!isSelectable) return;
+
             searchInput.value = selected.label;
             lokasiHidden.value = selected.id;
             hideDropdown();
@@ -379,49 +506,101 @@
 
         function updateActiveOption() {
             optionsList.querySelectorAll('li').forEach((li, i) => {
-                li.classList.toggle('bg-blue-100', i === activeIndex);
+                const isActive = i === activeIndex;
+                li.classList.toggle('bg-blue-100', isActive);
+                if (isActive) {
+                    li.scrollIntoView({block: 'nearest', inline: 'nearest'});
+                }
             });
         }
 
+        function renderOptions(filter = '') {
+            optionsList.innerHTML = '';
+            currentOptions = getFilteredLocations(filter, locations);
+
+            if (!currentOptions.length) {
+                notFound.classList.remove('hidden');
+                activeIndex = -1;
+                return;
+            }
+
+            notFound.classList.add('hidden');
+            currentOptions.forEach((loc, i) => optionsList.appendChild(createOptionItem(loc, i)));
+
+            if (filter) activeIndex = -1;
+            updateActiveOption();
+        }
+
         // -----------------------------
-        // Lokasi: Input event handlers
+        // Lokasi: Navigasi keyboard & input event handlers
         // -----------------------------
+
+        function debounce(fn, delay = 200) {
+            let t;
+            return (...args) => {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(null, args), delay);
+            };
+        }
 
         function initializeSearchInputEvents() {
             searchInput.addEventListener('input', function () {
                 const filter = this.value.trim();
-                filter ? (showDropdown(), renderOptions(filter)) : hideDropdown();
+                if (filter) {
+                    renderOptions(filter);
+                    showDropdown();
+                } else {
+                    hideDropdown();
+                }
             });
 
+            /* ----------  N A V I G A S I   P A N A H  ---------- */
             searchInput.addEventListener('keydown', function (e) {
                 if (dropdown.classList.contains('hidden') || !currentOptions.length) return;
 
+                const nextSelectable = (start, step) => {
+                    for (let i = start; i >= 0 && i < currentOptions.length; i += step) {
+                        if (isOptionSelectable(i)) return i;
+                    }
+                    return -1;
+                };
+
                 if (e.key === 'ArrowDown') {
                     e.preventDefault();
-                    activeIndex = (activeIndex + 1) % currentOptions.length;
-                    updateActiveOption();
+
+                    const begin = activeIndex === -1 ? 0 : activeIndex + 1;
+                    const candidate = nextSelectable(begin, +1);
+
+                    if (candidate !== -1) {
+                        activeIndex = candidate;
+                        updateActiveOption();
+                    }
                 } else if (e.key === 'ArrowUp') {
                     e.preventDefault();
-                    activeIndex = (activeIndex - 1 + currentOptions.length) % currentOptions.length;
-                    updateActiveOption();
+
+                    const begin = activeIndex === -1 ? currentOptions.length - 1 : activeIndex - 1;
+                    const candidate = nextSelectable(begin, -1);
+
+                    if (candidate !== -1) {
+                        activeIndex = candidate;
+                        updateActiveOption();
+                    }
                 } else if (e.key === 'Enter') {
                     e.preventDefault();
-                    selectOption(activeIndex);
+                    if (activeIndex !== -1 && isOptionSelectable(activeIndex)) {
+                        selectOption(activeIndex);
+                    }
                 }
             });
 
             searchInput.addEventListener('focus', function () {
                 const value = this.value.trim();
-                if (value) {
-                    showDropdown();
-                    renderOptions(value);
-                }
+                renderOptions(value);
+                showDropdown();
             });
 
             document.addEventListener('click', e => {
-                if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
-                    hideDropdown();
-                }
+                if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) hideDropdown();
             });
         }
 
@@ -442,22 +621,41 @@
         initializeSearchInputEvents();
 
         // -----------------------------
-        // Form handling
+        // Form: Event handling
         // -----------------------------
 
         document.getElementById('pelaporanForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             const form = e.target;
+
+            const lokasi = form.querySelector('#lokasi').value.trim();
+            const deskripsi = form.querySelector('#deskripsi').value.trim();
+            const skalaChecked = document.querySelector('input[name="skala-kerusakan"]:checked');
+            const frekuensiChecked = document.querySelector('input[name="frekuensi-penggunaan"]:checked');
+
+            if (!validateForm({lokasi, deskripsi, skalaChecked, frekuensiChecked, uploadedFiles})) {
+                return;
+            }
+
+            showKonfirmasiModal(form);
+        });
+
+        async function kirimForm(form) {
+            if (!form) {
+                showToast("Terjadi kesalahan internal saat mencoba mengirim form.", "red");
+                return;
+            }
+
             const submitBtn = form.querySelector('button[type="submit"]');
+            if (!submitBtn) {
+                showToast("Terjadi kesalahan: tombol submit tidak ditemukan.", "red");
+                return;
+            }
+
             const formData = new FormData(form);
 
-            const values = {
-                lokasi: form.querySelector('#lokasi').value.trim(),
-                deskripsi: form.querySelector('#deskripsi').value.trim(),
-                foto: uploadedFiles
-            };
-
-            if (!validateForm(values)) return;
+            const skala = document.querySelector('input[name="skala-kerusakan"]:checked')?.value;
+            const frekuensi = document.querySelector('input[name="frekuensi-penggunaan"]:checked')?.value;
 
             submitBtn.disabled = true;
             const originalText = submitBtn.innerHTML;
@@ -467,11 +665,15 @@
                 formData.append(`foto[${index}]`, file);
             });
 
+            if (skala) formData.append('skala', skala);
+            if (frekuensi) formData.append('frekuensi', frekuensi);
+
             try {
                 const res = await fetch('{{ route('store-pelaporan') }}', {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
                     },
                     body: formData
                 });
@@ -479,49 +681,78 @@
                 const data = await res.json();
                 handleResponse(res, data, form);
             } catch (err) {
-                console.error('Error:', err);
-                showToast('Terjadi kesalahan pada sistem.', 'red');
+                console.error('Error submitting form:', err);
+                showToast('Terjadi kesalahan pada sistem saat mengirim.', 'red');
             } finally {
                 submitBtn.disabled = false;
                 hideLoading(submitBtn, originalText);
             }
-        });
+        }
 
-        function validateForm({lokasi, deskripsi}) {
-            const skalaChecked = document.querySelector('input[name="skala-kerusakan"]:checked');
-            const frekuensiChecked = document.querySelector('input[name="frekuensi-penggunaan"]:checked');
+        // -----------------------------
+        // Form: Validation
+        // -----------------------------
+
+        function validateForm({lokasi, deskripsi, skalaChecked, frekuensiChecked, uploadedFiles}) {
+            const MAX_FOTO = 3;
+            if (uploadedFiles && uploadedFiles.length > MAX_FOTO) {
+                showToast(`Anda hanya dapat mengunggah maksimal ${MAX_FOTO} foto.`, "red");
+                return false;
+            }
 
             if (!lokasi) {
                 showToast("Fasilitas harus dipilih.", "red");
+                document.getElementById('search-lokasi')?.focus();
                 return false;
             }
 
             if (!skalaChecked) {
                 showToast("Skala kerusakan harus dipilih.", "red");
+                document.getElementById('skala-kerusakan')?.focus();
                 return false;
             }
 
             if (!frekuensiChecked) {
                 showToast("Frekuensi penggunaan harus dipilih.", "red");
+                document.getElementById('frekuensi-penggunaan')?.focus();
                 return false;
             }
 
             if (!deskripsi) {
                 showToast("Deskripsi harus diisi.", "red");
+                document.getElementById('deskripsi')?.focus();
                 return false;
             }
 
             if (deskripsi.length > 1000) {
                 showToast("Deskripsi tidak boleh lebih dari 1000 karakter.", "red");
+                document.getElementById('deskripsi')?.focus();
                 return false;
             }
 
             return true;
         }
 
+        // -----------------------------
+        // Form: Response Handling
+        // -----------------------------
+
         function handleResponse(res, data, form) {
             if (res.ok) {
                 form.reset();
+                uploadedFiles = [];
+                previewGrid.innerHTML = '';
+                const fotoCounter = document.getElementById('foto-counter');
+
+                if (fotoCounter) {
+                    fotoCounter.textContent = "(Opsional, tapi sangat disarankan untuk mempercepat proses perbaikan)";
+                }
+
+                const dataTransfer = new DataTransfer();
+                fotoInput.files = dataTransfer.files;
+                fotoInput.disabled = false;
+                uploadArea.classList.remove('opacity-50', 'cursor-not-allowed');
+                renderPreview();
                 showToast(data.message || "Laporan berhasil dikirim.", "green", () => location.reload());
             } else if (data.errors) {
                 for (const key in data.errors) showToast(`${key}: ${data.errors[key][0]}`, "red");
@@ -531,31 +762,111 @@
         }
 
         // -----------------------------
+        // Form: Modal Konfirmasi
+        // -----------------------------
+
+        function showKonfirmasiModal(formElement) {
+            currentFormToSubmit = formElement;
+            if (konfirmasiKirimModal && modalContent) {
+                // 1. Buat modal terlihat di DOM tapi masih transparan
+                konfirmasiKirimModal.classList.remove('pointer-events-none');
+                konfirmasiKirimModal.classList.add('opacity-100');
+
+                // 2. Aktifkan transisi untuk konten modal
+                modalContent.classList.remove('opacity-0', 'scale-95');
+                modalContent.classList.add('opacity-100', 'scale-100');
+
+            } else {
+                console.error("Elemen modal 'konfirmasiKirimModal' atau kontennya tidak ditemukan.");
+            }
+        }
+
+        function hideKonfirmasiModal() {
+            if (konfirmasiKirimModal && modalContent) {
+                konfirmasiKirimModal.classList.remove('opacity-100');
+                konfirmasiKirimModal.classList.add('opacity-0');
+                modalContent.classList.remove('opacity-100', 'scale-100');
+                modalContent.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                    konfirmasiKirimModal.classList.add('pointer-events-none');
+                }, 300);
+            }
+            currentFormToSubmit = null;
+        }
+
+        function initKonfirmasiModalHandlers() {
+            if (!konfirmasiKirimModal) return;
+
+            if (batalKirimBtn) {
+                batalKirimBtn.addEventListener('click', hideKonfirmasiModal);
+            }
+
+            if (lanjutKirimBtn) {
+                lanjutKirimBtn.addEventListener('click', () => {
+                    const formToProcess = currentFormToSubmit;
+                    if (formToProcess) {
+                        hideKonfirmasiModal();
+                        kirimForm(formToProcess);
+                    } else {
+                        console.error("Tidak ada form yang akan diproses setelah konfirmasi.");
+                    }
+                });
+            }
+
+            konfirmasiKirimModal.addEventListener('click', (event) => {
+                if (event.target === konfirmasiKirimModal) {
+                    hideKonfirmasiModal();
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initKonfirmasiModalHandlers();
+        });
+
+        // -----------------------------
         // Utilitas: Toast & Loading
         // -----------------------------
 
-        function showToast(message, color = 'blue', cb = null) {
+        function showToast(message, color = "green", onClick = null) {
             const now = Date.now();
-            if (now - lastToastTime < 1000) return;
+            if (now - lastToastTime < 2000) return;
             lastToastTime = now;
 
+            const icon = color === "green"
+                ? '<i class="bi bi-check-circle-fill text-xl"></i>'
+                : '<i class="bi bi-exclamation-circle-fill text-xl"></i>';
+
+            const background = color === "green"
+                ? "linear-gradient(to right, #00b09b, #96c93d)"
+                : "linear-gradient(to right, #ff5f6d, #ffc371)";
+
             Toastify({
-                text: message,
-                duration: 1500,
+                text: `<div class="flex items-center gap-3">${icon}<span>${message}</span></div>`,
+                duration: 3000,
                 gravity: "top",
                 position: "right",
-                backgroundColor: color,
-                callback: cb
+                backgroundColor: background,
+                className: "rounded-lg shadow-md",
+                stopOnFocus: true,
+                escapeMarkup: false,
+                style: {
+                    padding: "12px 20px",
+                    fontWeight: "500",
+                    minWidth: "300px"
+                },
+                onClick: onClick || function () {
+                }
             }).showToast();
         }
 
         function showLoading(button) {
             button.innerHTML = `
-        <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
-        </svg> Mengirim...
-    `;
+                <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
+                </svg> Mengirim...
+            `;
         }
 
         function hideLoading(button, originalText) {
@@ -613,8 +924,20 @@
 
         document.querySelectorAll('#search-lokasi, #deskripsi, #foto').forEach(field => {
             field.addEventListener('keydown', function (e) {
+                const isSearchLokasi = field.id === 'search-lokasi';
+                const dropdownIsVisible = !dropdown.classList.contains('hidden');
+
                 if (e.key === 'Enter') {
+                    if (isSearchLokasi) {
+                        e.preventDefault();
+                        if (dropdownIsVisible) {
+                            selectOption(activeIndex);
+                        }
+                        return;
+                    }
+
                     e.preventDefault();
+
                     const form = document.getElementById('pelaporanForm');
                     const lokasi = form.querySelector('#lokasi');
                     const deskripsi = form.querySelector('#deskripsi');
@@ -644,6 +967,7 @@
                         return;
                     }
 
+                    // Submit form
                     form.dispatchEvent(new Event('submit', {cancelable: true, bubbles: true}));
                 }
             });
@@ -683,9 +1007,14 @@
             const droppedFiles = [...e.dataTransfer.files];
 
             const totalFiles = uploadedFiles.length + droppedFiles.length;
-
             if (totalFiles > maxFoto) {
                 showToast(`Maksimal ${maxFoto} foto dapat diupload.`, "red");
+                return;
+            }
+
+            const totalSize = getTotalSize([...uploadedFiles, ...droppedFiles]);
+            if (totalSize > maxFileSize) {
+                showToast("Total ukuran file tidak boleh lebih dari 10MB.", "red");
                 return;
             }
 
@@ -697,14 +1026,19 @@
                 }
             }
 
-            updateInputFiles(); // sinkronkan input file
+            updateInputFiles();
         }
 
         function addFiles(files) {
             const totalFiles = uploadedFiles.length + files.length;
-
             if (totalFiles > maxFoto) {
                 showToast(`Maksimal ${maxFoto} foto dapat diupload.`, "red");
+                return;
+            }
+
+            const totalSize = getTotalSize([...uploadedFiles, ...files]);
+            if (totalSize > maxFileSize) {
+                showToast("Total ukuran file tidak boleh lebih dari 10MB.", "red");
                 return;
             }
 
@@ -818,6 +1152,10 @@
             } else {
                 fotoCounter.textContent = "(Opsional, tapi sangat disarankan untuk mempercepat proses perbaikan)";
             }
+        }
+
+        function getTotalSize(files) {
+            return files.reduce((acc, file) => acc + file.size, 0);
         }
     </script>
 @endpush

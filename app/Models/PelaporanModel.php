@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Model;
 
 class PelaporanModel extends Model
@@ -26,7 +27,7 @@ class PelaporanModel extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id', 'user_id');
+        return $this->belongsTo(UserModel::class, 'user_id', 'user_id');
     }
 
     public function fasilitas(): BelongsTo
@@ -38,4 +39,18 @@ class PelaporanModel extends Model
     {
         return $this->hasMany(StatusPelaporanModel::class, 'pelaporan_id', 'pelaporan_id');
     }
+
+    public function skorAlternatif()
+    {
+        return $this->hasMany(SkorAltModel::class, 'pelaporan_id', 'pelaporan_id');
+    }
+    public function perbaikan()
+{
+    return $this->hasOne(PerbaikanModel::class, 'pelaporan_id', 'pelaporan_id');
+}
+
+public function feedback()
+{
+    return $this->hasOne(FeedbackModel::class, 'pelaporan_id', 'pelaporan_id');
+}
 }
