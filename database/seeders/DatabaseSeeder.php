@@ -25,9 +25,9 @@ class DatabaseSeeder extends Seeder
             StatusPelaporanSeeder::class,
             AltSkorSeeder::class,
 //            TempSeeder::class,
-            PerbaikanSeeder::class,
+            // PerbaikanSeeder::class,
 //            PerbaikanPetugasSeeder::class,
-            StatusPerbaikanSeeder::class,
+            // StatusPerbaikanSeeder::class,
             FeedbackSeeder::class,
         ]);
     }

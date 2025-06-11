@@ -21,7 +21,7 @@ class RekomendasiPrioritasPerbaikan extends Component
     public $bobotKriteria = [];
     public $detailSkor = [];
     public $dssResults = [];
-    public $activeTab = 'mahasiswa'; // Default tab
+    public $activeTab = 'dosen'; // Default tab
 
     public function showDetail($fasilitasKode)
     {
@@ -123,11 +123,11 @@ class RekomendasiPrioritasPerbaikan extends Component
         // Filter berdasarkan tab yang aktif
         $roleFilter = null;
         switch ($this->activeTab) {
-            case 'dosen':
-                $roleFilter = 5; // role_id untuk dosen
-                break;
             case 'staff':
                 $roleFilter = 4; // role_id untuk staff
+                break;
+            case 'dosen':
+                $roleFilter = 5; // role_id untuk dosen
                 break;
             case 'mahasiswa':
                 $roleFilter = 6; // role_id untuk mahasiswa
