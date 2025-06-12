@@ -263,6 +263,11 @@ class UserTable extends Component
                             return;
                         }
 
+                        if (strlen((string)$data[$i]['B']) < 10) {
+                            $this->dispatch('showErrorToast', "Identitas pada baris {$i} harus minimal 10 digit.");
+                            return;
+                        }
+
                         if (UserModel::where('email', $data[$i]['D'])->exists()) {
                             $this->dispatch('showErrorToast', "Email {$data[$i]['D']} sudah digunakan pada baris {$i}");
                             return;

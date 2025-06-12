@@ -165,6 +165,14 @@ class LaporanKerusakan extends Component
             }
         ])->findOrFail($laporanId);
 
+        // Get the actual latest status from database
+        $latestStatus = DB::table('t_status_pelaporan')
+            ->where('pelaporan_id', $laporanId)
+            ->orderBy('created_at', 'desc')
+            ->value('status_pelaporan');
+
+        $this->selectedLaporan->latest_status = $latestStatus ?? 'Menunggu';
+
         $this->biaya = '';
         $this->showDetailModal = true;
     }

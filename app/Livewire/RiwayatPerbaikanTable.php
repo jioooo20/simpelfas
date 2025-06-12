@@ -6,6 +6,7 @@ use App\Models\PerbaikanModel;
 use App\Models\StatusPerbaikanModel;
 use App\Models\PerbaikanPetugasModel;
 use App\Models\User;
+use App\Models\UserModel;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Auth;
@@ -17,18 +18,21 @@ class RiwayatPerbaikanTable extends Component
 
     public $search = '';
     public $selectedStatus = '';
+    public $selectedTeknisi = '';
     public $page = 1;
 
     // Properties for sorting and pagination
     public $sortField = 'created_at';
     public $sortDirection = 'desc';
     public $perPage = 10;
+    public $teknisiList = [];
     
     // Enable deep-linking with URL parameters
     protected $queryString = [
         'page' => ['except' => 1],
         'search' => ['except' => ''],
         'selectedStatus' => ['except' => ''],
+        'selectedTeknisi' => ['except' => ''],
         'sortField' => ['except' => 'created_at'],
         'sortDirection' => ['except' => 'desc'],
         'perPage' => ['except' => 10],
@@ -43,6 +47,19 @@ class RiwayatPerbaikanTable extends Component
     public function updatedSelectedStatus()
     {
         $this->resetPage();
+    }
+    
+    public function updatedSelectedTeknisi()
+    {
+        $this->resetPage();
+    }
+    
+    public function mount()
+    {
+        // Ambil semua teknisi (role teknisi = 3, atau sesuaikan dengan model User/Role Anda)
+        $this->teknisiList = UserModel::whereHas('role', function($q) {
+            $q->where('role_nama', 'teknisi');
+        })->get();
     }
     
     public function render()
@@ -98,29 +115,18 @@ class RiwayatPerbaikanTable extends Component
             });
         }
 
-        return view('livewire.riwayatPerbaikan-table', compact('riwayatPerbaikan'));
-
-        // Then apply search filter if provided
-        if ($this->search) {
-            $search = strtolower(trim($this->search));
-            $riwayatPerbaikan = $riwayatPerbaikan->filter(function ($item) use ($search) {
-                // Search in multiple fields including technician names
-                return str_contains(strtolower($item['kode_perbaikan']), $search)
-                    || str_contains(strtolower($item['deskripsi_masalah']), $search)
-                    || str_contains(strtolower($item['lokasi']), $search)
-                    || str_contains(strtolower($item['gedung_nama']), $search)
-                    || str_contains(strtolower($item['ruang_nama']), $search)
-                    || str_contains(strtolower($item['teknisi_nama']), $search);
+        // Filter by teknisi jika dipilih
+        if ($this->selectedTeknisi) {
+            $riwayatPerbaikan = $riwayatPerbaikan->filter(function ($item) {
+                return $item->perbaikan->perbaikanPetugas->pluck('user_id')->contains($this->selectedTeknisi);
             });
         }
 
-        // For real implementation, use the commented code below
-        // $riwayatPerbaikan = $this->getRiwayatPerbaikanData();
-
- 
-
-
-        return view('livewire.riwayatPerbaikan-table', ['riwayatPerbaikan' => $riwayatPerbaikan]);
+        return view('livewire.riwayatPerbaikan-table', [
+            'riwayatPerbaikan' => $riwayatPerbaikan,
+            'teknisiList' => $this->teknisiList,
+            'selectedTeknisi' => $this->selectedTeknisi,
+        ]);
     }
 
     // Navigation methods for pagination
@@ -158,6 +164,7 @@ class RiwayatPerbaikanTable extends Component
     {
         $this->selectedStatus = '';
         $this->search = '';
+        $this->selectedTeknisi = '';
         $this->resetPage();
     }
 
@@ -195,6 +202,11 @@ class RiwayatPerbaikanTable extends Component
         $this->resetPage();
     }
 
+    public function setTeknisiFilter($userId)
+    {
+        $this->selectedTeknisi = $userId;
+        $this->resetPage();
+    }
 
     public function goToDetail($perbaikanId)
     {
