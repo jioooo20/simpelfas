@@ -44,7 +44,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/add', [AdminController::class, 'user_add'])->name('admin.user-add');
             Route::post('/import-user', [AdminController::class, 'import_user'])->name('admin.import-user');
         });
-        
+
         Route::prefix('gedung')->group(function (): void {
             Route::get('/', [AdminController::class, 'gedung'])->name('admin.gedung');
         });
@@ -67,7 +67,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [\App\Http\Controllers\LaporanKerusakanController::class, 'index'])->name('admin.laporan-kerusakan.index');
             Route::get('/{id}', [\App\Http\Controllers\LaporanKerusakanController::class, 'show'])->name('admin.laporan-kerusakan.show');
         });
-        
+
     });
     Route::middleware('role:2')->prefix('sarpra')->group(function (): void {
         Route::get('/', [SarpraController::class, 'dasbor'])->name('sarpra');
@@ -76,6 +76,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/statistik-fasilitas', [SarpraController::class, 'statistikFasilitas'])->name('statistik-fasilitas');
         Route::get('/feedback', [SarpraController::class, 'count-total'])->name('feedback.index');
         Route::get('/penugasan-perbaikan', [SarpraController::class, 'penugasan_perbaikan'])->name('penugasan-perbaikan');
+        Route::get('/history-laporan', [SarpraController::class, 'history_laporan'])->name('sarpra.history-laporan');
+        Route::get('/history-laporan/{pelaporan_id}', [SarpraController::class, 'history_laporan_detail'])->name('sarpra.laporan.history_laporan_detail');
     });
     Route::middleware('role:3')->prefix('teknisi')->group(function (): void {
         Route::get('/', [TeknisiController::class, 'perbaikan'])->name('teknisi');

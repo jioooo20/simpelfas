@@ -201,10 +201,11 @@ class UsersController extends Controller
         return view('pages.users.feedback.index', compact('perbaikan'));
     }
 
-    public function UmpanBalik_Create($perbaikan_id) {
+    public function UmpanBalik_Create($perbaikan_id)
+    {
         $laporan = PelaporanModel::with([
             'fasilitas.barang',
-            'perbaikan.statusPerbaikan' => function($query) {
+            'perbaikan.statusPerbaikan' => function ($query) {
                 $query->orderBy('created_at', 'desc');
             }
         ])->findOrFail($perbaikan_id);
@@ -214,85 +215,86 @@ class UsersController extends Controller
 
         // Ambil foto teknisi dari status perbaikan
         $fotoTeknisi = [];
-            if ($laporan->perbaikan && $laporan->perbaikan->statusPerbaikan) {
-                $fotoTeknisi = json_decode($laporan->perbaikan->statusPerbaikan->perbaikan_gambar, true) ?? [];
-            }
+        if ($laporan->perbaikan && $laporan->perbaikan->statusPerbaikan) {
+            $fotoTeknisi = json_decode($laporan->perbaikan->statusPerbaikan->perbaikan_gambar, true) ?? [];
+        }
 
         return view('pages.users.feedback.create', [
             'laporan' => $laporan,
             'fotoTeknisi' => $fotoTeknisi
-    ]);
-}
+        ]);
+    }
 
-public function storeFeedback(Request $request)
-{
-    // Validasi input
-    $validated = $request->validate([
-        'report_id' => 'required|exists:m_pelaporan,pelaporan_id',
-        'rating' => 'required|integer|between:1,5',
-        'comment' => 'nullable|string|max:1000',
-    ]);
+    public function storeFeedback(Request $request)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'report_id' => 'required|exists:m_pelaporan,pelaporan_id',
+            'rating' => 'required|integer|between:1,5',
+            'comment' => 'nullable|string|max:1000',
+        ]);
 
-    try {
-        // Cek apakah feedback untuk laporan ini sudah ada
-        $existingFeedback = FeedbackModel::where('pelaporan_id', $validated['report_id'])->first();
+        try {
+            // Cek apakah feedback untuk laporan ini sudah ada
+            $existingFeedback = FeedbackModel::where('pelaporan_id', $validated['report_id'])->first();
 
-        if ($existingFeedback) {
+            if ($existingFeedback) {
+                // Jika request AJAX, return JSON response
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'message' => 'Anda sudah memberikan umpan balik untuk laporan ini sebelumnya.'
+                    ], 409); // 409 Conflict status code
+                }
+
+                // Jika bukan AJAX, return redirect seperti biasa
+                return redirect()->back()
+                    ->with('error', 'Anda sudah memberikan umpan balik untuk laporan ini sebelumnya.')
+                    ->withInput();
+            }
+
+            // Buat feedback baru
+            FeedbackModel::create([
+                'pelaporan_id' => $validated['report_id'],
+                'feedback_text' => $validated['comment'],
+                'rating' => $validated['rating'],
+            ]);
+
             // Jika request AJAX, return JSON response
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
-                    'message' => 'Anda sudah memberikan umpan balik untuk laporan ini sebelumnya.'
-                ], 409); // 409 Conflict status code
+                    'message' => 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.',
+                    'status' => 'success'
+                ], 200);
+            }
+
+            // Jika bukan AJAX, return redirect seperti biasa
+            return redirect()->route('users.feedback')
+                ->with('success', 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.');
+
+        } catch (ValidationException $e) {
+            // Handle validation errors
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Data yang dikirim tidak valid.',
+                    'errors' => $e->validator->errors()
+                ], 422); // 422 Unprocessable Entity
+            }
+
+            // Jika bukan AJAX, throw exception seperti biasa
+            throw $e;
+
+        } catch (Exception $e) {
+            // Handle general errors
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Terjadi kesalahan saat mengirim umpan balik: ' . $e->getMessage()
+                ], 500); // 500 Internal Server Error
             }
 
             // Jika bukan AJAX, return redirect seperti biasa
             return redirect()->back()
-                ->with('error', 'Anda sudah memberikan umpan balik untuk laporan ini sebelumnya.')
+                ->with('error', 'Terjadi kesalahan saat mengirim umpan balik: ' . $e->getMessage())
                 ->withInput();
         }
-
-        // Buat feedback baru
-        FeedbackModel::create([
-            'pelaporan_id' => $validated['report_id'],
-            'feedback_text' => $validated['comment'],
-            'rating' => $validated['rating'],
-        ]);
-
-        // Jika request AJAX, return JSON response
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'message' => 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.',
-                'status' => 'success'
-            ], 200);
-        }
-
-        // Jika bukan AJAX, return redirect seperti biasa
-        return redirect()->route('users.feedback')
-            ->with('success', 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.');
-
-    } catch (ValidationException $e) {
-        // Handle validation errors
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'message' => 'Data yang dikirim tidak valid.',
-                'errors' => $e->validator->errors()
-            ], 422); // 422 Unprocessable Entity
-        }
-
-        // Jika bukan AJAX, throw exception seperti biasa
-        throw $e;
-
-    } catch (Exception $e) {
-        // Handle general errors
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'message' => 'Terjadi kesalahan saat mengirim umpan balik: ' . $e->getMessage()
-            ], 500); // 500 Internal Server Error
-        }
-
-        // Jika bukan AJAX, return redirect seperti biasa
-        return redirect()->back()
-            ->with('error', 'Terjadi kesalahan saat mengirim umpan balik: ' . $e->getMessage())
-            ->withInput();
     }
-}}
+}

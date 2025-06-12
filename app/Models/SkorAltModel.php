@@ -22,6 +22,10 @@ class SkorAltModel extends Model
         'nilai_skor',
     ];
 
+    protected $casts = [
+        'nilai_skor' => 'integer',
+    ];
+
     public function pelaporan(): BelongsTo
     {
         return $this->belongsTo(PelaporanModel::class, 'pelaporan_id', 'pelaporan_id');
@@ -35,7 +39,7 @@ class SkorAltModel extends Model
     public function getLabelAttribute()
     {
         $kriteria = $this->kriteria->kriteria_nama;
-        
+
         return match ($kriteria) {
             'Skala Kerusakan' => match ($this->nilai_skor) {
                 1 => 'Ringan',
