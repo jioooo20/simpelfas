@@ -44,7 +44,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/add', [AdminController::class, 'user_add'])->name('admin.user-add');
             Route::post('/import-user', [AdminController::class, 'import_user'])->name('admin.import-user');
         });
-        
+
         Route::prefix('gedung')->group(function (): void {
             Route::get('/', [AdminController::class, 'gedung'])->name('admin.gedung');
         });
@@ -67,7 +67,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [\App\Http\Controllers\LaporanKerusakanController::class, 'index'])->name('admin.laporan-kerusakan.index');
             Route::get('/{id}', [\App\Http\Controllers\LaporanKerusakanController::class, 'show'])->name('admin.laporan-kerusakan.show');
         });
-        
+
     });
     Route::middleware('role:2')->prefix('sarpra')->group(function (): void {
         Route::get('/', [SarpraController::class, 'dasbor'])->name('sarpra');
@@ -107,3 +107,8 @@ Route::middleware('auth')->group(function () {
 Route::get('/realtime-clock', function () {
     return Carbon::now()->translatedFormat('l, d F Y H:i:s');
 });
+
+Route::post('/notifikasi/read-all', function () {
+    auth()->user()->unreadNotifications->markAsRead();
+    return back();
+})->name('notifikasi.readAll');
