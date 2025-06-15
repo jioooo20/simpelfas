@@ -105,7 +105,7 @@
                         <span class="sidebar-text text-md">Laporan & Statistik Sistem</span>
                     </a>
                 </li>
-                <li>
+               <li>
                     <a href="#" class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                         <div class="w-6 text-center">
                             <i
@@ -217,8 +217,7 @@
                     <a href="{{ route('users') }}"
                         class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                         <div class="w-6 text-center">
-                            <i
-                                class="fa-solid fa-file-circle-plus group-hover:text-primary transition-transform duration-200"></i>
+                            <i class="fa-solid fa-file-circle-plus group-hover:text-primary transition-transform duration-200"></i>
                         </div>
                         <span class="sidebar-text text-md">Buat Laporan</span>
                     </a>
@@ -227,8 +226,7 @@
                     <a href="{{ route('status-laporan') }}"
                         class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 group">
                         <div class="w-6 text-center">
-                            <i
-                                class="fa-solid fa-clipboard-check group-hover:text-primary transition-transform duration-200"></i>
+                            <i class="fa-solid fa-clipboard-check group-hover:text-primary transition-transform duration-200"></i>
                         </div>
                         <span class="sidebar-text text-md">Status Laporan</span>
                     </a>
@@ -242,19 +240,6 @@
                     </a>
                 </li>
             @endif
-
-            <li>
-                <a href="{{ route('keluar') }}"
-                    class="flex items-center gap-4 p-2 rounded-md hover:bg-base-200 text-red-500 group"
-                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i
-                        class="fa-solid fa-sign-out-alt w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
-                    <span class="sidebar-text">Logout</span>
-                </a>
-                <form id="logout-form" action="{{ route('keluar') }}" method="POST" class="hidden">
-                    @csrf
-                </form>
-            </li>
         </ul>
     </nav>
 </div>
