@@ -8,7 +8,6 @@ use App\Models\PelaporanModel;
 use App\Models\FasilitasModel;
 use App\Models\UserModel;
 use App\Models\StatusPelaporanModel;
-use Illuminate\Support\Facades\DB;
 
 class LaporanStatistik extends Component
 {
@@ -18,8 +17,7 @@ class LaporanStatistik extends Component
         $this->resetPage();
     }
 
-
-   public function render()
+    public function render()
 {
     $table = PelaporanModel::query()
             ->with([

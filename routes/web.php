@@ -44,7 +44,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/add', [AdminController::class, 'user_add'])->name('admin.user-add');
             Route::post('/import-user', [AdminController::class, 'import_user'])->name('admin.import-user');
         });
-
+        
         Route::prefix('gedung')->group(function (): void {
             Route::get('/', [AdminController::class, 'gedung'])->name('admin.gedung');
         });
