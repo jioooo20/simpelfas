@@ -91,10 +91,19 @@
 
                                 <!-- Tombol Penilaian -->
                                 <div class="flex justify-end">
-                                    <a href="{{ route('feedback-create', ['perbaikan_id' => $items->pelaporan_id]) }}"
-                                        class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md font-medium text-sm transition duration-150 ease-in-out">
-                                        Beri Penilaian
-                                    </a>
+                                    @if($items->has_feedback)
+                                        <!-- Jika sudah ada feedback, tampilkan tombol lihat feedback -->
+                                        <a href="{{ route('feedback-detail', ['perbaikan_id' => $items->pelaporan_id]) }}"
+                                            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium text-sm transition duration-150 ease-in-out">
+                                            Lihat Penilaian
+                                        </a>
+                                    @else
+                                        <!-- Jika belum ada feedback, tampilkan tombol beri penilaian -->
+                                        <a href="{{ route('feedback-create', ['perbaikan_id' => $items->pelaporan_id]) }}"
+                                            class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md font-medium text-sm transition duration-150 ease-in-out">
+                                            Beri Penilaian
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
