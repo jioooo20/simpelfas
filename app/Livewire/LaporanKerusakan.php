@@ -187,7 +187,7 @@ class LaporanKerusakan extends Component
     public function terimaLaporan()
     {
         if (empty($this->biaya) || !is_numeric($this->biaya) || $this->biaya < 0) { // bisa biaya 0
-        // if (empty($this->biaya) || !is_numeric($this->biaya) || $this->biaya < 0) {
+            // if (empty($this->biaya) || !is_numeric($this->biaya) || $this->biaya < 0) {
             $this->dispatch('showErrorToast', 'Biaya harus diisi dengan angka yang valid!');
             return;
         }
@@ -218,6 +218,21 @@ class LaporanKerusakan extends Component
                 $avgC3 = SkorAltModel::where('kriteria_id', 3)
                     ->whereIn('pelaporan_id', $pelaporanIds)
                     ->avg('nilai_skor') ?? 0;
+
+                //ambil user_id dari semua pelaporan
+                $userIds = PelaporanModel::whereIn('pelaporan_id', $pelaporanIds)
+                    ->pluck('user_id')
+                    ->unique()
+                    ->toArray();
+
+                //notif
+                sendRoleNotification(
+                    [],
+                    'Laporan Diterima',
+                    'Laporan Anda dengan kode ' . $this->selectedLaporan->pelaporan_kode . ' telah diterima dan akan segera diproses.',
+                    'users/status-laporan',
+                    $userIds
+                );
 
                 // Loop untuk setiap pelaporan_id
                 foreach ($pelaporanIds as $pelaporanId) {
@@ -290,6 +305,21 @@ class LaporanKerusakan extends Component
                     'kriteria_id' => 4,
                     'nilai_skor' => $this->biaya
                 ]);
+
+                //ambil user_id dari pelaporan ini
+                $userId = PelaporanModel::where('pelaporan_id', $this->selectedLaporan->pelaporan_id)
+                    ->pluck('user_id')
+                    ->unique()
+                    ->toArray();
+
+                //notif
+                sendRoleNotification(
+                    [],
+                    'Laporan Diterima',
+                    'Laporan Anda dengan kode ' . $this->selectedLaporan->pelaporan_kode . ' telah diterima dan akan segera diproses.',
+                    'users/status-laporan',
+                    [$userId]
+                );
             }
 
             DB::commit();

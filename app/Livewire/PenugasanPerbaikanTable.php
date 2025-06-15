@@ -31,14 +31,14 @@ class PenugasanPerbaikanTable extends Component
     public $selectedTeknisi = [];
     public $catatan_penugasan = '';    // Data properties
     public $teknisiList = [];
-    public $statusList = 
+    public $statusList =
     [
         'Diterima',
-        'Diproses', 
+        'Diproses',
         'Selesai'
     ];
 
-    protected $listeners = 
+    protected $listeners =
     [
         'refreshTable' => '$refresh',
     ];
@@ -46,13 +46,12 @@ class PenugasanPerbaikanTable extends Component
     public function mount()
     {
         $this->loadTeknisiList();
-
     }
 
     public function loadTeknisiList()
     {
         // Load teknisi (users with role teknisi)
-        $this->teknisiList = UserModel::whereHas('role', function($query) {
+        $this->teknisiList = UserModel::whereHas('role', function ($query) {
             $query->where('role_nama', 'teknisi');
         })->get();
     }
@@ -78,10 +77,10 @@ class PenugasanPerbaikanTable extends Component
         $this->statusFilter = '';
         $this->teknisiFilter = '';
         $this->resetPage();
-    }    
-      
+    }
+
     public function getPerbaikanData()
-    { 
+    {
         $latestStatuses = DB::table('t_status_pelaporan as sp1')
             ->select('sp1.pelaporan_id', 'sp1.status_pelaporan', 'sp1.created_at')
             ->whereRaw('sp1.created_at = (
@@ -89,7 +88,7 @@ class PenugasanPerbaikanTable extends Component
                 FROM t_status_pelaporan sp2
                 WHERE sp2.pelaporan_id = sp1.pelaporan_id
             )')
-            ->whereIn('sp1.status_pelaporan', ['Diterima', 'Menunggu' , 'Diproses', 'Selesai'])
+            ->whereIn('sp1.status_pelaporan', ['Diterima', 'Menunggu', 'Diproses', 'Selesai'])
             ->orderBy('sp1.created_at', 'desc')
             ->get();
 
@@ -101,25 +100,25 @@ class PenugasanPerbaikanTable extends Component
             'fasilitas.ruang.lantai.gedung',
             'user',
             'perbaikan.latestStatusPerbaikan', // Tambahkan relasi ke status perbaikan terbaru
-            'statusPelaporan' => function($query) {
+            'statusPelaporan' => function ($query) {
                 $query->latest(); // Ambil status pelaporan terbaru
             },
         ])->whereIn('pelaporan_id', $orderedIds);
 
         // Search filter
         if (!empty($this->search)) {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->where('pelaporan_kode', 'like', '%' . $this->search . '%')
-                  ->orWhere('pelaporan_deskripsi', 'like', '%' . $this->search . '%')
-                  ->orWhereHas('fasilitas.barang', function($subQ) {
-                      $subQ->where('barang_nama', 'like', '%' . $this->search . '%');
-                  })
-                  ->orWhereHas('fasilitas.ruang.lantai.gedung', function($subQ) {
-                      $subQ->where('gedung_nama', 'like', '%' . $this->search . '%');
-                  })
-                  ->orWhereHas('fasilitas.ruang', function($subQ) {
-                      $subQ->where('ruang_nama', 'like', '%' . $this->search . '%');
-                  });
+                    ->orWhere('pelaporan_deskripsi', 'like', '%' . $this->search . '%')
+                    ->orWhereHas('fasilitas.barang', function ($subQ) {
+                        $subQ->where('barang_nama', 'like', '%' . $this->search . '%');
+                    })
+                    ->orWhereHas('fasilitas.ruang.lantai.gedung', function ($subQ) {
+                        $subQ->where('gedung_nama', 'like', '%' . $this->search . '%');
+                    })
+                    ->orWhereHas('fasilitas.ruang', function ($subQ) {
+                        $subQ->where('ruang_nama', 'like', '%' . $this->search . '%');
+                    });
             });
         }
 
@@ -140,18 +139,18 @@ class PenugasanPerbaikanTable extends Component
                 $query->whereIn('pelaporan_id', $filteredIds);
             } else {
                 // Ambil data dari t_status_perbaikan untuk status selain 'Diterima'
-                $query->where(function($q) {
-                    $q->whereHas('perbaikan.statusPerbaikan', function($subQ) {
+                $query->where(function ($q) {
+                    $q->whereHas('perbaikan.statusPerbaikan', function ($subQ) {
                         $subQ->where('perbaikan_status', $this->statusFilter);
                     });
                     // Jika tidak ada di status perbaikan, cek di status pelaporan
                     // (hanya jika status pelaporan adalah 'Diproses' atau 'Selesai')
                     if (in_array($this->statusFilter, ['Diproses', 'Selesai'])) {
-                        $q->orWhereHas('statusPelaporan', function($subQ) {
+                        $q->orWhereHas('statusPelaporan', function ($subQ) {
                             $subQ->where('status_pelaporan', $this->statusFilter)
                                 ->whereRaw('created_at = (
-                                    SELECT MAX(created_at) 
-                                    FROM t_status_pelaporan 
+                                    SELECT MAX(created_at)
+                                    FROM t_status_pelaporan
                                     WHERE pelaporan_id = m_pelaporan.pelaporan_id
                                 )');
                         });
@@ -162,7 +161,7 @@ class PenugasanPerbaikanTable extends Component
 
         // Filter teknisi
         if (!empty($this->teknisiFilter)) {
-            $query->whereHas('perbaikan.perbaikanPetugas', function($subQ) {
+            $query->whereHas('perbaikan.perbaikanPetugas', function ($subQ) {
                 $subQ->where('user_id', $this->teknisiFilter);
             });
         }
@@ -173,8 +172,8 @@ class PenugasanPerbaikanTable extends Component
         }
 
         return $query->paginate($this->perPage);
-    }    
-    
+    }
+
     public function openAssignModal($pelaporanId)
     {
         try {
@@ -185,7 +184,7 @@ class PenugasanPerbaikanTable extends Component
                 'user',
                 'perbaikan.perbaikanPetugas.user',
                 'perbaikan.latestStatusPerbaikan',
-                'statusPelaporan' => function($query) {
+                'statusPelaporan' => function ($query) {
                     $query->latest(); // Ambil status pelaporan terbaru
                 }
             ])->find($pelaporanId);
@@ -201,16 +200,15 @@ class PenugasanPerbaikanTable extends Component
             } else {
                 $this->selectedTeknisi = [];
             }
-            
+
             $this->catatan_penugasan = '';
             $this->showAssignModal = true;
-
         } catch (\Exception $e) {
             Log::error('Error opening assign modal: ' . $e->getMessage());
             $this->dispatch('showErrorToast', 'Terjadi kesalahan saat membuka modal penugasan');
         }
-    }    
-    
+    }
+
     public function closeAssignModal()
     {
         $this->showAssignModal = false;
@@ -219,12 +217,12 @@ class PenugasanPerbaikanTable extends Component
         $this->catatan_penugasan = '';
         $this->resetValidation();
     }
-    
+
     public function assignTeknisi()
     {
         $this->validate([
             'selectedTeknisi' => 'required|array|min:1',
-            'selectedTeknisi.*' => 'exists:m_user,user_id',                 
+            'selectedTeknisi.*' => 'exists:m_user,user_id',
         ], [
             'selectedTeknisi.required' => 'Pilih minimal satu teknisi',
             'selectedTeknisi.min' => 'Pilih minimal satu teknisi',
@@ -245,12 +243,11 @@ class PenugasanPerbaikanTable extends Component
                 $total_perbaikan_unik = PerbaikanModel::join('m_pelaporan', 'm_pelaporan.pelaporan_id', '=', 't_perbaikan.pelaporan_id')
                     ->distinct('m_pelaporan.fasilitas_id')
                     ->count();
-            }
-            else {
+            } else {
                 $total_perbaikan_unik = 0;
             }
 
-            $kodeDasar = 'PRBK-'. ($total_perbaikan_unik + 1) . '-' . $tgl . '-';
+            $kodeDasar = 'PRBK-' . ($total_perbaikan_unik + 1) . '-' . $tgl . '-';
             foreach ($laporanList as $laporan) {
                 // Cek jika belum ada perbaikan untuk laporan ini
                 $perbaikanLaporan = $laporan->perbaikan;
@@ -293,24 +290,45 @@ class PenugasanPerbaikanTable extends Component
                 $index++;
             }
 
+            //url
+            $perbaikanFirst = PerbaikanModel::whereHas('pelaporan', function ($query) use ($fasilitasId) {
+                $query->where('fasilitas_id', $fasilitasId);
+            })->first();
+            $idperbaikan = $perbaikanFirst ? $perbaikanFirst->perbaikan_id : null;
+            $url = '/teknisi/perbaikan/detail/' . $idperbaikan;
+            //notif
+            sendRoleNotification(
+                [],
+                'Penugasan Perbaikan Fasilitas',
+                'Anda telah ditugaskan untuk melakukan perbaikan fasilitas. Silakan periksa detail perbaikan dan lakukan tindakan yang diperlukan.',
+                $url,
+                $this->selectedTeknisi
+            );
+
+            sendRoleNotification(
+                ['1'],
+                'Fasilitas Dalam Perbaikan',
+                'Pantau perbaikan fasilitas yang sedang berlangsung.',
+                route('laporan.index')
+            );
+
             DB::commit();
 
             $teknisiNames = UserModel::whereIn('user_id', $this->selectedTeknisi)->pluck('nama')->join(', ');
-            $message = count($this->selectedTeknisi) > 1 ? 
+            $message = count($this->selectedTeknisi) > 1 ?
                 "Berhasil menugaskan teknisi: {$teknisiNames}" :
                 "Berhasil menugaskan teknisi: {$teknisiNames}";
 
             $this->dispatch('showSuccessToast', $message);
             $this->closeAssignModal();
             $this->resetPage();
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error assigning technicians: ' . $e->getMessage());
             $this->dispatch('showErrorToast', 'Terjadi kesalahan saat menugaskan teknisi: ' . $e->getMessage());
         }
-    }    
-    
+    }
+
     public function openDetailModal($pelaporanId)
     {
         try {
@@ -320,7 +338,7 @@ class PenugasanPerbaikanTable extends Component
                 'user',
                 'perbaikan.perbaikanPetugas.user',
                 'perbaikan.latestStatusPerbaikan',
-                'statusPelaporan' => function($query) {
+                'statusPelaporan' => function ($query) {
                     $query->latest(); // Ambil status pelaporan terbaru
                 }
             ])->find($pelaporanId);
@@ -331,7 +349,6 @@ class PenugasanPerbaikanTable extends Component
             }
 
             $this->showDetailModal = true;
-
         } catch (\Exception $e) {
             Log::error('Error opening detail modal: ' . $e->getMessage());
             $this->dispatch('showErrorToast', 'Terjadi kesalahan saat membuka detail');
@@ -342,11 +359,11 @@ class PenugasanPerbaikanTable extends Component
     {
         $this->showDetailModal = false;
         $this->selectedPerbaikan = null;
-    }    
-    
+    }
+
     /**
      * Mark a repair report as completed
-     * 
+     *
      * @param int $pelaporanId
      * @return void
      */
@@ -354,31 +371,31 @@ class PenugasanPerbaikanTable extends Component
     {
         try {
             DB::beginTransaction();
-            
+
             // Get the pelaporan record with necessary relationships
             $pelaporan = PelaporanModel::with(['perbaikan.latestStatusPerbaikan'])->find($pelaporanId);
-            
+
             if (!$pelaporan) {
                 $this->dispatch('showErrorToast', 'Data laporan tidak ditemukan');
                 return;
             }
-            
+
             if (!$pelaporan->perbaikan) {
                 $this->dispatch('showErrorToast', 'Data perbaikan tidak ditemukan');
                 return;
             }
-            
+
             // Check if current status is "Selesai"
             $currentStatus = $pelaporan->perbaikan->latestStatusPerbaikan?->perbaikan_status ?? null;
             if ($currentStatus !== 'Selesai') {
                 $this->dispatch('showErrorToast', 'Hanya laporan dengan status "Selesai" yang dapat dilaporkan selesai.');
                 return;
             }
-            
+
             // Get the base repair code to find related repairs
             $perbaikanKode = $pelaporan->perbaikan->perbaikan_kode;
             $baseKode = substr($perbaikanKode, 0, strrpos($perbaikanKode, '-'));
-            
+
             // Find all repairs with similar code (prefix match)
             $relatedPerbaikan = PerbaikanModel::where('perbaikan_kode', 'like', $baseKode . '-%')->get();
             $completedCount = 0;
@@ -398,10 +415,24 @@ class PenugasanPerbaikanTable extends Component
                     'updated_at' => now()
                 ]);
                 $completedCount++;
+
+                //notip
+                $url = '/users/laporan-detail/' . $perbaikan->pelaporan_id;
+                $pelaporID = DB::table('m_pelaporan')
+                    ->where('pelaporan_id', $perbaikan->pelaporan_id)
+                    ->pluck('user_id')
+                    ->toArray();
+                sendRoleNotification(
+                    [],
+                    'Perbaikan Selesai',
+                    'Perbaikan fasilitas telah selesai dikerjakan. Silakan periksa hasil perbaikan dan berikan feedback jika diperlukan.',
+                    $url,
+                    $pelaporID
+                );
             }
             DB::commit();
-            $message = $completedCount > 1 
-                ? "Berhasil menyelesaikan {$completedCount} laporan perbaikan terkait" 
+            $message = $completedCount > 1
+                ? "Berhasil menyelesaikan {$completedCount} laporan perbaikan terkait"
                 : "Laporan perbaikan berhasil diselesaikan";
             $this->dispatch('showSuccessToast', $message);
             $this->closeDetailModal();
@@ -411,24 +442,24 @@ class PenugasanPerbaikanTable extends Component
             $this->dispatch('showErrorToast', 'Terjadi kesalahan saat menyelesaikan laporan: ' . $e->getMessage());
         }
     }
-    
+
     /**
      * Get the CSS class for status badge color
-     * 
+     *
      * @param string $status
      * @return string
      */
     public function getStatusBadgeColor($status)
     {
-        return match($status) {
+        return match ($status) {
             'Diproses' => 'badge-info',
             'Selesai' => 'badge-success',
             'Diterima' => 'badge-warning',
             'Menunggu' => 'badge-secondary',
             default => 'badge-ghost'
         };
-    }    
-    
+    }
+
     public function render()
     {
         return view('livewire.penugasan-perbaikan-table', [
