@@ -159,7 +159,6 @@ class SarpraController extends Controller
         ]);
     }
 
-
     public function history_laporan_detail(int $pelaporan_id)
     {
         $laporan = $this->pelaporanRepository->findDetailById($pelaporan_id);
@@ -196,10 +195,7 @@ class SarpraController extends Controller
         }
 
         $gambarData = [
-            'Gambar Laporan' => $laporan->statusPelaporan
-                ->where('status_pelaporan', 'Menunggu')
-                ->pluck('pelaporan_gambar')
-                ->filter()
+            'Gambar Laporan' => collect(json_decode($laporan->pelaporan_gambar, true) ?? [])
                 ->map(fn($path) => Storage::url($path))
                 ->values(),
 
