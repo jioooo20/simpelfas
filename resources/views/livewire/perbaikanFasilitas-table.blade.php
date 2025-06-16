@@ -172,10 +172,10 @@
                         </td>
                         <td class="text-center">
                             <div class="flex items-center justify-center gap-4">
-                                    <button wire:click="goToDetail('{{ $item['id'] }}')"
-                                        class="text-primary" title="Lihat Detail">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
+                                <button wire:click="goToDetail('{{ $item['id'] }}')" class="text-primary"
+                                    title="Lihat Detail">
+                                    <i class="fas fa-eye"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -204,43 +204,43 @@
     </div>
 
     {{-- Pagination --}}
-    @if (isset($perbaikanData) && $perbaikanData->hasPages())
-        <div class="mt-4 flex justify-between items-center w-full">
-            <div class="flex items-center">
-                <span class="text-sm text-gray-500 mr-2">Data per halaman:</span>
-                <select wire:model.live="perPage" class="select select-sm select-bordered">
-                    <option value="10">10</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                </select>
-                <span class="text-sm text-gray-500 ml-4">
-                    Menampilkan {{ $perbaikanData->firstItem() }} - {{ $perbaikanData->lastItem() }} dari
-                    {{ $perbaikanData->total() }} data
-                </span>
-            </div>
-            <div class="join">
-                @if ($perbaikanData->onFirstPage())
-                    <button class="join-item btn btn-disabled">«</button>
-                @else
-                    <button wire:click="previousPage" wire:loading.attr="disabled" class="join-item btn">«</button>
-                @endif
-                @foreach (range(1, $perbaikanData->lastPage()) as $page)
-                    @if ($page == $perbaikanData->currentPage())
-                        <button class="join-item btn btn-active">{{ $page }}</button>
-                    @else
-                        <button wire:click="gotoPage({{ $page }})" wire:loading.attr="disabled"
-                            class="join-item btn">{{ $page }}</button>
-                    @endif
-                @endforeach
-                @if ($perbaikanData->hasMorePages())
-                    <button wire:click="nextPage" wire:loading.attr="disabled" class="join-item btn">»</button>
-                @else
-                    <button class="join-item btn btn-disabled">»</button>
-                @endif
-            </div>
+    <div class="mt-4 flex justify-between items-center w-full">
+        <div class="text-sm text-gray-500">
+            Menampilkan {{ $perbaikanData->firstItem() ?? 0 }} - {{ $perbaikanData->lastItem() ?? 0 }} dari 
+            {{ $perbaikanData->total() }} data
         </div>
-    @endif
+        <div class="join">
+            @if ($perbaikanData->onFirstPage())
+                <button class="join-item btn btn-sm btn-disabled">«</button>
+            @else
+                <button wire:click="previousPage" wire:loading.attr="disabled" class="join-item btn btn-sm">«</button>
+            @endif
+            
+            @php
+                $startPage = max($page - 1, 1);
+                $endPage = min($startPage + 2, $perbaikanData->lastPage());
+                
+                if ($endPage - $startPage < 2) {
+                    $startPage = max($endPage - 2, 1);
+                }
+            @endphp
+            
+            @for ($i = $startPage; $i <= $endPage; $i++)
+                @if ($i == $perbaikanData->currentPage())
+                    <button class="join-item btn btn-sm btn-active">{{ $i }}</button>
+                @else
+                    <button wire:click="gotoPage({{ $i }})" wire:loading.attr="disabled" 
+                        class="join-item btn btn-sm">{{ $i }}</button>
+                @endif
+            @endfor
+            
+            @if ($perbaikanData->hasMorePages())
+                <button wire:click="nextPage" wire:loading.attr="disabled" class="join-item btn btn-sm">»</button>
+            @else
+                <button class="join-item btn btn-sm btn-disabled">»</button>
+            @endif
+        </div>
+    </div>
 
     @push('skrip')
         <script>

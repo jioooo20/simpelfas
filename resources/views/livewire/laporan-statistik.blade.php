@@ -50,8 +50,9 @@
     @endpush
 
     <div>
+        <div class="flex justify-between gap-4 ">
         {{-- search --}}
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between w-full items-center mb-4">
             <div class="relative w-full">
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <i class="bi bi-search text-gray-400"></i>
@@ -60,94 +61,109 @@
                     placeholder="Cari berdasarkan nama pelapor, laporan, nama barang, atau status..." />
             </div>
         </div>
+        {{-- Filter Periode --}}
+        @php
+            $years = range(date('Y'), 2020);
+        @endphp
+        <div class="flex items-center gap-2 mb-4">
+            <label for="tahun" class="font-semibold">Tahun:</label>
+            <select wire:model.live="tahun" id="tahun" class="select select-bordered">
+                @foreach ($years as $year)
+                    <option value="{{ $year }}">{{ $year }}</option>
+                @endforeach
+            </select>
+        </div>
+    </div>
 
         {{-- table --}}
         <div>
             <table class="table w-full">
-    <thead>
-        <tr>
-            <th>Pelapor</th>
-            <th>Laporan</th>
-            <th>Skala Kerusakan</th>
-            <th>Frekuensi</th>
-            <th>Tanggal</th>
-            <th>Status</th>
-            <th>Rating</th> <!-- Tambahkan kolom Rating -->
-        </tr>
-    </thead>
+                <thead>
+                    <tr>
+                        <th>Pelapor</th>
+                        <th>Laporan</th>
+                        <th>Skala Kerusakan</th>
+                        <th>Frekuensi</th>
+                        <th>Tanggal</th>
+                        <th>Status</th>
+                        <th>Rating</th> <!-- Tambahkan kolom Rating -->
+                    </tr>
+                </thead>
 
-    <tbody>
-        @foreach ($table as $laporan)
-            @php
-                $status = $laporan->statusPelaporan->first()->status_pelaporan ?? 'pending';
-                $statusClass = match ($status) {
-                    'selesai' => 'badge-success',
-                    'dalam_proses' => 'badge-warning',
-                    'ditolak' => 'badge-error',
-                    default => 'badge-info',
-                };
+                <tbody>
+                    @forelse ($table as $laporan)
+                        @php
+                            $status = $laporan->statusPelaporan->first()->status_pelaporan ?? 'pending';
+                            $statusClass = match ($status) {
+                                'selesai' => 'badge-success',
+                                'dalam_proses' => 'badge-warning',
+                                'ditolak' => 'badge-error',
+                                default => 'badge-info',
+                            };
 
-                $skala = $laporan->skorAlternatif->where('kriteria_id', 2)->first();
-                $frekuensi = $laporan->skorAlternatif->where('kriteria_id', 3)->first();
-                
-                // Cek apakah ada feedback dan rating
-                $rating = $laporan->feedback->rating ?? null;
-            @endphp
-            <tr>
-                <td>{{ $laporan->user->nama ?? '-' }}</td>
-                <td>{{ $laporan->pelaporan_kode ?? '-' }}</td>
-                <td>
-                    @if ($skala)
-                        {{ match ((int) $skala->nilai_skor) {
-                            1 => 'Ringan',
-                            2 => 'Sedang',
-                            3 => 'Berat',
-                            default => 'Nilai: ' . $skala->nilai_skor,
-                        } }}
-                    @else
-                        -
-                    @endif
-                </td>
-                <td>
-                    @if ($frekuensi)
-                        {{ match ((int) $frekuensi->nilai_skor) {
-                            1 => 'Jarang',
-                            2 => 'Sedang',
-                            3 => 'Sering',
-                            default => 'Nilai: ' . $frekuensi->nilai_skor,
-                        } }}
-                    @else
-                        -
-                    @endif
-                </td>
-                <td>{{ $laporan->created_at->format('d M Y') }}</td>
-                <td>
-                    <span class="badge {{ $statusClass }}">
-                        {{ ucfirst(str_replace('_', ' ', $status)) }}
-                    </span>
-                </td>
-                <td>
-    @if($laporan->feedback && $laporan->feedback->rating !== null)
-        <div class="rating rating-sm">
-            @for($i = 1; $i <= 5; $i++)
-                <input 
-                    type="radio" 
-                    name="rating-{{ $laporan->pelaporan_id }}" 
-                    class="mask mask-star-2 bg-orange-400" 
-                    {{ $i <= $laporan->feedback->rating ? 'checked' : '' }} 
-                    disabled
-                />
-            @endfor
-            <span class="ml-2 text-sm">({{ $laporan->feedback->rating }}/5)</span>
-        </div>
-    @else
-        <span class="text-gray-500">Belum ada rating</span>
-    @endif
-</td>
-            </tr>
-        @endforeach
-    </tbody>
-</table>
+                            $skala = $laporan->skorAlternatif->where('kriteria_id', 2)->first();
+                            $frekuensi = $laporan->skorAlternatif->where('kriteria_id', 3)->first();
+
+                            // Cek apakah ada feedback dan rating
+                            $rating = $laporan->feedback->rating ?? null;
+                        @endphp
+                        <tr>
+                            <td>{{ $laporan->user->nama ?? '-' }}</td>
+                            <td>{{ $laporan->pelaporan_kode ?? '-' }}</td>
+                            <td>
+                                @if ($skala)
+                                    {{ match ((int) $skala->nilai_skor) {
+                                        1 => 'Ringan',
+                                        2 => 'Sedang',
+                                        3 => 'Berat',
+                                        default => 'Nilai: ' . $skala->nilai_skor,
+                                    } }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td>
+                                @if ($frekuensi)
+                                    {{ match ((int) $frekuensi->nilai_skor) {
+                                        1 => 'Jarang',
+                                        2 => 'Sedang',
+                                        3 => 'Sering',
+                                        default => 'Nilai: ' . $frekuensi->nilai_skor,
+                                    } }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td>{{ $laporan->created_at->format('d M Y') }}</td>
+                            <td>
+                                <span class="badge {{ $statusClass }}">
+                                    {{ ucfirst(str_replace('_', ' ', $status)) }}
+                                </span>
+                            </td>
+                            <td>
+                                @if ($laporan->feedback && $laporan->feedback->rating !== null)
+                                    <div class="rating rating-sm">
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <input type="radio" name="rating-{{ $laporan->pelaporan_id }}"
+                                                class="mask mask-star-2 bg-orange-400"
+                                                {{ $i <= $laporan->feedback->rating ? 'checked' : '' }} disabled />
+                                        @endfor
+                                        <span class="ml-2 text-sm">({{ $laporan->feedback->rating }}/5)</span>
+                                    </div>
+                                @else
+                                    <span class="text-gray-500">Belum ada rating</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center py-8 text-gray-500">
+                                Tidak ada data untuk tahun yang dipilih.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
 
             {{ $table->links() }}
         </div>
