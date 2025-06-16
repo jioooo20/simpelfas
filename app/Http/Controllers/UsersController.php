@@ -45,11 +45,25 @@ class UsersController extends Controller
                 $request->input('frekuensi')
             );
 
+            sendRoleNotification(
+                [2], //Sarpra
+                'Laporan Kerusakan Baru',
+                'Segera periksa laporan kerusakan baru dari pengguna.',
+                route('sarpra.laporan-kerusakan-fasilitas')
+            );
+
+            sendRoleNotification(
+                [1], //Admin
+                'Laporan Kerusakan Baru',
+                'Pantau laporan kerusakan baru yang telah dibuat oleh pengguna.',
+                route('laporan.index')
+            );
+
+
             return response()->json([
                 'success' => true,
                 'message' => 'Laporan berhasil dikirim.'
             ]);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -173,7 +187,6 @@ class UsersController extends Controller
                 }
 
                 return $gambarPaths;
-
             } catch (Exception $e) {
                 Log::error($e);
                 throw ValidationException::withMessages(['foto' => 'Gagal memproses gambar, silakan coba lagi.']);
@@ -270,7 +283,6 @@ class UsersController extends Controller
             // Jika bukan AJAX, return redirect seperti biasa
             return redirect()->route('users.feedback')
                 ->with('success', 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.');
-
         } catch (ValidationException $e) {
             // Handle validation errors
             if ($request->ajax() || $request->wantsJson()) {
@@ -282,7 +294,6 @@ class UsersController extends Controller
 
             // Jika bukan AJAX, throw exception seperti biasa
             throw $e;
-
         } catch (Exception $e) {
             // Handle general errors
             if ($request->ajax() || $request->wantsJson()) {

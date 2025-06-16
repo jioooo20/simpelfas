@@ -109,3 +109,8 @@ Route::middleware('auth')->group(function () {
 Route::get('/realtime-clock', function () {
     return Carbon::now()->translatedFormat('l, d F Y H:i:s');
 });
+
+Route::post('/notifikasi/read-all', function () {
+    auth()->user()->unreadNotifications->markAsRead();
+    return back();
+})->name('notifikasi.readAll');
