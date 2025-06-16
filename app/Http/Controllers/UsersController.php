@@ -198,15 +198,25 @@ class UsersController extends Controller
 
     public function UmpanBalik() {
         $userId = auth()->id();
+        
+
         $perbaikan = PelaporanModel::with([
             'fasilitas', 
             'statusPelaporan' => function ($query) {
                 $query->orderBy('created_at');
             },
-            'feedback' // Tambahkan relasi feedback
+            'feedback'
         ])->where('user_id', $userId)->get();
         
+
         $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
+        
+        // inii filter
+        $perbaikan = $perbaikan->filter(function ($item) {
+        $sortedStatus = $item->statusPelaporan->sortBy('created_at');
+        $latestStatus = $sortedStatus->last();
+        return $latestStatus && $latestStatus->status_pelaporan === 'Selesai';
+    });
         
         $perbaikan->transform(function ($item) use ($fasilitasOptions) {
             $item['fasilitas_label'] = $fasilitasOptions[$item->fasilitas_id]['label'] ?? null;
