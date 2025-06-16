@@ -76,6 +76,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/statistik-fasilitas', [SarpraController::class, 'statistikFasilitas'])->name('statistik-fasilitas');
         Route::get('/feedback', [SarpraController::class, 'count-total'])->name('feedback.index');
         Route::get('/penugasan-perbaikan', [SarpraController::class, 'penugasan_perbaikan'])->name('penugasan-perbaikan');
+        Route::get('/history-laporan', [SarpraController::class, 'history_laporan'])->name('sarpra.history-laporan');
+        Route::get('/history-laporan/{pelaporan_id}', [SarpraController::class, 'history_laporan_detail'])->name('sarpra.laporan.history_laporan_detail');
     });
     Route::middleware('role:3')->prefix('teknisi')->group(function (): void {
         Route::get('/', [TeknisiController::class, 'perbaikan'])->name('teknisi');
