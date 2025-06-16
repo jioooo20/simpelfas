@@ -40,15 +40,8 @@ class AdminController extends Controller
         return view('pages.admin.manage-user.index', compact('table', 'roles'));
     }
 
-    public function laporan_statistik (){
-        $table = PelaporanModel::with('fasilitas','user', 'statusPelaporan')->paginate(10);
-        $fasilitas = FasilitasModel::all();
-        $user = UserModel::all();
-        $status = StatusPelaporanModel::all();
-        return view('pages.admin.laporan-statistik.index', compact('table', 'fasilitas', 'user','status'));
-    }
 
-    public function laporan_dan_statistik(Request $request)
+    public function laporan_statistik(Request $request)
     {
         $start = $request->input('start_date') ?? Carbon::now()->startOfMonth();
         $end = $request->input('end_date') ?? Carbon::now()->endOfMonth();

@@ -68,7 +68,7 @@
                     <th class="flex gap-2 justify-center">ID</th>
                     <th>Judul Laporan</th>
                     <th>Pelapor</th>
-                    <th>Fasilitas</th>
+                    
                     <th>Status</th>
                     <th>Tanggal</th>
                     <th class="flex gap-2 justify-center">Aksi</th>
@@ -97,14 +97,11 @@
                                 </div>
                             </div>
                         </td>
-                        <td>
-                            <div class="badge badge-outline">
-                                {{ $laporan->fasilitas->nama ?? 'Fasilitas tidak diketahui' }}
-                            </div>
-                        </td>
+                        
                         <td>
                             @php
-                                $statusClass = match($laporan->statusPelaporan->nama ?? 'pending') {
+                                $latestStatus = $laporan->statusPelaporan->sortByDesc('created_at')->first();
+                                $statusClass = match($latestStatus->nama ?? 'pending') {
                                     'selesai', 'completed' => 'badge-success',
                                     'dalam_proses', 'in_progress' => 'badge-warning',
                                     'pending' => 'badge-info',
@@ -113,7 +110,7 @@
                                 };
                             @endphp
                             <div class="badge {{ $statusClass }}">
-                                {{ $laporan->statusPelaporan->nama ?? 'Pending' }}
+                                {{ $latestStatus->nama ?? 'Pending' }}
                             </div>
                         </td>
                         <td>

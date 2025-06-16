@@ -210,7 +210,7 @@ class UsersController extends Controller
         
         $perbaikan->transform(function ($item) use ($fasilitasOptions) {
             $item['fasilitas_label'] = $fasilitasOptions[$item->fasilitas_id]['label'] ?? null;
-            $item['has_feedback'] = $item->feedback()->exists(); // Tambahkan flag apakah sudah ada feedback
+            $item['has_feedback'] = $item->feedback()->exists();
             return $item;
         });
         

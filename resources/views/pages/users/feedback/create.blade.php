@@ -129,36 +129,6 @@
                         @csrf
                         <input type="hidden" name="report_id" value="{{ $laporan->pelaporan_id }}">
 
-                <!-- Rating -->
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-medium mb-3">Rating Kepuasan</label>
-                    <div x-data="{ rating: 0 }" class="flex flex-col items-start space-y-2">
-                        <div class='flex space-x-1'>
-                            @for ($i = 1; $i <= 5; $i++)
-                                <label class="cursor-pointer transform hover:scale-110 transition">
-                                    <input type="radio" name="rating" value="{{ $i }}" class="hidden"
-                                        x-model="rating">
-                                    <span class="text-3xl":class="rating >= {{ $i }} ? 'text-yellow-500' : 'text-gray-300'">★</span>
-                                </label>
-                            @endfor
-                        </div>
-                        <span class="ml-2 text-gray-600 text-sm">(1 = Buruk, 5 = Sangat Puas)</span>
-                    </div>
-                    @error('rating')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Komentar -->
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-medium mb-3">Komentar</label>
-                    <textarea name="comment" rows="4"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Bagaimana penanganan kerusakan ini?"></textarea>
-                    @error('comment')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
                         <!-- Rating Section -->
                         <div class="bg-white p-6 rounded-lg border border-gray-200">
                             <label class="block text-gray-800 font-semibold mb-4 text-lg">Rating Kepuasan</label>

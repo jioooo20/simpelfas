@@ -47,7 +47,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Komentar</p>
-                            <p class="font-medium">{{ $feedback->komentar }}</p>
+                            <p class="font-medium">{{ $feedback->feedback_text }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Tanggal Penilaian</p>
