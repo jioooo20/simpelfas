@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use App\Repositories\PelaporanRepository;
 use App\Repositories\FeedbackRepository;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class SarpraController extends Controller
 {
@@ -195,9 +196,26 @@ class SarpraController extends Controller
         }
 
         $gambarData = [
-            'Gambar Laporan' => $laporan->statusPelaporan->where('status_pelaporan', 'Menunggu')->pluck('pelaporan_gambar')->filter()->values(),
-            'Gambar Perbaikan' => $laporan->perbaikan?->statusPerbaikan->where('perbaikan_status', 'Diproses')->pluck('perbaikan_gambar')->filter()->values() ?? collect(),
-            'Gambar Selesai' => $laporan->perbaikan?->statusPerbaikan->where('perbaikan_status', 'Selesai')->pluck('perbaikan_gambar')->filter()->values() ?? collect(),
+            'Gambar Laporan' => $laporan->statusPelaporan
+                ->where('status_pelaporan', 'Menunggu')
+                ->pluck('pelaporan_gambar')
+                ->filter()
+                ->map(fn($path) => Storage::url($path))
+                ->values(),
+
+            'Gambar Perbaikan' => $laporan->perbaikan?->statusPerbaikan
+                    ->where('perbaikan_status', 'Diproses')
+                    ->pluck('perbaikan_gambar')
+                    ->filter()
+                    ->map(fn($path) => Storage::url($path))
+                    ->values() ?? collect(),
+
+            'Gambar Selesai' => $laporan->perbaikan?->statusPerbaikan
+                    ->where('perbaikan_status', 'Selesai')
+                    ->pluck('perbaikan_gambar')
+                    ->filter()
+                    ->map(fn($path) => Storage::url($path))
+                    ->values() ?? collect(),
         ];
 
         $detailData = [
