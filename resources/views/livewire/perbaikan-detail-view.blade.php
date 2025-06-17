@@ -39,9 +39,30 @@
                 @if ($statusTerakhir->perbaikan_status != 'Selesai')
                     <!-- Tombol aksi untuk teknisi -->
                     <div class="card-actions justify-end mt-16">
-                        <button type="button" onclick="Livewire.dispatch('openUpdateModal')"
-                            class="btn btn-primary btn-sm text-white">Update
-                            Status</button>
+                        @php
+                            // Cek apakah user yang login adalah teknisi yang ditugaskan
+                            $isAssignedTechnician = false;
+                            $userId = auth()->id();
+                            if ($perbaikan->perbaikanPetugas && $perbaikan->perbaikanPetugas->count() > 0) {
+                                foreach ($perbaikan->perbaikanPetugas as $petugas) {
+                                    if ($petugas->user_id == $userId) {
+                                        $isAssignedTechnician = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        @endphp
+                        
+                        @if ($isAssignedTechnician)
+                            <button type="button" onclick="Livewire.dispatch('openUpdateModal')"
+                                class="btn btn-primary btn-sm text-white">Update
+                                Status</button>
+                        @else
+                            <button type="button" disabled
+                                class="btn btn-primary btn-sm text-white opacity-50 cursor-not-allowed" 
+                                title="Hanya teknisi yang ditugaskan yang dapat mengupdate status">Update
+                                Status</button>
+                        @endif
                     </div>
                     @livewire('perbaikan-update-form', ['perbaikanId' => $perbaikan->perbaikan_id], key($perbaikan->perbaikan_id))
                 @else

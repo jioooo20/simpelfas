@@ -67,7 +67,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [\App\Http\Controllers\LaporanKerusakanController::class, 'index'])->name('admin.laporan-kerusakan.index');
             Route::get('/{id}', [\App\Http\Controllers\LaporanKerusakanController::class, 'show'])->name('admin.laporan-kerusakan.show');
         });
-        
+
     });
     Route::middleware('role:2')->prefix('sarpra')->group(function (): void {
         Route::get('/', [SarpraController::class, 'dasbor'])->name('sarpra');
@@ -76,6 +76,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/statistik-fasilitas', [SarpraController::class, 'statistikFasilitas'])->name('statistik-fasilitas');
         Route::get('/feedback', [SarpraController::class, 'count-total'])->name('feedback.index');
         Route::get('/penugasan-perbaikan', [SarpraController::class, 'penugasan_perbaikan'])->name('penugasan-perbaikan');
+        Route::get('/history-laporan', [SarpraController::class, 'history_laporan'])->name('sarpra.history-laporan');
+        Route::get('/history-laporan/{pelaporan_id}', [SarpraController::class, 'history_laporan_detail'])->name('sarpra.laporan.history_laporan_detail');
     });
     Route::middleware('role:3')->prefix('teknisi')->group(function (): void {
         Route::get('/', [TeknisiController::class, 'perbaikan'])->name('teknisi');
@@ -85,7 +87,7 @@ Route::middleware('auth')->group(function () {
         });
         Route::group(['prefix' => 'riwayat-perbaikan'], function (): void {
             Route::get('/', [TeknisiController::class, 'riwayat'])->name('riwayat-perbaikan');
-            Route::get('/detail', [TeknisiController::class, 'riwayatShow'])->name('riwayat-perbaikan-detail');
+            Route::get('/detail', [TeknisiController::class, 'riwayatShow'])->name('detail-riwayat-perbaikan');
         });
     });
     Route::middleware('role:4,5,6')->prefix('users')->group(function (): void {
@@ -95,6 +97,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/lokasi-options', [UsersController::class, 'getLokasiOptions'])->name('lokasi-options');
         Route::get('/feedback',[UsersController::class, 'UmpanBalik'])->name('users.feedback'); //
         Route::get('/feedback-create/{perbaikan_id}',[UsersController::class, 'UmpanBalik_Create'])->name('feedback-create');
+        Route::get('/feedback/detail/{perbaikan_id}',[UsersController::class, 'showDetail'])->name('feedback-detail');
         Route::post('/feedback/store', [UsersController::class, 'storeFeedback'])->name('feedback-store');
         Route::get('/laporan-data', [UsersController::class, 'getLaporanData'])->name('laporan-data');
         Route::get('/laporan-detail/{id}', [UsersController::class, 'getLaporanDetail'])->name('laporan-detail');
@@ -107,3 +110,8 @@ Route::middleware('auth')->group(function () {
 Route::get('/realtime-clock', function () {
     return Carbon::now()->translatedFormat('l, d F Y H:i:s');
 });
+
+Route::post('/notifikasi/read-all', function () {
+    auth()->user()->unreadNotifications->markAsRead();
+    return back();
+})->name('notifikasi.readAll');

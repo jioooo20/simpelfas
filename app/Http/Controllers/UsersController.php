@@ -45,11 +45,25 @@ class UsersController extends Controller
                 $request->input('frekuensi')
             );
 
+            sendRoleNotification(
+                [2], //Sarpra
+                'Laporan Kerusakan Baru',
+                'Segera periksa laporan kerusakan baru dari pengguna.',
+                route('sarpra.laporan-kerusakan-fasilitas')
+            );
+
+            sendRoleNotification(
+                [1], //Admin
+                'Laporan Kerusakan Baru',
+                'Pantau laporan kerusakan baru yang telah dibuat oleh pengguna.',
+                route('laporan.index')
+            );
+
+
             return response()->json([
                 'success' => true,
                 'message' => 'Laporan berhasil dikirim.'
             ]);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -81,20 +95,30 @@ class UsersController extends Controller
         $laporan = $this->pelaporanRepo->getLaporanDetailById($id);
         $latestStatus = $laporan->statusPelaporan->first();
         $skor = $this->pelaporanRepo->getSkorKriteriaByPelaporanId($laporan->pelaporan_id);
-        $gambarPerbaikan = [];
-        $gambarSelesai = [];
-        if ($laporan->perbaikan && $laporan->perbaikan->statusPerbaikan) {
-            foreach ($laporan->perbaikan->statusPerbaikan as $statusPerbaikan) {
-                if ($statusPerbaikan->perbaikan_status === 'Diproses') {
-                    $gambarPerbaikan = json_decode($statusPerbaikan->perbaikan_gambar ?? '[]', true);
-                } elseif ($statusPerbaikan->perbaikan_status === 'Selesai') {
-                    $gambarSelesai = json_decode($statusPerbaikan->perbaikan_gambar ?? '[]', true);
-                }
-            }
-        }
+
+        // Gunakan collection untuk mengambil semua gambar dengan cara yang lebih bersih
+        $allStatusPerbaikan = $laporan->perbaikan?->statusPerbaikan ?? collect();
+
+        // [PERBAIKAN] Mengambil path gambar sebagai string tunggal, bukan JSON
+        // 1. Ambil semua gambar 'Diproses'
+        $gambarPerbaikan = $allStatusPerbaikan
+            ->where('perbaikan_status', 'Diproses')
+            ->pluck('perbaikan_gambar') // Langsung ambil nilai dari kolom 'perbaikan_gambar'
+            ->filter()                  // Hapus item yang null atau kosong dari koleksi
+            ->values()
+            ->all();
+
+        // 2. Ambil semua gambar 'Selesai'
+        $gambarSelesai = $allStatusPerbaikan
+            ->where('perbaikan_status', 'Selesai')
+            ->pluck('perbaikan_gambar') // Langsung ambil nilai dari kolom 'perbaikan_gambar'
+            ->filter()                  // Hapus item yang null atau kosong
+            ->values()
+            ->all();
 
         // Susun array gambar final
         $gambar = [
+            // Untuk Gambar Laporan, kita tetap pakai json_decode karena datanya memang array
             'Gambar Laporan' => json_decode($laporan->pelaporan_gambar ?? '[]', true),
             'Gambar Perbaikan' => $gambarPerbaikan,
             'Gambar Selesai' => $gambarSelesai,
@@ -173,7 +197,6 @@ class UsersController extends Controller
                 }
 
                 return $gambarPaths;
-
             } catch (Exception $e) {
                 Log::error($e);
                 throw ValidationException::withMessages(['foto' => 'Gagal memproses gambar, silakan coba lagi.']);
@@ -183,28 +206,49 @@ class UsersController extends Controller
         return null;
     }
 
-    public function UmpanBalik()
-    {
+    public function UmpanBalik() {
         $userId = auth()->id();
+        
 
-        $perbaikan = PelaporanModel::with(['fasilitas', 'statusPelaporan' => function ($query) {
-            $query->orderBy('created_at');
-        }])->where('user_id', $userId)->get();
+        $perbaikan = PelaporanModel::with([
+            'fasilitas', 
+            'statusPelaporan' => function ($query) {
+                $query->orderBy('created_at');
+            },
+            'feedback'
+        ])->where('user_id', $userId)->get();
+        
 
         $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
-
+        
+        // inii filter
+        $perbaikan = $perbaikan->filter(function ($item) {
+        $sortedStatus = $item->statusPelaporan->sortBy('created_at');
+        $latestStatus = $sortedStatus->last();
+        return $latestStatus && $latestStatus->status_pelaporan === 'Selesai';
+    });
+        
         $perbaikan->transform(function ($item) use ($fasilitasOptions) {
             $item['fasilitas_label'] = $fasilitasOptions[$item->fasilitas_id]['label'] ?? null;
+            $item['has_feedback'] = $item->feedback()->exists();
             return $item;
         });
-
+        
         return view('pages.users.feedback.index', compact('perbaikan'));
     }
 
-    public function UmpanBalik_Create($perbaikan_id) {
+    public function showDetail($perbaikan_id) {
+        $feedback = FeedbackModel::with('pelaporan')
+            ->where('pelaporan_id', $perbaikan_id)
+            ->firstOrFail();
+        
+        return view('pages.users.feedback.detail', compact('feedback'));
+    }
+    public function UmpanBalik_Create($perbaikan_id)
+    {
         $laporan = PelaporanModel::with([
             'fasilitas.barang',
-            'perbaikan.statusPerbaikan' => function($query) {
+            'perbaikan.statusPerbaikan' => function ($query) {
                 $query->orderBy('created_at', 'desc');
             }
         ])->findOrFail($perbaikan_id);
@@ -214,85 +258,84 @@ class UsersController extends Controller
 
         // Ambil foto teknisi dari status perbaikan
         $fotoTeknisi = [];
-            if ($laporan->perbaikan && $laporan->perbaikan->statusPerbaikan) {
-                $fotoTeknisi = json_decode($laporan->perbaikan->statusPerbaikan->perbaikan_gambar, true) ?? [];
-            }
+        if ($laporan->perbaikan && $laporan->perbaikan->statusPerbaikan) {
+            $fotoTeknisi = json_decode($laporan->perbaikan->statusPerbaikan->perbaikan_gambar, true) ?? [];
+        }
 
         return view('pages.users.feedback.create', [
             'laporan' => $laporan,
             'fotoTeknisi' => $fotoTeknisi
-    ]);
-}
+        ]);
+    }
 
-public function storeFeedback(Request $request)
-{
-    // Validasi input
-    $validated = $request->validate([
-        'report_id' => 'required|exists:m_pelaporan,pelaporan_id',
-        'rating' => 'required|integer|between:1,5',
-        'comment' => 'nullable|string|max:1000',
-    ]);
+    public function storeFeedback(Request $request)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'report_id' => 'required|exists:m_pelaporan,pelaporan_id',
+            'rating' => 'required|integer|between:1,5',
+            'comment' => 'nullable|string|max:1000',
+        ]);
 
-    try {
-        // Cek apakah feedback untuk laporan ini sudah ada
-        $existingFeedback = FeedbackModel::where('pelaporan_id', $validated['report_id'])->first();
+        try {
+            // Cek apakah feedback untuk laporan ini sudah ada
+            $existingFeedback = FeedbackModel::where('pelaporan_id', $validated['report_id'])->first();
 
-        if ($existingFeedback) {
+            if ($existingFeedback) {
+                // Jika request AJAX, return JSON response
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'message' => 'Anda sudah memberikan umpan balik untuk laporan ini sebelumnya.'
+                    ], 409); // 409 Conflict status code
+                }
+
+                // Jika bukan AJAX, return redirect seperti biasa
+                return redirect()->back()
+                    ->with('error', 'Anda sudah memberikan umpan balik untuk laporan ini sebelumnya.')
+                    ->withInput();
+            }
+
+            // Buat feedback baru
+            FeedbackModel::create([
+                'pelaporan_id' => $validated['report_id'],
+                'feedback_text' => $validated['comment'],
+                'rating' => $validated['rating'],
+            ]);
+
             // Jika request AJAX, return JSON response
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
-                    'message' => 'Anda sudah memberikan umpan balik untuk laporan ini sebelumnya.'
-                ], 409); // 409 Conflict status code
+                    'message' => 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.',
+                    'status' => 'success'
+                ], 200);
+            }
+
+            // Jika bukan AJAX, return redirect seperti biasa
+            return redirect()->route('users.feedback')
+                ->with('success', 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.');
+        } catch (ValidationException $e) {
+            // Handle validation errors
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Data yang dikirim tidak valid.',
+                    'errors' => $e->validator->errors()
+                ], 422); // 422 Unprocessable Entity
+            }
+
+            // Jika bukan AJAX, throw exception seperti biasa
+            throw $e;
+        } catch (Exception $e) {
+            // Handle general errors
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Terjadi kesalahan saat mengirim umpan balik: ' . $e->getMessage()
+                ], 500); // 500 Internal Server Error
             }
 
             // Jika bukan AJAX, return redirect seperti biasa
             return redirect()->back()
-                ->with('error', 'Anda sudah memberikan umpan balik untuk laporan ini sebelumnya.')
+                ->with('error', 'Terjadi kesalahan saat mengirim umpan balik: ' . $e->getMessage())
                 ->withInput();
         }
-
-        // Buat feedback baru
-        FeedbackModel::create([
-            'pelaporan_id' => $validated['report_id'],
-            'feedback_text' => $validated['comment'],
-            'rating' => $validated['rating'],
-        ]);
-
-        // Jika request AJAX, return JSON response
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'message' => 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.',
-                'status' => 'success'
-            ], 200);
-        }
-
-        // Jika bukan AJAX, return redirect seperti biasa
-        return redirect()->route('users.feedback')
-            ->with('success', 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.');
-
-    } catch (ValidationException $e) {
-        // Handle validation errors
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'message' => 'Data yang dikirim tidak valid.',
-                'errors' => $e->validator->errors()
-            ], 422); // 422 Unprocessable Entity
-        }
-
-        // Jika bukan AJAX, throw exception seperti biasa
-        throw $e;
-
-    } catch (Exception $e) {
-        // Handle general errors
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'message' => 'Terjadi kesalahan saat mengirim umpan balik: ' . $e->getMessage()
-            ], 500); // 500 Internal Server Error
-        }
-
-        // Jika bukan AJAX, return redirect seperti biasa
-        return redirect()->back()
-            ->with('error', 'Terjadi kesalahan saat mengirim umpan balik: ' . $e->getMessage())
-            ->withInput();
     }
-}}
+}

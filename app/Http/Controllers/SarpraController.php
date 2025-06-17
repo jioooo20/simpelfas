@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\FasilitasRepository;
+use App\Repositories\SkorAltRepository;
 use Illuminate\Http\Request;
 use App\Models\PelaporanModel;
 use App\Models\PerbaikanModel;
@@ -14,18 +15,21 @@ use Illuminate\Support\Facades\DB;
 use App\Repositories\PelaporanRepository;
 use App\Repositories\FeedbackRepository;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class SarpraController extends Controller
 {
     protected PelaporanRepository $pelaporanRepository;
     protected FeedbackRepository $feedbackRepository;
     protected FasilitasRepository $fasilitasRepository;
+    private SkorAltRepository $skorAltRepository;
 
-    public function __construct(PelaporanRepository $pelaporanRepository, FeedbackRepository $feedbackRepository, FasilitasRepository $fasilitasRepository)
+    public function __construct(PelaporanRepository $pelaporanRepository, FeedbackRepository $feedbackRepository, FasilitasRepository $fasilitasRepository, SkorAltRepository $skorAltRepository)
     {
         $this->pelaporanRepository = $pelaporanRepository;
         $this->feedbackRepository = $feedbackRepository;
         $this->fasilitasRepository = $fasilitasRepository;
+        $this->skorAltRepository = $skorAltRepository;
     }
 
     public function dasbor()
@@ -69,10 +73,10 @@ class SarpraController extends Controller
 
         // Laporan per bulan (6 bulan terakhir)
         $laporanPerBulan = PelaporanModel::select(
-                DB::raw('MONTH(created_at) as bulan'),
-                DB::raw('YEAR(created_at) as tahun'),
-                DB::raw('count(*) as total')
-            )
+            DB::raw('MONTH(created_at) as bulan'),
+            DB::raw('YEAR(created_at) as tahun'),
+            DB::raw('count(*) as total')
+        )
             ->where('created_at', '>=', now()->subMonths(6))
             ->groupBy(DB::raw('YEAR(created_at), MONTH(created_at)'))
             ->orderBy('tahun')
@@ -118,6 +122,116 @@ class SarpraController extends Controller
         return view('pages.sarpra.penugasan-perbaikan.index');
     }
 
+    public function history_laporan()
+    {
+        $semuaLaporan = $this->pelaporanRepository->getHistoryLaporan();
+        $historyData = $semuaLaporan->map(function ($laporan) {
+            $fasilitasLabel = 'Informasi Fasilitas Tidak Lengkap';
+            if ($laporan->fasilitas?->ruang?->ruang_nama && $laporan->fasilitas?->barang?->barang_nama) {
+                $fasilitasLabel =
+                    $laporan->fasilitas->ruang->ruang_nama . ' - ' .
+                    $laporan->fasilitas->barang->barang_nama . ' - ' .
+                    $laporan->fasilitas->barang->barang_kode;
+            }
+
+            $statusLaporan = $laporan->latest_status_laporan ?? 'Menunggu';
+
+            $statusPerbaikan = 'Belum Ada';
+            if ($statusLaporan === 'Ditolak') {
+                $statusPerbaikan = 'Tidak Ada';
+            } elseif (in_array($statusLaporan, ['Diterima', 'Diproses', 'Selesai'])) {
+                $statusPerbaikan = $laporan->latest_status_perbaikan ?? 'Menunggu';
+            }
+
+            return [
+                'id' => $laporan->pelaporan_id,
+                'kode' => $laporan->pelaporan_kode,
+                'fasilitas' => $fasilitasLabel,
+                'pelapor' => $laporan->user?->nama ?? 'User Tidak Dikenal',
+                'statusLaporan' => $statusLaporan,
+                'statusPerbaikan' => $statusPerbaikan,
+                'rating' => $laporan->feedback?->rating ?? 0,
+            ];
+        });
+
+        return view('pages.sarpra.history-laporan.index', [
+            'historyData' => $historyData
+        ]);
+    }
+
+    public function history_laporan_detail(int $pelaporan_id)
+    {
+        $laporan = $this->pelaporanRepository->findDetailById($pelaporan_id);
+
+        $fasilitasLabel = data_get($laporan, 'fasilitas.ruang.ruang_nama', 'N/A') . ' - ' .
+            data_get($laporan, 'fasilitas.barang.barang_nama', 'N/A') . ' - ' .
+            data_get($laporan, 'fasilitas.barang.barang_kode', 'N/A');
+
+        $skalaKerusakanLabel = 'N/A';
+        $frekuensiPenggunaanLabel = 'N/A';
+
+        foreach ($laporan->skorAlternatif as $skor) {
+            // [MODIFIKASI] Panggil method dari SkorAltRepository
+            if (data_get($skor, 'kriteria.kriteria_nama') === 'Skala_Kerusakan') {
+                $skalaKerusakanLabel = $this->skorAltRepository->getSkorLabel($skor);
+            }
+            if (data_get($skor, 'kriteria.kriteria_nama') === 'Frekuensi_Penggunaan') {
+                $frekuensiPenggunaanLabel = $this->skorAltRepository->getSkorLabel($skor);
+            }
+        }
+
+        $statusLaporan = $laporan->statusPelaporan->sortByDesc('created_at')->first()->status_pelaporan ?? 'Menunggu';
+
+        $dataPerbaikan = null;
+        if ($laporan->perbaikan) {
+            $statusPerbaikanTerakhir = $laporan->perbaikan->statusPerbaikan->sortByDesc('created_at')->first();
+            $dataPerbaikan = [
+                'kode' => $laporan->perbaikan->perbaikan_kode,
+                'teknisi' => data_get($laporan, 'perbaikan.perbaikanPetugas.0.user.nama', 'Belum Ditugaskan'),
+                'tanggalMulai' => $laporan->perbaikan->created_at->format('d F Y'),
+                'status' => $statusPerbaikanTerakhir?->perbaikan_status ?? 'Menunggu',
+                'catatan' => $laporan->perbaikan->perbaikan_deskripsi ?: 'Tidak ada catatan'
+            ];
+        }
+
+        $gambarData = [
+            'Gambar Laporan' => collect(json_decode($laporan->pelaporan_gambar, true) ?? [])
+                ->map(fn($path) => Storage::url($path))
+                ->values(),
+
+            'Gambar Perbaikan' => $laporan->perbaikan?->statusPerbaikan
+                    ->where('perbaikan_status', 'Diproses')
+                    ->pluck('perbaikan_gambar')
+                    ->filter()
+                    ->map(fn($path) => Storage::url($path))
+                    ->values() ?? collect(),
+
+            'Gambar Selesai' => $laporan->perbaikan?->statusPerbaikan
+                    ->where('perbaikan_status', 'Selesai')
+                    ->pluck('perbaikan_gambar')
+                    ->filter()
+                    ->map(fn($path) => Storage::url($path))
+                    ->values() ?? collect(),
+        ];
+
+        $detailData = [
+            'id' => $laporan->pelaporan_id,
+            'kode' => $laporan->pelaporan_kode,
+            'fasilitas' => $fasilitasLabel,
+            'skalaKerusakan' => $skalaKerusakanLabel,
+            'frekuensiPenggunaan' => $frekuensiPenggunaanLabel,
+            'deskripsi' => $laporan->pelaporan_deskripsi,
+            'tanggal' => $laporan->created_at->format('d F Y'),
+            'status' => $statusLaporan,
+            'perbaikan' => $dataPerbaikan,
+            'gambar' => $gambarData
+        ];
+
+        return view('pages.sarpra.history-laporan.laporan-detail', [
+            'detailData' => $detailData
+        ]);
+    }
+
     public function statistikFasilitas()
     {
         $data = $this->collectStatistikData();
@@ -154,7 +268,7 @@ class SarpraController extends Controller
             'averageResponseDays' => $this->pelaporanRepository->getAverageResponseDays(),
             'total' => $this->pelaporanRepository->getTotalPelaporan(),
             'pending' => $this->pelaporanRepository->countLaporanDenganStatusTerakhir('Menunggu'),
-            'selesai' => $this->pelaporanRepository->countLaporanDenganStatusTerakhir('Diterima'),
+            'selesai' => $this->pelaporanRepository->countLaporanDenganStatusTerakhir('Selesai'),
             'kepuasan' => $this->feedbackRepository->getAverageRating(),
         ];
     }
@@ -316,7 +430,7 @@ class SarpraController extends Controller
                 'item_code' => $detail->item_code ?? null,
                 'subtitle' => $detail->building . ', ' . $detail->floor . ', ' . $detail->room,
                 'reports' => $dataSkor['jumlah_laporan'],
-                'satisfaction' => (float) $dataSkor['rata_rata_rating'],
+                'satisfaction' => (float)$dataSkor['rata_rata_rating'],
                 'interval' => $dataSkor['average_interval_days'],
                 'score' => $skor,
                 'status' => $status,

@@ -21,7 +21,8 @@ class RekomendasiPrioritasPerbaikan extends Component
     public $bobotKriteria = [];
     public $detailSkor = [];
     public $dssResults = [];
-    public $activeTab = 'mahasiswa'; // Default tab
+    public $dssSteps = []; // Add this property for processing steps
+    public $activeTab = 'dosen'; // Default tab
 
     public function showDetail($fasilitasKode)
     {
@@ -123,11 +124,11 @@ class RekomendasiPrioritasPerbaikan extends Component
         // Filter berdasarkan tab yang aktif
         $roleFilter = null;
         switch ($this->activeTab) {
-            case 'dosen':
-                $roleFilter = 5; // role_id untuk dosen
-                break;
             case 'staff':
                 $roleFilter = 4; // role_id untuk staff
+                break;
+            case 'dosen':
+                $roleFilter = 5; // role_id untuk dosen
                 break;
             case 'mahasiswa':
                 $roleFilter = 6; // role_id untuk mahasiswa
@@ -242,6 +243,8 @@ class RekomendasiPrioritasPerbaikan extends Component
 
     protected function processMabac($data, $weights, $roleId)
     {
+        $steps = []; // Store processing steps
+
         // Step 1: Find max and min values for each criterion
         $maxValues = [
             'c1' => max(array_column($data, 'c1')),
@@ -257,6 +260,10 @@ class RekomendasiPrioritasPerbaikan extends Component
             'c4' => min(array_column($data, 'c4'))
         ];
 
+        $steps['original_matrix'] = $data;
+        $steps['max_values'] = $maxValues;
+        $steps['min_values'] = $minValues;
+
         // Step 2: Calculate normalized matrix
         $normalized = [];
         foreach ($data as $facilityCode => $values) {
@@ -267,6 +274,7 @@ class RekomendasiPrioritasPerbaikan extends Component
                 'c4' => $this->normalizeValue($values['c4'], $maxValues['c4'], $minValues['c4'], true) // C4 is cost
             ];
         }
+        $steps['normalized_matrix'] = $normalized;
 
         // Step 3: Calculate weighted matrix V
         $weightedMatrix = [];
@@ -278,6 +286,8 @@ class RekomendasiPrioritasPerbaikan extends Component
                 'c4' => ($weights['C4'] * $values['c4']) + $weights['C4']
             ];
         }
+        $steps['weighted_matrix'] = $weightedMatrix;
+        $steps['weights'] = $weights;
 
         // Step 4: Calculate border approximation area G
         $g = [];
@@ -288,6 +298,7 @@ class RekomendasiPrioritasPerbaikan extends Component
             }
             $g[$criterion] = pow($product, 1/count($weightedMatrix));
         }
+        $steps['border_approximation'] = $g;
 
         // Step 5: Calculate distance matrix Q
         $distanceMatrix = [];
@@ -299,6 +310,7 @@ class RekomendasiPrioritasPerbaikan extends Component
                 'c4' => $values['c4'] - $g['c4']
             ];
         }
+        $steps['distance_matrix'] = $distanceMatrix;
 
         // Step 6: Calculate final scores and ranking
         $scores = [];
@@ -316,12 +328,15 @@ class RekomendasiPrioritasPerbaikan extends Component
 
         return [
             'scores' => $scores,
-            'ranking' => $ranking
+            'ranking' => $ranking,
+            'steps' => $steps
         ];
     }
 
     protected function processEdas($data, $weights)
     {
+        $steps = []; // Store processing steps
+
         // Step 1: Calculate average of each criterion
         $avgValues = [
             'c1' => array_sum(array_column($data, 'c1')) / count($data),
@@ -329,6 +344,10 @@ class RekomendasiPrioritasPerbaikan extends Component
             'c3' => array_sum(array_column($data, 'c3')) / count($data),
             'c4' => array_sum(array_column($data, 'c4')) / count($data)
         ];
+
+        $steps['original_matrix'] = $data;
+        $steps['average_values'] = $avgValues;
+        $steps['weights'] = $weights;
 
         // Step 2 & 3: Calculate PDA and NDA
         $pda = [];
@@ -351,6 +370,9 @@ class RekomendasiPrioritasPerbaikan extends Component
             ];
         }
 
+        $steps['pda_matrix'] = $pda;
+        $steps['nda_matrix'] = $nda;
+
         // Step 5 & 6: Calculate SP and SN
         $sp = [];
         $sn = [];
@@ -368,9 +390,15 @@ class RekomendasiPrioritasPerbaikan extends Component
                 $nda[$facilityCode]['c4'] * $weights['C4'];
         }
 
+        $steps['sp_values'] = $sp;
+        $steps['sn_values'] = $sn;
+
         // Step 7 & 8: Calculate NSP and NSN
         $maxSp = max($sp);
         $maxSn = max($sn);
+
+        $steps['max_sp'] = $maxSp;
+        $steps['max_sn'] = $maxSn;
 
         $nsp = [];
         $nsn = [];
@@ -378,6 +406,9 @@ class RekomendasiPrioritasPerbaikan extends Component
             $nsp[$facilityCode] = $value / $maxSp;
             $nsn[$facilityCode] = 1 - ($sn[$facilityCode] / $maxSn);
         }
+
+        $steps['nsp_values'] = $nsp;
+        $steps['nsn_values'] = $nsn;
 
         // Step 9: Calculate final scores and ranking
         $scores = [];
@@ -395,7 +426,8 @@ class RekomendasiPrioritasPerbaikan extends Component
 
         return [
             'scores' => $scores,
-            'ranking' => $ranking
+            'ranking' => $ranking,
+            'steps' => $steps
         ];
     }
 
@@ -439,6 +471,13 @@ class RekomendasiPrioritasPerbaikan extends Component
             'dosen' => $mabacDsnResult,
             'staff' => $edasStfResult,
             'final' => $finalResult
+        ];
+
+        // Store processing steps
+        $this->dssSteps = [
+            'mahasiswa' => $mabacMhsResult['steps'],
+            'dosen' => $mabacDsnResult['steps'],
+            'staff' => $edasStfResult['steps']
         ];
 
         // Generate GDSS code based on current timestamp

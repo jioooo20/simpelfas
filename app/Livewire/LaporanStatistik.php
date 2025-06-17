@@ -8,16 +8,26 @@ use App\Models\PelaporanModel;
 use App\Models\FasilitasModel;
 use App\Models\UserModel;
 use App\Models\StatusPelaporanModel;
-use Illuminate\Support\Facades\DB;
 
 class LaporanStatistik extends Component
 {
     use WithPagination;
     public $search = '';
+    public $tahun;
+
+    public function mount()
+    {
+        $this->tahun = date('Y');
+    }
+
     public function updatingSearch(){
         $this->resetPage();
     }
 
+    public function updatedTahun()
+    {
+        $this->resetPage();
+    }
 
    public function render()
 {
@@ -27,6 +37,11 @@ class LaporanStatistik extends Component
                 'user',
                 'statusPelaporan' => function($query) {
                     $query->latest()->limit(1);
+                },
+                'skorAlternatif' => function($query) {
+                $query->with(['kriteria' => function($q) {
+                    $q->whereIn('kriteria_nama', ['Skala Kerusakan', 'Frekuensi Penggunaan']);
+                    }]);
                 },
                 'skorAlternatif',
                 'feedback' => function($query) {
@@ -42,6 +57,9 @@ class LaporanStatistik extends Component
                 ->orWhereHas('fasilitas.barang', function ($q) {
                     $q->where('barang_nama', 'like', '%' . $this->search . '%');
                 });
+            })
+            ->when($this->tahun, function ($query) {
+                $query->whereYear('created_at', $this->tahun);
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);

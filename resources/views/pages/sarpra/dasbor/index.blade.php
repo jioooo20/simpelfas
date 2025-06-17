@@ -3,7 +3,7 @@
 @section('judul', 'Dasbor Sarana Prasarana')
 @section('content')
     <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div class="container mx-auto px-4 py-6">
+        <div class="container mx-auto px-4 py-3 1/2">
 
             <!-- Enhanced Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
