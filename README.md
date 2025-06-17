@@ -12,18 +12,19 @@ Sistem ini bertujuan untuk:
 1. Memudahkan mahasiswa, dosen, dan staf dalam melaporkan kerusakan fasilitas.
 2. Membantu tim pengelola fasilitas dalam melacak, memprioritaskan, dan menangani permintaan perbaikan.
 3. Mengotomatisasi dokumentasi dan menyediakan basis data terpusat untuk catatan perbaikan.
-4. Menerapkan Sistem Pendukung Keputusan (DSS) untuk merekomendasikan perbaikan mendesak berdasarkan prioritas dan dampak.
+4. Menerapkan Sistem Pendukung Keputusan (DSS) untuk merekomendasikan perbaikan mendesak berdasarkan prioritas.
 
 ## Fitur
 
 ### Admin
+- **Dasbor**: Tinjauan singkat terkait data dan statistik pelaporan.
+- **Manajemen Akun & Profil**: Masuk dan memperbarui profil pengguna.
 - **Manajemen Pengguna**: Menambah, mengedit, atau menghapus akun pengguna (mahasiswa, dosen, tendik, admin).
-- **Manajemen Data Fasilitas**: Mengelola daftar fasilitas kampus seperti laboratorium, AC, proyektor, PC, dan jaringan.
 - **Manajemen Data Gedung**: Mengelola informasi gedung tempat fasilitas berada, seperti Gedung Teknik Sipil atau Parkir Utama.
+- **Manajemen Data Fasilitas**: Mengelola daftar fasilitas kampus pada setiap ruangan seperti laboratorium, AC, proyektor, PC, dan jaringan.
+- **Manajemen Data Barang**: Mengelola daftar barang kampus seperti laboratorium, AC, proyektor, PC, dan jaringan.
 - **Pengelolaan Laporan Kerusakan**: Melihat dan memantau status laporan kerusakan.
-- **Manajemen Prioritas Perbaikan**: Mengatur data prioritas perbaikan fasilitas.
-- **Laporan dan Statistik**: Menghasilkan laporan periodik tentang status perbaikan dan analisis tren kerusakan.
-- **Manajemen Periode**: Mengelola daftar periode pelaporan tahunan.
+- **Laporan dan Statistik Sistem**: Menghasilkan laporan periodik tentang status perbaikan dan analisis tren kerusakan.
 
 ### Mahasiswa, Dosen, Tendik
 - **Manajemen Akun & Profil**: Masuk dan memperbarui profil pengguna.
@@ -32,15 +33,18 @@ Sistem ini bertujuan untuk:
 - **Umpan Balik**: Memberikan rating dan umpan balik tentang kepuasan terhadap hasil perbaikan.
 
 ### Sarana dan Prasarana
-- **Penentuan Prioritas**: Mengelola masukan tentang prioritas perbaikan berdasarkan dampak akademik.
-- **Pengelolaan Laporan**: Menerima, memverifikasi, dan mengkategorikan laporan kerusakan.
-- **Rekomendasi Perbaikan**: Menentukan prioritas perbaikan berdasarkan rekomendasi sistem yang dihasilkan oleh DSS (Decision Support System).
-- **Penugasan Teknisi**: Mengalokasikan tugas perbaikan kepada teknisi dan memantau progres.
-- **Analisis Statistik**: Mengelola statistik kerusakan dan kepuasan pengguna untuk perencanaan jangka panjang.
+- **Dasbor**: Tinjauan singkat terkait data dan statistik fasilitas dan laporan.
+- **Manajemen Akun & Profil**: Masuk dan memperbarui profil pengguna.
+- **Pengelolaan Laporan Kerusakan Fasilitas**: Menerima, memverifikasi, dan mengkategorikan laporan kerusakan.
+- **Rekomendasi Prioritas Perbaikan**: Menentukan prioritas perbaikan berdasarkan rekomendasi sistem yang dihasilkan oleh DSS (Decision Support System).
+- **Analisis Statistik Fasilitas**: Mengelola statistik kerusakan dan kepuasan pengguna untuk perencanaan jangka panjang.
+- **Penugasan Perbaikan**: Mengalokasikan tugas perbaikan kepada teknisi dan memantau progres.
+- **Riwayat Laporan**: Meninjau kembali detail laporan yang telah selesai
 
 ### Teknisi
+- **Manajemen Akun & Profil**: Masuk dan memperbarui profil pengguna.
 - **Laporan Perbaikan**: Menerima dan mengelola tugas perbaikan fasilitas.
-- **Riwayat Perbaikan**: Melihat riwayat laporan perbaikan yang telah dilakukan.
+- **Riwayat Perbaikan**: Melihat riwayat laporan perbaikan yang telah diselesaikan.
 
 ## Teknologi yang Digunakan
 
@@ -53,11 +57,11 @@ Sistem ini bertujuan untuk:
 ## Prasyarat
 
 Untuk menjalankan proyek ini secara lokal, pastikan Anda memiliki:
-- PHP >= 8.0
+- PHP v8.2.27
+- Node v22.11.0
 - Composer
 - MySQL/MariaDB
-- Node.js dan NPM (untuk mengelola aset frontend)
-- Server web (misalnya, Apache atau Nginx)
+- NPM v10.9.1++ (untuk mengelola aset frontend)
 
 ## Petunjuk Program
 
@@ -92,15 +96,20 @@ Untuk menjalankan proyek ini secara lokal, pastikan Anda memiliki:
    ```bash
    php artisan key:generate
    ```
-
-5. **Migrasi Database**
+   
+5.**Inisiasi Storage**
    ```bash
-   php artisan migrate
+   php artisan storage:link
    ```
 
-6. **Kompilasi Aset Frontend dan Backend Bersamaan**
+6. **Migrasi Database**
    ```bash
-   npm run app
+   php artisan migrate:fresh --seed
+   ```
+   
+7. **Kompilasi Aset Frontend dan Backend Bersamaan**
+   ```bash
+   npm run app #php artisan serve & npm run dev menjadi 1 perintah
    ```
    Akses aplikasi di `http://localhost:8000`.
 
