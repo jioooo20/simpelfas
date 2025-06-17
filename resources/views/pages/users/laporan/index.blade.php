@@ -447,7 +447,7 @@
         function createOptionItem(loc, index) {
             const li = document.createElement('li');
             const statusCode = loc.statusCode || '';
-            const isSelectable = !(statusCode === 'RUSAK' || statusCode === 'DALAM PERBAIKAN');
+            const isSelectable = !(statusCode === 'DALAM PERBAIKAN');
 
             let liClasses = 'px-4 py-2 transition-colors flex justify-between items-center';
             li.dataset.originalIndex = index;
@@ -487,7 +487,7 @@
             if (!option) return false;
 
             const statusCode = option.statusCode || '';
-            return !(statusCode === 'RUSAK' || statusCode === 'DALAM PERBAIKAN');
+            return !(statusCode === 'DALAM PERBAIKAN');
         }
 
         function selectOption(index) {
@@ -495,7 +495,7 @@
 
             const selected = currentOptions[index];
             const statusCode = selected.statusCode || '';
-            const isSelectable = !(statusCode === 'RUSAK' || statusCode === 'DALAM PERBAIKAN');
+            const isSelectable = !(statusCode === 'DALAM PERBAIKAN');
 
             if (!isSelectable) return;
 

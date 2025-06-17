@@ -95,30 +95,23 @@ class UsersController extends Controller
         $laporan = $this->pelaporanRepo->getLaporanDetailById($id);
         $latestStatus = $laporan->statusPelaporan->first();
         $skor = $this->pelaporanRepo->getSkorKriteriaByPelaporanId($laporan->pelaporan_id);
-
-        // Gunakan collection untuk mengambil semua gambar dengan cara yang lebih bersih
         $allStatusPerbaikan = $laporan->perbaikan?->statusPerbaikan ?? collect();
 
-        // [PERBAIKAN] Mengambil path gambar sebagai string tunggal, bukan JSON
-        // 1. Ambil semua gambar 'Diproses'
         $gambarPerbaikan = $allStatusPerbaikan
             ->where('perbaikan_status', 'Diproses')
-            ->pluck('perbaikan_gambar') // Langsung ambil nilai dari kolom 'perbaikan_gambar'
-            ->filter()                  // Hapus item yang null atau kosong dari koleksi
+            ->pluck('perbaikan_gambar')
+            ->filter()
             ->values()
             ->all();
 
-        // 2. Ambil semua gambar 'Selesai'
         $gambarSelesai = $allStatusPerbaikan
             ->where('perbaikan_status', 'Selesai')
-            ->pluck('perbaikan_gambar') // Langsung ambil nilai dari kolom 'perbaikan_gambar'
-            ->filter()                  // Hapus item yang null atau kosong
+            ->pluck('perbaikan_gambar')
+            ->filter()
             ->values()
             ->all();
 
-        // Susun array gambar final
         $gambar = [
-            // Untuk Gambar Laporan, kita tetap pakai json_decode karena datanya memang array
             'Gambar Laporan' => json_decode($laporan->pelaporan_gambar ?? '[]', true),
             'Gambar Perbaikan' => $gambarPerbaikan,
             'Gambar Selesai' => $gambarSelesai,
@@ -206,44 +199,46 @@ class UsersController extends Controller
         return null;
     }
 
-    public function UmpanBalik() {
+    public function UmpanBalik()
+    {
         $userId = auth()->id();
-        
+
 
         $perbaikan = PelaporanModel::with([
-            'fasilitas', 
+            'fasilitas',
             'statusPelaporan' => function ($query) {
                 $query->orderBy('created_at');
             },
             'feedback'
         ])->where('user_id', $userId)->get();
-        
+
 
         $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
-        
-        // inii filter
+
         $perbaikan = $perbaikan->filter(function ($item) {
-        $sortedStatus = $item->statusPelaporan->sortBy('created_at');
-        $latestStatus = $sortedStatus->last();
-        return $latestStatus && $latestStatus->status_pelaporan === 'Selesai';
-    });
-        
+            $sortedStatus = $item->statusPelaporan->sortBy('created_at');
+            $latestStatus = $sortedStatus->last();
+            return $latestStatus && $latestStatus->status_pelaporan === 'Selesai';
+        });
+
         $perbaikan->transform(function ($item) use ($fasilitasOptions) {
             $item['fasilitas_label'] = $fasilitasOptions[$item->fasilitas_id]['label'] ?? null;
             $item['has_feedback'] = $item->feedback()->exists();
             return $item;
         });
-        
+
         return view('pages.users.feedback.index', compact('perbaikan'));
     }
 
-    public function showDetail($perbaikan_id) {
+    public function showDetail($perbaikan_id)
+    {
         $feedback = FeedbackModel::with('pelaporan')
             ->where('pelaporan_id', $perbaikan_id)
             ->firstOrFail();
-        
+
         return view('pages.users.feedback.detail', compact('feedback'));
     }
+
     public function UmpanBalik_Create($perbaikan_id)
     {
         $laporan = PelaporanModel::with([
@@ -256,7 +251,6 @@ class UsersController extends Controller
         $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
         $laporan->fasilitas_label = $fasilitasOptions[$laporan->fasilitas_id]['label'] ?? null;
 
-        // Ambil foto teknisi dari status perbaikan
         $fotoTeknisi = [];
         if ($laporan->perbaikan && $laporan->perbaikan->statusPerbaikan) {
             $fotoTeknisi = json_decode($laporan->perbaikan->statusPerbaikan->perbaikan_gambar, true) ?? [];
@@ -270,7 +264,6 @@ class UsersController extends Controller
 
     public function storeFeedback(Request $request)
     {
-        // Validasi input
         $validated = $request->validate([
             'report_id' => 'required|exists:m_pelaporan,pelaporan_id',
             'rating' => 'required|integer|between:1,5',
@@ -278,31 +271,26 @@ class UsersController extends Controller
         ]);
 
         try {
-            // Cek apakah feedback untuk laporan ini sudah ada
             $existingFeedback = FeedbackModel::where('pelaporan_id', $validated['report_id'])->first();
 
             if ($existingFeedback) {
-                // Jika request AJAX, return JSON response
                 if ($request->ajax() || $request->wantsJson()) {
                     return response()->json([
                         'message' => 'Anda sudah memberikan umpan balik untuk laporan ini sebelumnya.'
-                    ], 409); // 409 Conflict status code
+                    ], 409);
                 }
 
-                // Jika bukan AJAX, return redirect seperti biasa
                 return redirect()->back()
                     ->with('error', 'Anda sudah memberikan umpan balik untuk laporan ini sebelumnya.')
                     ->withInput();
             }
 
-            // Buat feedback baru
             FeedbackModel::create([
                 'pelaporan_id' => $validated['report_id'],
                 'feedback_text' => $validated['comment'],
                 'rating' => $validated['rating'],
             ]);
 
-            // Jika request AJAX, return JSON response
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'message' => 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.',
@@ -310,7 +298,6 @@ class UsersController extends Controller
                 ], 200);
             }
 
-            // Jika bukan AJAX, return redirect seperti biasa
             return redirect()->route('users.feedback')
                 ->with('success', 'Umpan balik berhasil dikirim! Terima kasih atas masukan Anda.');
         } catch (ValidationException $e) {
@@ -319,20 +306,18 @@ class UsersController extends Controller
                 return response()->json([
                     'message' => 'Data yang dikirim tidak valid.',
                     'errors' => $e->validator->errors()
-                ], 422); // 422 Unprocessable Entity
+                ], 422);
             }
 
-            // Jika bukan AJAX, throw exception seperti biasa
             throw $e;
         } catch (Exception $e) {
             // Handle general errors
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'message' => 'Terjadi kesalahan saat mengirim umpan balik: ' . $e->getMessage()
-                ], 500); // 500 Internal Server Error
+                ], 500);
             }
 
-            // Jika bukan AJAX, return redirect seperti biasa
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan saat mengirim umpan balik: ' . $e->getMessage())
                 ->withInput();

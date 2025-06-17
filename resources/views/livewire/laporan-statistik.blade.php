@@ -63,7 +63,7 @@
         </div>
         {{-- Filter Periode --}}
         @php
-            $years = range(date('Y'), 2020);
+            $years = range(date('Y'), 2024);
         @endphp
         <div class="flex items-center gap-2 mb-4">
             <label for="tahun" class="font-semibold">Tahun:</label>
