@@ -37,7 +37,7 @@ class PelaporanModel extends Model
 
     public function statusPelaporan(): HasMany
     {
-        return $this->hasMany(StatusPelaporanModel::class, 'pelaporan_id', 'pelaporan_id');
+        return $this->hasMany(StatusPelaporanModel::class, 'pelaporan_id', 'pelaporan_id')->orderBy('created_at');
     }
 
     public function skorAlternatif()

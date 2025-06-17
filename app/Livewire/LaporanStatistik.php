@@ -8,7 +8,6 @@ use App\Models\PelaporanModel;
 use App\Models\FasilitasModel;
 use App\Models\UserModel;
 use App\Models\StatusPelaporanModel;
-use Illuminate\Support\Facades\DB;
 
 class LaporanStatistik extends Component
 {
@@ -38,6 +37,11 @@ class LaporanStatistik extends Component
                 'user',
                 'statusPelaporan' => function($query) {
                     $query->latest()->limit(1);
+                },
+                'skorAlternatif' => function($query) {
+                $query->with(['kriteria' => function($q) {
+                    $q->whereIn('kriteria_nama', ['Skala Kerusakan', 'Frekuensi Penggunaan']);
+                    }]);
                 },
                 'skorAlternatif',
                 'feedback' => function($query) {

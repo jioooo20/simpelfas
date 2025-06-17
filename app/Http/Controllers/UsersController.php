@@ -206,24 +206,44 @@ class UsersController extends Controller
         return null;
     }
 
-    public function UmpanBalik()
-    {
+    public function UmpanBalik() {
         $userId = auth()->id();
+        
 
-        $perbaikan = PelaporanModel::with(['fasilitas', 'statusPelaporan' => function ($query) {
-            $query->orderBy('created_at');
-        }])->where('user_id', $userId)->get();
+        $perbaikan = PelaporanModel::with([
+            'fasilitas', 
+            'statusPelaporan' => function ($query) {
+                $query->orderBy('created_at');
+            },
+            'feedback'
+        ])->where('user_id', $userId)->get();
+        
 
         $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
-
+        
+        // inii filter
+        $perbaikan = $perbaikan->filter(function ($item) {
+        $sortedStatus = $item->statusPelaporan->sortBy('created_at');
+        $latestStatus = $sortedStatus->last();
+        return $latestStatus && $latestStatus->status_pelaporan === 'Selesai';
+    });
+        
         $perbaikan->transform(function ($item) use ($fasilitasOptions) {
             $item['fasilitas_label'] = $fasilitasOptions[$item->fasilitas_id]['label'] ?? null;
+            $item['has_feedback'] = $item->feedback()->exists();
             return $item;
         });
-
+        
         return view('pages.users.feedback.index', compact('perbaikan'));
     }
 
+    public function showDetail($perbaikan_id) {
+        $feedback = FeedbackModel::with('pelaporan')
+            ->where('pelaporan_id', $perbaikan_id)
+            ->firstOrFail();
+        
+        return view('pages.users.feedback.detail', compact('feedback'));
+    }
     public function UmpanBalik_Create($perbaikan_id)
     {
         $laporan = PelaporanModel::with([
