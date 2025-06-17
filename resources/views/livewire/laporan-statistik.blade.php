@@ -64,73 +64,86 @@
     <div class="overflow-x-auto">
         <table class="table table-zebra w-full relative" id="laporan-table">
             <thead>
-                <tr class="bg-base-200">
-                    <th class="flex gap-2 justify-center">ID</th>
-                    <th>Judul Laporan</th>
+                <tr>
                     <th>Pelapor</th>
-                    
-                    <th>Status</th>
+                    <th>Laporan</th>
+                    <th>Skala Kerusakan</th>
+                    <th>Frekuensi</th>
                     <th>Tanggal</th>
-                    <th class="flex gap-2 justify-center">Aksi</th>
+                    <th>Status</th>
+                    <th>Rating</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($table as $laporan)
-                    <tr class="hover">
-                        <td class="flex gap-2 justify-center">{{ $laporan->id ?? $laporan->pelaporan_id }}</td>
+                    @php
+                        $status = $laporan->statusPelaporan->first()->status_pelaporan ?? 'Menunggu';
+                        $statusClass = match ($status) {
+                            'Selesai' => 'badge-success',
+                            'Diproses' => 'badge-warning',
+                            'Diterima' => 'badge-primary',
+                            'Menunggu' => 'badge-info',
+                            default => 'badge-neutral',
+                        };
+                        $skala = $laporan->skorAlternatif->first(function ($item) {
+                            return optional($item->kriteria)->kriteria_nama === 'Skala Kerusakan';
+                        });
+
+                        $frekuensi = $laporan->skorAlternatif->first(function ($item) {
+                            return optional($item->kriteria)->kriteria_nama === 'Frekuensi Penggunaan';
+                        });
+                        $skala = $laporan->skorAlternatif->where('kriteria_id', 2)->first();
+                        $frekuensi = $laporan->skorAlternatif->where('kriteria_id', 3)->first();
+
+                        $rating = $laporan->feedback->rating ?? null;
+                    @endphp
+                    <tr>
+                        <td>{{ $laporan->user->nama ?? '-' }}</td>
+                        <td>{{ $laporan->pelaporan_kode ?? '-' }}</td>
                         <td>
-                            <div class="font-medium">
-                                {{ Str::limit($laporan->judul_laporan ?? 'Tidak ada judul', 30) }}
-                            </div>
-                            <div class="text-sm text-gray-500">
-                                {{ Str::limit($laporan->deskripsi_laporan ?? 'Tidak ada deskripsi', 50) }}
-                            </div>
+                            @if ($skala)
+                                {{ match ((int) $skala->nilai_skor) {
+                                    1 => 'Ringan',
+                                    2 => 'Sedang',
+                                    3 => 'Berat',
+                                    default => 'Nilai: ' . $skala->nilai_skor,
+                                } }}
+                            @else
+                                -
+                            @endif
                         </td>
                         <td>
-                            <div class="flex items-center gap-2">
-                                <img class="h-8 w-8 rounded-full"
-                                    src="https://ui-avatars.com/api/?name={{ urlencode($laporan->user->nama ?? 'Unknown') }}&background=4338ca&color=fff"
-                                    alt="{{ $laporan->user->nama ?? 'Unknown' }}" loading="lazy">
-                                <div>
-                                    <div class="font-medium">{{ $laporan->user->nama ?? 'Tidak diketahui' }}</div>
-                                    <div class="text-sm text-gray-500">{{ $laporan->user->email ?? 'Email tidak tersedia' }}</div>
+                            @if ($frekuensi)
+                                {{ match ((int) $frekuensi->nilai_skor) {
+                                    1 => 'Jarang',
+                                    2 => 'Sedang',
+                                    3 => 'Sering',
+                                    default => 'Nilai: ' . $frekuensi->nilai_skor,
+                                } }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td>{{ $laporan->created_at->format('d M Y') }}</td>
+                        <td>
+                            <span class="badge {{ $statusClass }}">
+                                {{ ucfirst(str_replace('_', ' ', $status)) }}
+                            </span>
+                        </td>
+                        <td>
+
+                            @if ($laporan->feedback && $laporan->feedback->rating !== null)
+                                <div class="rating rating-sm">
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        <input type="radio" name="rating-{{ $laporan->pelaporan_id }}"
+                                            class="mask mask-star-2 bg-orange-400"
+                                            {{ $i <= $laporan->feedback->rating ? 'checked' : '' }} disabled />
+                                    @endfor
+                                    <span class="ml-2 text-sm">({{ $laporan->feedback->rating }}/5)</span>
                                 </div>
-                            </div>
-                        </td>
-                        
-                        <td>
-                            @php
-                                $latestStatus = $laporan->statusPelaporan->sortByDesc('created_at')->first();
-                                $statusClass = match($latestStatus->nama ?? 'pending') {
-                                    'selesai', 'completed' => 'badge-success',
-                                    'dalam_proses', 'in_progress' => 'badge-warning',
-                                    'pending' => 'badge-info',
-                                    'ditolak', 'rejected' => 'badge-error',
-                                    default => 'badge-ghost'
-                                };
-                            @endphp
-                            <div class="badge {{ $statusClass }}">
-                                {{ $latestStatus->nama ?? 'Pending' }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="text-sm">
-                                {{ $laporan->created_at ? $laporan->created_at->format('d M Y') : 'Tidak diketahui' }}
-                            </div>
-                            <div class="text-xs text-gray-500">
-                                {{ $laporan->created_at ? $laporan->created_at->format('H:i') : '' }}
-                            </div>
-                        </td>
-                        <td class="flex gap-2 justify-center">
-                            <a href="#" class="text-blue-400 hover:text-blue-800" title="Lihat Detail">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="#" class="text-indigo-400 hover:text-indigo-800" title="Edit">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                            <a href="#" class="text-red-500 hover:text-red-700" title="Hapus">
-                                <i class="bi bi-trash"></i>
-                            </a>
+                            @else
+                                <span class="text-gray-500">Belum ada rating</span>
+                            @endif
                         </td>
                     </tr>
                 @endforeach
@@ -141,11 +154,12 @@
     {{-- Pagination --}}
     <div class="flex items-center justify-between mt-6">
         <div class="text-sm text-gray-500">
-            Menampilkan {{ $table->firstItem() ?? 0 }} - {{ $table->lastItem() ?? 0 }} dari {{ $table->total() }} hasil
+            Menampilkan {{ $table->firstItem() ?? 0 }} - {{ $table->lastItem() ?? 0 }} dari {{ $table->total() }}
+            hasil
         </div>
         <div class="join">
             {{-- Previous Page Link --}}
-            @if($table->onFirstPage())
+            @if ($table->onFirstPage())
                 <button class="join-item btn btn-sm" disabled>«</button>
             @else
                 <button class="join-item btn btn-sm" wire:click="previousPage">«</button>
@@ -163,13 +177,13 @@
 
             @for ($page = $startPage; $page <= $endPage; $page++)
                 <button class="join-item btn btn-sm {{ $table->currentPage() == $page ? 'btn-active' : '' }}"
-                        wire:click="gotoPage({{ $page }})">
+                    wire:click="gotoPage({{ $page }})">
                     {{ $page }}
                 </button>
             @endfor
 
             {{-- Next Page Link --}}
-            @if($table->hasMorePages())
+            @if ($table->hasMorePages())
                 <button class="join-item btn btn-sm" wire:click="nextPage">»</button>
             @else
                 <button class="join-item btn btn-sm" disabled>»</button>

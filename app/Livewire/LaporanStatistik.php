@@ -26,6 +26,11 @@ class LaporanStatistik extends Component
                 'statusPelaporan' => function($query) {
                     $query->latest()->limit(1);
                 },
+                'skorAlternatif' => function($query) {
+                $query->with(['kriteria' => function($q) {
+                    $q->whereIn('kriteria_nama', ['Skala Kerusakan', 'Frekuensi Penggunaan']);
+                    }]);
+                },
                 'skorAlternatif',
                 'feedback' => function($query) {
                     $query->select('pelaporan_id', 'rating');
