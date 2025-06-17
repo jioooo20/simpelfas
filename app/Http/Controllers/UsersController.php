@@ -95,20 +95,30 @@ class UsersController extends Controller
         $laporan = $this->pelaporanRepo->getLaporanDetailById($id);
         $latestStatus = $laporan->statusPelaporan->first();
         $skor = $this->pelaporanRepo->getSkorKriteriaByPelaporanId($laporan->pelaporan_id);
-        $gambarPerbaikan = [];
-        $gambarSelesai = [];
-        if ($laporan->perbaikan && $laporan->perbaikan->statusPerbaikan) {
-            foreach ($laporan->perbaikan->statusPerbaikan as $statusPerbaikan) {
-                if ($statusPerbaikan->perbaikan_status === 'Diproses') {
-                    $gambarPerbaikan = json_decode($statusPerbaikan->perbaikan_gambar ?? '[]', true);
-                } elseif ($statusPerbaikan->perbaikan_status === 'Selesai') {
-                    $gambarSelesai = json_decode($statusPerbaikan->perbaikan_gambar ?? '[]', true);
-                }
-            }
-        }
+
+        // Gunakan collection untuk mengambil semua gambar dengan cara yang lebih bersih
+        $allStatusPerbaikan = $laporan->perbaikan?->statusPerbaikan ?? collect();
+
+        // [PERBAIKAN] Mengambil path gambar sebagai string tunggal, bukan JSON
+        // 1. Ambil semua gambar 'Diproses'
+        $gambarPerbaikan = $allStatusPerbaikan
+            ->where('perbaikan_status', 'Diproses')
+            ->pluck('perbaikan_gambar') // Langsung ambil nilai dari kolom 'perbaikan_gambar'
+            ->filter()                  // Hapus item yang null atau kosong dari koleksi
+            ->values()
+            ->all();
+
+        // 2. Ambil semua gambar 'Selesai'
+        $gambarSelesai = $allStatusPerbaikan
+            ->where('perbaikan_status', 'Selesai')
+            ->pluck('perbaikan_gambar') // Langsung ambil nilai dari kolom 'perbaikan_gambar'
+            ->filter()                  // Hapus item yang null atau kosong
+            ->values()
+            ->all();
 
         // Susun array gambar final
         $gambar = [
+            // Untuk Gambar Laporan, kita tetap pakai json_decode karena datanya memang array
             'Gambar Laporan' => json_decode($laporan->pelaporan_gambar ?? '[]', true),
             'Gambar Perbaikan' => $gambarPerbaikan,
             'Gambar Selesai' => $gambarSelesai,

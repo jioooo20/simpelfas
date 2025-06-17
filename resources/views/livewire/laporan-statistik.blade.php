@@ -49,14 +49,29 @@
         </script>
     @endpush
 
-    {{-- search --}}
-    <div class="flex justify-between items-center mb-4">
-        <div class="relative w-full">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <i class="bi bi-search text-gray-400"></i>
+    <div>
+        <div class="flex justify-between gap-4 ">
+        {{-- search --}}
+        <div class="flex justify-between w-full items-center mb-4">
+            <div class="relative w-full">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <i class="bi bi-search text-gray-400"></i>
+                </div>
+                <input wire:model.live="search" type="text" class="input input-bordered w-full pl-10"
+                    placeholder="Cari berdasarkan nama pelapor, laporan, nama barang, atau status..." />
             </div>
-            <input wire:model.live="search" type="text" class="input input-bordered w-full pl-10"
-                placeholder="Cari berdasarkan nama pelapor, judul laporan, atau fasilitas..." />
+        </div>
+        {{-- Filter Periode --}}
+        @php
+            $years = range(date('Y'), 2020);
+        @endphp
+        <div class="flex items-center gap-2 mb-4">
+            <label for="tahun" class="font-semibold">Tahun:</label>
+            <select wire:model.live="tahun" id="tahun" class="select select-bordered">
+                @foreach ($years as $year)
+                    <option value="{{ $year }}">{{ $year }}</option>
+                @endforeach
+            </select>
         </div>
     </div>
 

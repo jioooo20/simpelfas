@@ -73,22 +73,8 @@
         </script>
 
         {{-- Filter Periode --}}
-        <form method="GET" action="{{ route('laporan.index') }}" class="flex flex-wrap gap-2 items-end mb-4">
-            <div>
-                <label for="start_date" class="block text-sm">Dari</label>
-                <input type="date" name="start_date" id="start_date"
-                    value="{{ request('start_date') ?? now()->startOfMonth()->toDateString() }}"
-                    class="input input-bordered">
-            </div>
-            <div>
-                <label for="end_date" class="block text-sm">Sampai</label>
-                <input type="date" name="end_date" id="end_date"
-                    value="{{ request('end_date') ?? now()->endOfMonth()->toDateString() }}" class="input input-bordered">
-            </div>
-            <div>
-                <button type="submit" class="btn btn-primary">Terapkan</button>
-            </div>
-        </form>
+
+
 
         {{-- Card Ringkasan --}}
         <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">

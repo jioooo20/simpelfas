@@ -190,26 +190,10 @@ class PelaporanRepository
     public function countTodayPendingReports(): int
     {
         $totalPendingToday = DB::table('m_pelaporan as p')
-            ->joinSub(
-                DB::table('t_status_pelaporan as sp')
-                    ->joinSub(
-                        DB::table('t_status_pelaporan')
-                            ->select('pelaporan_id', DB::raw('MAX(created_at) as latest_status_time'))
-                            ->groupBy('pelaporan_id'),
-                        'latest_status',
-                        function ($join) {
-                            $join->on('sp.pelaporan_id', '=', 'latest_status.pelaporan_id')
-                                ->on('sp.created_at', '=', 'latest_status.latest_status_time');
-                        }
-                    )
-                    ->where('sp.status_pelaporan', 'Menunggu')
-                    ->select('sp.pelaporan_id'),
-                'filtered_latest_status',
-                'filtered_latest_status.pelaporan_id',
-                '=',
-                'p.pelaporan_id'
-            )
-            ->whereDate('p.created_at', now()->toDateString())
+            ->join('t_status_pelaporan as sp', 'p.pelaporan_id', '=', 'sp.pelaporan_id')
+            ->whereDate('p.created_at', today())
+            ->where('sp.status_pelaporan', 'Menunggu')
+            ->whereDate('sp.created_at', today())
             ->distinct('p.pelaporan_id')
             ->count('p.pelaporan_id');
 
@@ -271,8 +255,6 @@ class PelaporanRepository
 
     public function getStatistikIntervalPerFasilitas(): Collection
     {
-        // Langkah 1: Subquery untuk mendapatkan semua laporan yang statusnya 'Selesai',
-        // beserta waktu kapan laporan dibuat dan kapan diselesaikan.
         $laporanSelesai = PelaporanModel::query()
             ->join('t_status_pelaporan as s', 'm_pelaporan.pelaporan_id', '=', 's.pelaporan_id')
             ->where('s.status_pelaporan', 'Selesai')
@@ -362,5 +344,50 @@ class PelaporanRepository
         krsort($yearlyData);
 
         return $yearlyData;
+    }
+
+    public function getHistoryLaporan()
+    {
+        // Paginasi bisa ditambahkan di sini jika perlu, ganti ->get() dengan ->paginate(10)
+        return PelaporanModel::with([
+            'user:user_id,nama',
+            'fasilitas.ruang:ruang_id,ruang_nama',
+            'fasilitas.barang:barang_id,barang_nama,barang_kode',
+            'feedback:pelaporan_id,rating'
+        ])
+            ->select('m_pelaporan.*') // Mulai dengan memilih semua kolom dari tabel utama
+            ->addSelect([
+                // Subquery untuk mendapatkan status pelaporan terakhir
+                'latest_status_laporan' => DB::table('t_status_pelaporan as sp')
+                    ->whereColumn('sp.pelaporan_id', 'm_pelaporan.pelaporan_id')
+                    ->orderByDesc('sp.created_at')
+                    ->select('sp.status_pelaporan')
+                    ->limit(1),
+
+                // Subquery untuk mendapatkan status perbaikan terakhir
+                'latest_status_perbaikan' => DB::table('t_status_perbaikan as spb')
+                    ->join('t_perbaikan as pb', 'spb.perbaikan_id', '=', 'pb.perbaikan_id')
+                    ->whereColumn('pb.pelaporan_id', 'm_pelaporan.pelaporan_id')
+                    ->orderByDesc('spb.created_at')
+                    ->select('spb.perbaikan_status')
+                    ->limit(1)
+            ])
+            ->latest() // Urutkan berdasarkan laporan terbaru
+            ->get();
+    }
+
+    public function findDetailById(int $pelaporan_id)
+    {
+        return PelaporanModel::with([
+            'user:user_id,nama', // Untuk nama pelapor
+            'fasilitas.ruang:ruang_id,ruang_nama', // Untuk nama ruang
+            'fasilitas.barang:barang_id,barang_nama,barang_kode', // Untuk nama & kode barang
+            'feedback:pelaporan_id,rating', // Untuk rating
+            'skorAlternatif.kriteria', // Untuk Skala Kerusakan & Frekuensi Penggunaan
+            'statusPelaporan', // Untuk gambar laporan awal
+            'perbaikan.perbaikanPetugas.user:user_id,nama', // Untuk nama teknisi
+            'perbaikan.statusPerbaikan' // Untuk gambar perbaikan & selesai
+        ])
+            ->findOrFail($pelaporan_id); // Gunakan findOrFail untuk otomatis 404 jika tidak ketemu
     }
 }
