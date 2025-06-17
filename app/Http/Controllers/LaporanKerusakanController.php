@@ -17,7 +17,7 @@ class LaporanKerusakanController extends Controller
             }
         ])
         ->orderBy('created_at', 'desc')
-        ->paginate(10);
+        ->paginate(5);
 
         return view('pages.admin.laporan-kerusakan.index', compact('laporanKerusakan'));
     }
