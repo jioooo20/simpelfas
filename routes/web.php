@@ -44,7 +44,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/add', [AdminController::class, 'user_add'])->name('admin.user-add');
             Route::post('/import-user', [AdminController::class, 'import_user'])->name('admin.import-user');
         });
-
+        
         Route::prefix('gedung')->group(function (): void {
             Route::get('/', [AdminController::class, 'gedung'])->name('admin.gedung');
         });
@@ -97,6 +97,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/lokasi-options', [UsersController::class, 'getLokasiOptions'])->name('lokasi-options');
         Route::get('/feedback',[UsersController::class, 'UmpanBalik'])->name('users.feedback'); //
         Route::get('/feedback-create/{perbaikan_id}',[UsersController::class, 'UmpanBalik_Create'])->name('feedback-create');
+        Route::get('/feedback/detail/{perbaikan_id}',[UsersController::class, 'showDetail'])->name('feedback-detail');
         Route::post('/feedback/store', [UsersController::class, 'storeFeedback'])->name('feedback-store');
         Route::get('/laporan-data', [UsersController::class, 'getLaporanData'])->name('laporan-data');
         Route::get('/laporan-detail/{id}', [UsersController::class, 'getLaporanDetail'])->name('laporan-detail');

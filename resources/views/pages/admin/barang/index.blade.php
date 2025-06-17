@@ -59,13 +59,25 @@
                     </tbody>
                 </table>
             </div>
-            <div class="flex flex-col md:flex-row justify-between items-center mt-2">
-                <div class="text-gray-600 text-sm mb-2 md:mb-0">
-                    Menampilkan {{ $data->firstItem() ?? 0 }} - {{ $data->lastItem() ?? 0 }} dari {{ $data->total() }} hasil
+            @php
+                $currentPage = $data->currentPage();
+                $lastPage = $data->lastPage();
+            @endphp
+            <div class="flex items-center justify-between mt-6">
+                <div class="text-sm text-gray-500">
+                    Menampilkan {{ $data->firstItem() }} - {{ $data->lastItem() }} dari {{ $data->total() }} hasil
                 </div>
-                {{-- <div>
-                    {{ $data->links('vendor.pagination.tailwind') }}
-                </div> --}}
+
+                <div class="flex space-x-1 px-2 py-1 bg-gray-100 rounded-lg">
+                    @for ($i = 1; $i <= $lastPage; $i++)
+                        @if ($i == $currentPage)
+                            <span class="px-3 py-1 text-sm font-semibold text-blue-600 bg-white rounded-md">{{ $i }}</span>
+                        @else
+                            <a href="{{ $data->url($i) }}"
+                            class="px-3 py-1 text-sm text-gray-700 hover:bg-gray-200 rounded-md">{{ $i }}</a>
+                        @endif
+                    @endfor
+                </div>
             </div>
         </div>
     </div>
@@ -130,6 +142,7 @@
 </div>
 
 @push('skrip')
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script>
 function showModal(id) {
     document.getElementById(id).classList.remove('hidden');
@@ -145,6 +158,73 @@ function clearError() {
     document.getElementById('error_kode').innerText = '';
     document.getElementById('error_nama').innerText = '';
     document.getElementById('error_deskripsi').innerText = '';
+}
+
+function showNotification(message, isSuccess) {
+    Toastify({
+        text: message,
+        duration: 3000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        backgroundColor: isSuccess ? "#22c55e" : "#ef4444",
+        stopOnFocus: true
+    }).showToast();
+}
+
+function addBarangToTable(barang) {
+    const tbody = document.querySelector('#barang-table tbody');
+    const tr = document.createElement('tr');
+    tr.className = 'odd:bg-white even:bg-blue-50';
+    tr.setAttribute('data-barang', JSON.stringify(barang));
+    tr.innerHTML = `
+        <td>${barang.barang_id}</td>
+        <td>${barang.barang_kode}</td>
+        <td>${barang.barang_nama}</td>
+        <td>${barang.deskripsi || ''}</td>
+        <td class="flex gap-2 justify-center">
+            <button class="btn-detail" title="Detail">
+                <i class="bi bi-eye text-cyan-500 hover:text-cyan-700"></i>
+            </button>
+            <button class="btn-edit" title="Edit">
+                <i class="bi bi-pencil text-blue-500 hover:text-blue-700"></i>
+            </button>
+            <button class="btn-hapus-modal" title="Hapus" data-id="${barang.barang_id}" data-nama="${barang.barang_nama}">
+                <i class="bi bi-trash text-red-500 hover:text-red-700"></i>
+            </button>
+        </td>
+    `;
+    
+    // Jika tabel kosong, ganti baris "Tidak ada data"
+    if (tbody.querySelector('tr td[colspan="5"]')) {
+        tbody.innerHTML = '';
+    }
+    
+    tbody.prepend(tr);
+}
+
+function updateBarangInTable(barang) {
+    const tr = document.querySelector(`tr[data-barang*='"barang_id":${barang.barang_id}']`);
+    if (tr) {
+        tr.setAttribute('data-barang', JSON.stringify(barang));
+        tr.innerHTML = `
+            <td>${barang.barang_id}</td>
+            <td>${barang.barang_kode}</td>
+            <td>${barang.barang_nama}</td>
+            <td>${barang.deskripsi || ''}</td>
+            <td class="flex gap-2 justify-center">
+                <button class="btn-detail" title="Detail">
+                    <i class="bi bi-eye text-cyan-500 hover:text-cyan-700"></i>
+                </button>
+                <button class="btn-edit" title="Edit">
+                    <i class="bi bi-pencil text-blue-500 hover:text-blue-700"></i>
+                </button>
+                <button class="btn-hapus-modal" title="Hapus" data-id="${barang.barang_id}" data-nama="${barang.barang_nama}">
+                    <i class="bi bi-trash text-red-500 hover:text-red-700"></i>
+                </button>
+            </td>
+        `;
+    }
 }
 
 // Live search
@@ -186,39 +266,50 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Konfirmasi Hapus
     document.getElementById('btnKonfirmasiHapus').addEventListener('click', function() {
-        if(barangIdHapus) {
-            fetch(`/admin/barang/${barangIdHapus}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
+    if(barangIdHapus) {
+        fetch(`/admin/barang/${barangIdHapus}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                _method: 'DELETE'
             })
-            .then(res => res.json())
-            .then(data => {
-                hideModal('hapusModal');
-                if(data.success) {
-                    document.querySelector(`button[data-id="${barangIdHapus}"]`).closest('tr').remove();
-                    Toastify({ text: "Data berhasil dihapus!", backgroundColor: "#22c55e", duration: 2000 }).showToast();
-                } else {
-                    Toastify({ text: "Gagal menghapus data!", backgroundColor: "#ef4444", duration: 2000 }).showToast();
+        })
+        .then(res => res.json())
+        .then(data => {
+            hideModal('hapusModal');
+            if(data.success) {
+                const tr = document.querySelector(`button[data-id="${barangIdHapus}"]`).closest('tr');
+                tr.remove();
+                showNotification("Data berhasil dihapus!", true);
+                
+                // Cek jika tabel kosong
+                if(document.querySelectorAll('#barang-table tbody tr').length === 0) {
+                    document.querySelector('#barang-table tbody').innerHTML = 
+                        '<tr><td colspan="5" class="text-center">Tidak ada data barang.</td></tr>';
                 }
-                barangIdHapus = null;
-            })
-            .catch(() => {
-                hideModal('hapusModal');
-                Toastify({ text: "Terjadi kesalahan!", backgroundColor: "#ef4444", duration: 2000 }).showToast();
-                barangIdHapus = null;
-            });
-        }
-    });
+            } else {
+                showNotification(data.message || "Gagal menghapus data!", false);
+            }
+            barangIdHapus = null;
+        })
+        .catch(() => {
+            hideModal('hapusModal');
+            showNotification("Terjadi kesalahan!", false);
+            barangIdHapus = null;
+        });
+    }
+});
 
     // Event delegation untuk aksi di tabel
     document.getElementById('barang-table').addEventListener('click', function(e) {
         // Detail
         if (e.target.closest('.btn-detail')) {
             let tr = e.target.closest('tr');
-            let id = tr.querySelector('.btn-hapus-modal, .btn-hapus').getAttribute('data-id');
+            let id = tr.querySelector('.btn-hapus-modal').getAttribute('data-id');
             fetch(`/admin/barang/${id}`)
                 .then(res => res.json())
                 .then(barang => {
@@ -226,20 +317,20 @@ document.addEventListener('DOMContentLoaded', function () {
                         <tr><th>ID</th><td>${barang.barang_id}</td></tr>
                         <tr><th>Kode</th><td>${barang.barang_kode}</td></tr>
                         <tr><th>Nama</th><td>${barang.barang_nama}</td></tr>
-                        <tr><th>Deskripsi</th><td>${barang.deskripsi ?? ''}</td></tr>
+                        <tr><th>Deskripsi</th><td>${barang.deskripsi || ''}</td></tr>
                     </table>`;
                     document.getElementById('detailBody').innerHTML = html;
                     showModal('detailModal');
                 })
                 .catch(() => {
-                    Toastify({ text: "Gagal mengambil data!", backgroundColor: "#ef4444", duration: 2000 }).showToast();
+                    showNotification("Gagal mengambil data detail!", false);
                 });
         }
 
         // Edit
         if (e.target.closest('.btn-edit')) {
             let tr = e.target.closest('tr');
-            let id = tr.querySelector('.btn-hapus-modal, .btn-hapus').getAttribute('data-id');
+            let id = tr.querySelector('.btn-hapus-modal').getAttribute('data-id');
             clearForm();
             fetch(`/admin/barang/${id}`)
                 .then(res => res.json())
@@ -249,11 +340,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('barang_id').value = barang.barang_id;
                     document.getElementById('barang_kode').value = barang.barang_kode;
                     document.getElementById('barang_nama').value = barang.barang_nama;
-                    document.getElementById('deskripsi').value = barang.deskripsi ?? '';
+                    document.getElementById('deskripsi').value = barang.deskripsi || '';
                     showModal('barangModal');
                 })
                 .catch(() => {
-                    Toastify({ text: "Gagal mengambil data!", backgroundColor: "#ef4444", duration: 2000 }).showToast();
+                    showNotification("Gagal mengambil data untuk edit!", false);
                 });
         }
 
@@ -274,10 +365,9 @@ document.addEventListener('DOMContentLoaded', function () {
         let method = document.getElementById('formMethod').value;
         let url = method === 'POST' ? '/admin/barang' : `/admin/barang/${id}`;
         let formData = new FormData(this);
-        formData.append('_method', method);
 
         fetch(url, {
-            method: 'POST',
+            method: method === 'POST' ? 'POST' : 'PUT',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Accept': 'application/json'
@@ -285,20 +375,29 @@ document.addEventListener('DOMContentLoaded', function () {
             body: formData
         })
         .then(async res => {
+            const data = await res.json();
             if(res.ok) {
-                location.reload();
+                hideModal('barangModal');
+                showNotification(data.message || (method === 'POST' ? "Data berhasil ditambahkan!" : "Data berhasil diperbarui!"), true);
+                
+                if (method === 'POST') {
+                    addBarangToTable(data.barang);
+                } else {
+                    updateBarangInTable(data.barang);
+                }
             } else if(res.status === 422) {
-                let data = await res.json();
                 if(data.errors) {
                     if(data.errors.barang_kode) document.getElementById('error_kode').innerText = data.errors.barang_kode[0];
                     if(data.errors.barang_nama) document.getElementById('error_nama').innerText = data.errors.barang_nama[0];
                     if(data.errors.deskripsi) document.getElementById('error_deskripsi').innerText = data.errors.deskripsi[0];
                 }
             } else {
-                Toastify({ text: "Terjadi kesalahan!", backgroundColor: "#ef4444", duration: 2000 }).showToast();
+                showNotification(data.message || "Terjadi kesalahan!", false);
             }
         })
-        .catch(() => Toastify({ text: "Terjadi kesalahan!", backgroundColor: "#ef4444", duration: 2000 }).showToast());
+        .catch(() => {
+            showNotification("Terjadi kesalahan saat menyimpan data!", false);
+        });
     });
 });
 </script>

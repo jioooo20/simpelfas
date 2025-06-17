@@ -206,6 +206,17 @@
                 <!-- Photos will be loaded here dynamically -->
             </div>
         </div>
+        @error('rating')
+            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+        @enderror
+    </div>
+    
+    <!-- Komentar -->
+    <div class="mb-6">
+        <label class="block text-gray-700 font-medium mb-3">Komentar</label>
+        --}}
+        </div>
+    </div>
         <form method="dialog" class="modal-backdrop">
             <button>close</button>
         </form>
