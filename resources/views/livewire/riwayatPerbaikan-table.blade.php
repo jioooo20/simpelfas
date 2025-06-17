@@ -145,30 +145,56 @@
     </div>
 
     {{-- pagination --}}
-    @if (method_exists($riwayatPerbaikan, 'hasPages') && $riwayatPerbaikan->hasPages())
-        <div class="flex items-center justify-between mt-6">
-            <div class="text-sm text-gray-500">
-                Menampilkan {{ $riwayatPerbaikan->firstItem() }} - {{ $riwayatPerbaikan->lastItem() }} dari {{ $riwayatPerbaikan->total() }}
-                hasil
-            </div>
-            <div class="join">
-                @php
-                    $startPage = max($page - 1, 1);
-                    $endPage = min($startPage + 2, $riwayatPerbaikan->lastPage());
-
-                    if ($endPage - $startPage < 2) {
-                        $startPage = max($endPage - 2, 1);
-                    }
-                @endphp
-
-                @for ($i = $startPage; $i <= $endPage; $i++)
-                    <button wire:click="gotoPage({{ $i }})" class="join-item btn btn-sm {{ $page == $i ? 'btn-active' : '' }}">
-                        {{ $i }}
-                    </button>
-                @endfor
-            </div>
+    <div class="mt-4 flex justify-between items-center w-full">
+        <div class="text-sm text-gray-500">
+            @if (method_exists($riwayatPerbaikan, 'hasPages'))
+                Menampilkan {{ $riwayatPerbaikan->firstItem() ?? 0 }} - {{ $riwayatPerbaikan->lastItem() ?? 0 }} dari 
+                {{ $riwayatPerbaikan->total() }} hasil
+            @else
+                Menampilkan {{ count($riwayatPerbaikan) }} hasil
+            @endif
         </div>
-    @endif
+        <div class="join">
+            @if (!method_exists($riwayatPerbaikan, 'hasPages') || $riwayatPerbaikan->onFirstPage())
+                <button class="join-item btn btn-sm btn-disabled">«</button>
+            @else
+                <button wire:click="previousPage" wire:loading.attr="disabled" class="join-item btn btn-sm">«</button>
+            @endif
+            
+            @php
+                if (method_exists($riwayatPerbaikan, 'currentPage') && method_exists($riwayatPerbaikan, 'lastPage')) {
+                    $currentPage = $riwayatPerbaikan->currentPage();
+                    $lastPage = $riwayatPerbaikan->lastPage();
+                } else {
+                    $currentPage = 1;
+                    $lastPage = 1;
+                }
+                
+                $startPage = max($currentPage - 1, 1);
+                $endPage = min($startPage + 2, $lastPage);
+                
+                if ($endPage - $startPage < 2) {
+                    $startPage = max($endPage - 2, 1);
+                }
+            @endphp
+            
+            @for ($i = $startPage; $i <= $endPage; $i++)
+                @if ($i == $currentPage)
+                    <button class="join-item btn btn-sm btn-active">{{ $i }}</button>
+                @else
+                    <button wire:click="gotoPage({{ $i }})" wire:loading.attr="disabled" 
+                        class="join-item btn btn-sm">{{ $i }}</button>
+                @endif
+            @endfor
+            
+            @if (method_exists($riwayatPerbaikan, 'hasMorePages') && $riwayatPerbaikan->hasMorePages())
+                <button wire:click="nextPage" wire:loading.attr="disabled" class="join-item btn btn-sm">»</button>
+            @else
+                <button class="join-item btn btn-sm btn-disabled">»</button>
+            @endif
+        </div>
+    </div>
+
 </div>
 
 

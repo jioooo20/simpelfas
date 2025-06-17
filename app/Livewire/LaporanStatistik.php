@@ -14,10 +14,21 @@ class LaporanStatistik extends Component
 {
     use WithPagination;
     public $search = '';
+    public $tahun;
+
+    public function mount()
+    {
+        $this->tahun = date('Y');
+    }
+
     public function updatingSearch(){
         $this->resetPage();
     }
 
+    public function updatedTahun()
+    {
+        $this->resetPage();
+    }
 
    public function render()
 {
@@ -42,6 +53,9 @@ class LaporanStatistik extends Component
                 ->orWhereHas('fasilitas.barang', function ($q) {
                     $q->where('barang_nama', 'like', '%' . $this->search . '%');
                 });
+            })
+            ->when($this->tahun, function ($query) {
+                $query->whereYear('created_at', $this->tahun);
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
