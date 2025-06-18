@@ -86,7 +86,7 @@
                         @endif
                     </div>
                 </div>
-                <div class="max-h-80 overflow-y-auto">
+                <div class="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-base-300">
                     @forelse ($notifs as $notif)
                         <a href="{{ $notif->data['url'] }}"
                            class="block px-4 py-3 hover:bg-base-200 border-b border-base-300 transition-colors duration-200 group">
