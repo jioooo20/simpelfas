@@ -211,6 +211,18 @@ class LaporanKerusakan extends Component
             $pelaporanIds = $existingLaporans->pluck('pelaporan_id')->toArray();
             $jumlahLaporan = count($pelaporanIds);
 
+            // Ambil nilai C4 dari semua laporan dengan fasilitas yang sama
+            $existingC4Scores = SkorAltModel::where('kriteria_id', 4)
+                ->whereIn('pelaporan_id', $pelaporanIds)
+                ->pluck('nilai_skor')
+                ->toArray();
+
+            // Hitung rata-rata C4 atau ambil nilai tunggal
+            $avgC4 = !empty($existingC4Scores) ?
+                (count($existingC4Scores) > 1 ?
+                    array_sum($existingC4Scores) / count($existingC4Scores) :
+                    $existingC4Scores[0]) : 0;
+
             if ($jumlahLaporan > 1) {
                 // Ambil semua skor C2 dan C3 yang sudah ada
                 $existingC2Scores = SkorAltModel::where('kriteria_id', 2)
@@ -280,6 +292,17 @@ class LaporanKerusakan extends Component
                             ]
                         );
                     }
+                    // Update atau create skor C14 (biaya)
+                    SkorAltModel::updateOrCreate(
+                        [
+                            'pelaporan_id' => $pelaporanId,
+                            'kriteria_id' => 4
+                        ],
+                        [
+                            'skor_alt_kode' => $pelaporanId . '-C1',
+                            'nilai_skor' => $avgC4
+                        ]
+                    );
                 }
 
                 // Ambil user_id dari semua pelaporan untuk notifikasi
@@ -309,6 +332,14 @@ class LaporanKerusakan extends Component
                     'skor_alt_kode' => $this->selectedLaporan->pelaporan_id . '-C1',
                     'kriteria_id' => 1,
                     'nilai_skor' => 1
+                ]);
+
+                // Create skor C4 dengan nilai 0
+                SkorAltModel::create([
+                    'pelaporan_id' => $this->selectedLaporan->pelaporan_id,
+                    'skor_alt_kode' => $this->selectedLaporan->pelaporan_id . '-C4',
+                    'kriteria_id' => 4,
+                    'nilai_skor' => 0
                 ]);
 
                 // Ambil user_id untuk notifikasi
