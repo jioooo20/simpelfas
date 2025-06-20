@@ -138,6 +138,9 @@ class RekomendasiPrioritasPerbaikan extends Component
         // Query untuk mendapatkan data fasilitas dengan agregasi laporan dan skor
         $query = DB::table('t_fasilitas as f')
             ->leftJoin('m_barang as b', 'f.barang_id', '=', 'b.barang_id')
+            ->leftJoin('m_ruang as r', 'f.ruang_id', '=', 'r.ruang_id')
+            ->leftJoin('m_lantai as l', 'r.lantai_id', '=', 'l.lantai_id')
+            ->leftJoin('m_gedung as g', 'l.gedung_id', '=', 'g.gedung_id')
             ->leftJoin('m_pelaporan as p', 'p.fasilitas_id', '=', 'f.fasilitas_id')
             ->where('f.fasilitas_status', '=', 'Rusak')
             ->leftJoin('m_user as u', function($join) use ($roleFilter) {
@@ -166,13 +169,15 @@ class RekomendasiPrioritasPerbaikan extends Component
                 'f.barang_id',
                 'f.fasilitas_kode',
                 'b.barang_nama',
-                DB::raw('COUNT(DISTINCT p.pelaporan_id) as total_pelaporan'),
+                'g.gedung_nama',
+                'l.lantai_nama',
+                'r.ruang_nama',
                 DB::raw('AVG(COALESCE(skor1.nilai_skor, 0)) as c1'),
                 DB::raw('AVG(COALESCE(skor2.nilai_skor, 0)) as c2'),
                 DB::raw('AVG(COALESCE(skor3.nilai_skor, 0)) as c3'),
                 DB::raw('AVG(COALESCE(skor4.nilai_skor, 0)) as c4')
             )
-            ->groupBy('f.barang_id', 'f.fasilitas_kode', 'b.barang_nama');
+            ->groupBy('f.barang_id', 'f.fasilitas_kode', 'b.barang_nama', 'g.gedung_nama', 'l.lantai_nama', 'r.ruang_nama');
 
         // Apply filter hanya untuk fasilitas yang memiliki laporan dari role tertentu
         if ($roleFilter) {
@@ -185,7 +190,7 @@ class RekomendasiPrioritasPerbaikan extends Component
             });
         }
 
-        $laporanData = $query->orderBy('total_pelaporan', 'desc')
+        $laporanData = $query->orderBy('c1', 'desc')
             ->paginate(10);
 
         // Load bobot kriteria berdasarkan tab yang aktif
