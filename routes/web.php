@@ -89,6 +89,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [TeknisiController::class, 'riwayat'])->name('riwayat-perbaikan');
             Route::get('/detail', [TeknisiController::class, 'riwayatShow'])->name('detail-riwayat-perbaikan');
         });
+        Route::group(['prefix' => 'penugasan'], function (): void {
+            Route::get('/', [TeknisiController::class, 'rekomendasi_biaya_perbaikan'])->name('teknisi.rekomendasi-biaya-perbaikan');
+        });
     });
     Route::middleware('role:4,5,6')->prefix('users')->group(function (): void {
         Route::get('/', [UsersController::class, 'index'])->name('users');

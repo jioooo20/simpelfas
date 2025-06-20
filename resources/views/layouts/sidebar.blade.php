@@ -1,5 +1,5 @@
 <div id="sidebar"
-     class="fixed top-0 left-0 z-40 flex h-screen w-64 flex-col bg-base-100 p-4 text-base-content transition-transform duration-300 ease-in-out border-r border-base-300 -translate-x-full lg:translate-x-0">
+     class="fixed top-0 left-0 z-40 flex h-screen w-64 flex-col bg-base-100 p-4 text-base-content transition-transform duration-300 ease-in-out -translate-x-full lg:translate-x-0">
     <div class="mb-4 flex items-center justify-between">
         <div class="my-1 flex items-center gap-2">
             <span class="ml-2 text-2xl judul text-content-accent">Simpelfas</span>
@@ -232,6 +232,21 @@
                         </div>
                         {{-- Modifikasi --}}
                         <span class="sidebar-text text-sm">Perbaikan Fasilitas</span>
+                    </a>
+                </li>
+
+                {{-- Rekomendasi Biaya Perbaikan --}}
+                <li>
+                    <a href="{{ route('teknisi.rekomendasi-biaya-perbaikan') }}"
+                       class="flex items-center gap-3 p-2 rounded-md hover:bg-base-200 group {{-- Modifikasi --}}
+            {{ request()->routeIs('teknisi.rekomendasi-biaya-perbaikan') ? 'bg-sky-100 text-sky-700 font-semibold' : '' }}">
+                        <div class="w-6 text-center">
+                            {{-- Modifikasi --}}
+                            <i class="fa-solid fa-hand-holding-dollar text-lg group-hover:text-primary transition-transform duration-200 hover:scale-110
+                    {{ request()->routeIs('teknisi.rekomendasi-biaya-perbaikan') ? 'text-sky-600' : 'text-gray-500' }}"></i>
+                        </div>
+                        {{-- Modifikasi --}}
+                        <span class="sidebar-text text-sm">Rekomendasi Biaya Perbaikan</span>
                     </a>
                 </li>
 
