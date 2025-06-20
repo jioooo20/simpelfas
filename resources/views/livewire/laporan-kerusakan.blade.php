@@ -73,7 +73,7 @@
                             </div>
                         </td>
                         <td>
-                            <div class="font-medium">{{ $laporan->fasilitas->barang->barang_nama ?? 'N/A' }}</div>
+                            <div class="font-medium">{{ $laporan->fasilitas->barang->barang_nama ?? 'N/A' }}<span> {{ substr($laporan->fasilitas->fasilitas_kode ?? '', -2) }}</span></div>
                             <div class="text-sm text-gray-500">{{ $laporan->fasilitas->fasilitas_kode ?? '-' }}</div>
                         </td>
                         <td>
@@ -301,7 +301,7 @@
                                 <div class="space-y-3 mt-4">
                                     <div class="flex justify-between">
                                         <span class="font-semibold">Nama Barang:</span>
-                                        <span>{{ $selectedLaporan->fasilitas->barang->barang_nama ?? 'N/A' }}</span>
+                                        <span>{{ $selectedLaporan->fasilitas->barang->barang_nama ?? 'N/A' }} {{ substr($laporan->fasilitas->fasilitas_kode ?? '', -2) }}</span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span class="font-semibold">Kode Fasilitas:</span>
@@ -339,43 +339,27 @@
                     </div>
                 </div>
 
-                {{-- Form Biaya dan Aksi --}}
+                {{-- Aksi Terima/Tolak --}}
                 @if ($currentStatus === 'Menunggu')
                     <div class="card bg-base-100 shadow-lg mt-6">
                         <div class="card-body">
                             <h3 class="card-title text-lg bg-base-200 p-3 -mx-6 -mt-6 rounded-t-lg">
-                                <i class="bi bi-currency-dollar"></i>
-                                Persetujuan Laporan
+                                <i class="bi bi-clipboard-check"></i>
+                                Tindakan Laporan
                             </h3>
 
-                            <div class="mt-4">
-                                <div class="form-control">
-                                    <label class="label">
-                                        <span class="label-text font-semibold">Estimasi Biaya Perbaikan (Rp)</span>
-                                    </label>
-                                    <input wire:model.live="biaya" type="number" class="input input-bordered w-full"
-                                        placeholder="Masukkan estimasi biaya perbaikan (Masukkan 00 untuk tanpa biaya)"
-                                        min="0" step="1000">
-                                    @error('biaya')
-                                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                                    @enderror
-                                </div>
+                            <div class="flex justify-end gap-3 mt-6">
+                                <button wire:click="closeModal" class="btn btn-outline">
+                                    <i class="bi bi-x mr-1"></i> Batal
+                                </button>
 
-                                <div class="flex justify-end gap-3 mt-6">
-                                    <button wire:click="closeModal" class="btn btn-outline">
-                                        <i class="bi bi-x mr-1"></i> Batal
-                                    </button>
+                                <button wire:click="tolakLaporan" class="btn btn-error">
+                                    <i class="bi bi-x-circle mr-1"></i> Tolak
+                                </button>
 
-                                    <button wire:click="tolakLaporan" class="btn btn-error">
-                                        <i class="bi bi-x-circle mr-1"></i> Tolak
-                                    </button>
-
-                                    <button wire:click="terimaLaporan" class="btn btn-success"
-                                        @if (empty($biaya) || ($biaya = 0)) disabled @endif> {{-- bisa biaya 0 --}}
-                                        {{-- @if (empty($biaya) || $biaya <= 0) disabled @endif> --}}
-                                        <i class="bi bi-check-circle mr-1"></i> Terima
-                                    </button>
-                                </div>
+                                <button wire:click="terimaLaporan" class="btn btn-success">
+                                    <i class="bi bi-check-circle mr-1"></i> Terima
+                                </button>
                             </div>
                         </div>
                     </div>
