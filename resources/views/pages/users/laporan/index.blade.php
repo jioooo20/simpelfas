@@ -392,26 +392,18 @@
         }
 
         function createStatusBadge(statusCode, statusText) {
-            if (!statusCode) return null;
+            const badgeStyles = {
+                'RUSAK': 'bg-red-100 text-red-800',
+                'DALAM PERBAIKAN': 'bg-yellow-100 text-yellow-800'
+            };
 
-            const badge = document.createElement('span');
-            let badgeClasses = 'text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap';
-
-            switch (statusCode) {
-                case 'TERSEDIA':
-                    badgeClasses += ' bg-green-100 text-green-800';
-                    break;
-                case 'RUSAK':
-                    badgeClasses += ' bg-red-100 text-red-800';
-                    break;
-                case 'DALAM PERBAIKAN':
-                    badgeClasses += ' bg-yellow-100 text-yellow-800';
-                    break;
-                default:
-                    badgeClasses += ' bg-gray-100 text-gray-800';
+            if (!statusCode || !badgeStyles[statusCode]) {
+                return null;
             }
 
-            badge.className = badgeClasses;
+            const badge = document.createElement('span');
+            const baseClasses = 'text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap';
+            badge.className = `${baseClasses} ${badgeStyles[statusCode]}`;
             badge.textContent = statusText || statusCode;
             return badge;
         }
