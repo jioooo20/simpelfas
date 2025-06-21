@@ -164,6 +164,7 @@
                 init() {
                     this.allLaporan = @json($historyData);
                     this.loading = false;
+                    console.log(this.allLaporan);
                 },
 
                 get filteredLaporan() {
