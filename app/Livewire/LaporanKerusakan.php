@@ -78,6 +78,7 @@ class LaporanKerusakan extends Component
         $this->perPage = 10;
         $this->resetPage();
     }
+
     public function render()
     {
         // Get latest status for each pelaporan to avoid N+1 queries
