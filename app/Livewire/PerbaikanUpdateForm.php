@@ -81,6 +81,7 @@ class PerbaikanUpdateForm extends Component
         // Update hanya di tabel t_status_perbaikan
         // Cari semua perbaikan dengan kode yang mirip (prefix)
         $prefix = preg_replace('/\d+$/', '', $perbaikan->perbaikan_kode);
+        // dd($prefix);
         $perbaikanList = PerbaikanModel::where('perbaikan_kode', 'like', $prefix . '%')->get();
 
         foreach ($perbaikanList as $item) {

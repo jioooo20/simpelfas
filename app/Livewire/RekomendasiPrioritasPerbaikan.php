@@ -138,6 +138,9 @@ class RekomendasiPrioritasPerbaikan extends Component
         // Query untuk mendapatkan data fasilitas dengan agregasi laporan dan skor
         $query = DB::table('t_fasilitas as f')
             ->leftJoin('m_barang as b', 'f.barang_id', '=', 'b.barang_id')
+            ->leftJoin('m_ruang as r', 'f.ruang_id', '=', 'r.ruang_id')
+            ->leftJoin('m_lantai as l', 'r.lantai_id', '=', 'l.lantai_id')
+            ->leftJoin('m_gedung as g', 'l.gedung_id', '=', 'g.gedung_id')
             ->leftJoin('m_pelaporan as p', 'p.fasilitas_id', '=', 'f.fasilitas_id')
             ->where('f.fasilitas_status', '=', 'Rusak')
             ->leftJoin('m_user as u', function($join) use ($roleFilter) {
@@ -166,13 +169,15 @@ class RekomendasiPrioritasPerbaikan extends Component
                 'f.barang_id',
                 'f.fasilitas_kode',
                 'b.barang_nama',
-                DB::raw('COUNT(DISTINCT p.pelaporan_id) as total_pelaporan'),
+                'g.gedung_nama',
+                'l.lantai_nama',
+                'r.ruang_nama',
                 DB::raw('AVG(COALESCE(skor1.nilai_skor, 0)) as c1'),
                 DB::raw('AVG(COALESCE(skor2.nilai_skor, 0)) as c2'),
                 DB::raw('AVG(COALESCE(skor3.nilai_skor, 0)) as c3'),
                 DB::raw('AVG(COALESCE(skor4.nilai_skor, 0)) as c4')
             )
-            ->groupBy('f.barang_id', 'f.fasilitas_kode', 'b.barang_nama');
+            ->groupBy('f.barang_id', 'f.fasilitas_kode', 'b.barang_nama', 'g.gedung_nama', 'l.lantai_nama', 'r.ruang_nama');
 
         // Apply filter hanya untuk fasilitas yang memiliki laporan dari role tertentu
         if ($roleFilter) {
@@ -185,7 +190,7 @@ class RekomendasiPrioritasPerbaikan extends Component
             });
         }
 
-        $laporanData = $query->orderBy('total_pelaporan', 'desc')
+        $laporanData = $query->orderBy('c1', 'desc')
             ->paginate(10);
 
         // Load bobot kriteria berdasarkan tab yang aktif
@@ -296,7 +301,9 @@ class RekomendasiPrioritasPerbaikan extends Component
             foreach ($weightedMatrix as $values) {
                 $product *= $values[$criterion];
             }
-            $g[$criterion] = pow($product, 1/count($weightedMatrix));
+            // Add safety check for division by zero
+            $count = count($weightedMatrix);
+            $g[$criterion] = $count > 0 ? pow(abs($product), 1/$count) : 0;
         }
         $steps['border_approximation'] = $g;
 
@@ -337,12 +344,13 @@ class RekomendasiPrioritasPerbaikan extends Component
     {
         $steps = []; // Store processing steps
 
-        // Step 1: Calculate average of each criterion
+        // Step 1: Calculate average of each criterion with safety check
+        $dataCount = count($data);
         $avgValues = [
-            'c1' => array_sum(array_column($data, 'c1')) / count($data),
-            'c2' => array_sum(array_column($data, 'c2')) / count($data),
-            'c3' => array_sum(array_column($data, 'c3')) / count($data),
-            'c4' => array_sum(array_column($data, 'c4')) / count($data)
+            'c1' => $dataCount > 0 ? array_sum(array_column($data, 'c1')) / $dataCount : 0,
+            'c2' => $dataCount > 0 ? array_sum(array_column($data, 'c2')) / $dataCount : 0,
+            'c3' => $dataCount > 0 ? array_sum(array_column($data, 'c3')) / $dataCount : 0,
+            'c4' => $dataCount > 0 ? array_sum(array_column($data, 'c4')) / $dataCount : 0
         ];
 
         $steps['original_matrix'] = $data;
@@ -353,20 +361,20 @@ class RekomendasiPrioritasPerbaikan extends Component
         $pda = [];
         $nda = [];
         foreach ($data as $facilityCode => $values) {
-            // PDA calculation
+            // PDA calculation with zero division checks
             $pda[$facilityCode] = [
-                'c1' => max(0, ($values['c1'] - $avgValues['c1'])) / $avgValues['c1'],
-                'c2' => max(0, ($values['c2'] - $avgValues['c2'])) / $avgValues['c2'],
-                'c3' => max(0, ($values['c3'] - $avgValues['c3'])) / $avgValues['c3'],
-                'c4' => max(0, ($avgValues['c4'] - $values['c4'])) / $avgValues['c4'] // C4 is cost
+                'c1' => $avgValues['c1'] != 0 ? max(0, ($values['c1'] - $avgValues['c1'])) / $avgValues['c1'] : 0,
+                'c2' => $avgValues['c2'] != 0 ? max(0, ($values['c2'] - $avgValues['c2'])) / $avgValues['c2'] : 0,
+                'c3' => $avgValues['c3'] != 0 ? max(0, ($values['c3'] - $avgValues['c3'])) / $avgValues['c3'] : 0,
+                'c4' => $avgValues['c4'] != 0 ? max(0, ($avgValues['c4'] - $values['c4'])) / $avgValues['c4'] : 0 // C4 is cost
             ];
 
-            // NDA calculation
+            // NDA calculation with zero division checks
             $nda[$facilityCode] = [
-                'c1' => max(0, ($avgValues['c1'] - $values['c1'])) / $avgValues['c1'],
-                'c2' => max(0, ($avgValues['c2'] - $values['c2'])) / $avgValues['c2'],
-                'c3' => max(0, ($avgValues['c3'] - $values['c3'])) / $avgValues['c3'],
-                'c4' => max(0, ($values['c4'] - $avgValues['c4'])) / $avgValues['c4'] // C4 is cost
+                'c1' => $avgValues['c1'] != 0 ? max(0, ($avgValues['c1'] - $values['c1'])) / $avgValues['c1'] : 0,
+                'c2' => $avgValues['c2'] != 0 ? max(0, ($avgValues['c2'] - $values['c2'])) / $avgValues['c2'] : 0,
+                'c3' => $avgValues['c3'] != 0 ? max(0, ($avgValues['c3'] - $values['c3'])) / $avgValues['c3'] : 0,
+                'c4' => $avgValues['c4'] != 0 ? max(0, ($values['c4'] - $avgValues['c4'])) / $avgValues['c4'] : 0 // C4 is cost
             ];
         }
 
@@ -393,7 +401,7 @@ class RekomendasiPrioritasPerbaikan extends Component
         $steps['sp_values'] = $sp;
         $steps['sn_values'] = $sn;
 
-        // Step 7 & 8: Calculate NSP and NSN
+        // Step 7 & 8: Calculate NSP and NSN with safety checks
         $maxSp = max($sp);
         $maxSn = max($sn);
 
@@ -403,8 +411,8 @@ class RekomendasiPrioritasPerbaikan extends Component
         $nsp = [];
         $nsn = [];
         foreach ($sp as $facilityCode => $value) {
-            $nsp[$facilityCode] = $value / $maxSp;
-            $nsn[$facilityCode] = 1 - ($sn[$facilityCode] / $maxSn);
+            $nsp[$facilityCode] = $maxSp != 0 ? $value / $maxSp : 0;
+            $nsn[$facilityCode] = $maxSn != 0 ? 1 - ($sn[$facilityCode] / $maxSn) : 0;
         }
 
         $steps['nsp_values'] = $nsp;
@@ -433,10 +441,15 @@ class RekomendasiPrioritasPerbaikan extends Component
 
     protected function normalizeValue($value, $max, $min, $isCost)
     {
+        // Add safety check for division by zero
         if ($max == $min) return 0;
+
+        $denominator = $isCost ? ($min - $max) : ($max - $min);
+        if ($denominator == 0) return 0;
+
         return $isCost ?
-            ($value - $max) / ($min - $max) :
-            ($value - $min) / ($max - $min);
+            ($value - $max) / $denominator :
+            ($value - $min) / $denominator;
     }
 
     public function olahDss()
