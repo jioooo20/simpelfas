@@ -1,66 +1,71 @@
-<div class="w-full"> {{-- search --}}
-    <div class="mb-4 flex flex-wrap items-center gap-2 w-full">
-        <div class="relative flex-1 min-w-0">
+<div class="w-full">
+    {{-- Filter dan Pencarian (Solusi Hybrid Responsif & Dinamis) --}}
+    <div class="mb-6 flex flex-col md:flex-row items-center gap-4 w-full">
+
+        {{-- Grup Pencarian --}}
+        <div class="relative w-full md:flex-1">
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <i class="bi bi-search text-gray-500"></i>
             </span>
             <input wire:model.live.debounce.300ms="search" type="text"
-                placeholder="Cari kode, masalah, lokasi, atau teknisi..."
-                class="w-full h-10 pl-10 pr-4 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-400" />
+                   placeholder="Cari kode, masalah, lokasi..."
+                   class="w-full h-10 pl-10 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-400"/>
             @if ($search)
                 <button wire:click="clearSearch"
-                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700">
-                    <i class="bi bi-x-circle"></i>
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700">
+                    <i class="bi bi-x-circle-fill"></i>
                 </button>
             @endif
         </div>
-        <div class="flex items-center">
-            <div class="dropdown">
+
+        {{-- Grup Filter Status --}}
+        <div class="w-full md:w-auto">
+            <div class="dropdown w-full md:w-auto">
                 <label tabindex="0"
-                    class="btn {{ $selectedStatus ? 'btn-primary text-white' : 'btn-outline' }} gap-2">
-                    {{ $selectedStatus ?: 'Semua Status' }}
+                       class="btn {{ $selectedStatus ? 'btn-primary text-white' : 'btn-outline border-gray-300' }} gap-2 w-full md:w-auto">
+                    <span>{{ $selectedStatus ?: 'Semua Status' }}</span>
                     <i class="bi bi-chevron-down"></i>
                 </label>
-                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-1">
                     <li>
                         <a wire:click="setStatusFilter('')" class="{{ !$selectedStatus ? 'bg-base-200' : '' }}">Semua
                             Status</a>
                     </li>
                     <li>
                         <a wire:click="setStatusFilter('Menunggu')"
-                            class="{{ $selectedStatus === 'Menunggu' ? 'bg-base-200' : '' }}">Menunggu</a>
+                           class="{{ $selectedStatus === 'Menunggu' ? 'bg-base-200' : '' }}">Menunggu</a>
                     </li>
                     <li>
                         <a wire:click="setStatusFilter('Diproses')"
-                            class="{{ $selectedStatus === 'Diproses' ? 'bg-base-200' : '' }}">Diproses</a>
+                           class="{{ $selectedStatus === 'Diproses' ? 'bg-base-200' : '' }}">Diproses</a>
                     </li>
                     <li>
                         <a wire:click="setStatusFilter('Selesai')"
-                            class="{{ $selectedStatus === 'Selesai' ? 'bg-base-200' : '' }}">Selesai</a>
+                           class="{{ $selectedStatus === 'Selesai' ? 'bg-base-200' : '' }}">Selesai</a>
                     </li>
                 </ul>
             </div>
         </div>
     </div>
 
-    {{-- active filters indicator --}}
+    {{-- Indikator Filter Aktif --}}
     @if ($selectedStatus || $search)
         <div class="mb-4 flex flex-wrap gap-2">
             <div class="text-sm text-gray-500">Filter aktif:</div>
 
             @if ($selectedStatus)
-                <div class="badge badge-outline gap-1 px-3 py-2">
+                <div class="badge badge-outline gap-1 pl-2 pr-1 py-3">
                     Status: {{ $selectedStatus }}
-                    <button wire:click="clearStatusFilter" class="ml-2 hover:text-red-500">
+                    <button wire:click="clearStatusFilter" class="ml-1 hover:text-red-500">
                         <i class="bi bi-x-circle"></i>
                     </button>
                 </div>
             @endif
 
             @if ($search)
-                <div class="badge badge-outline gap-1 px-3 py-2">
+                <div class="badge badge-outline gap-1 pl-2 pr-1 py-3">
                     @if (preg_match('/^fasilitas_id:(\d+)$/', $search))
-                        <span class="flex items-center">
+                        <span class="flex items-center text-xs">
                             <i class="bi bi-filter-circle-fill mr-1"></i>
                             Menampilkan semua perbaikan untuk:
                             <span
@@ -69,7 +74,7 @@
                     @else
                         <span>Pencarian: "{{ $search }}"</span>
                     @endif
-                    <button wire:click="clearSearch" class="ml-2 hover:text-red-500">
+                    <button wire:click="clearSearch" class="ml-1 hover:text-red-500">
                         <i class="bi bi-x-circle"></i>
                     </button>
                 </div>
@@ -77,196 +82,199 @@
         </div>
     @endif
 
-    {{-- Table Perbaikan --}}
-    <div class="overflow-x-auto rounded-xl border border-gray-200 w-full">
-        <table class="table table-zebra w-full table-fixed">
-            <thead class="bg-base-200 text-base-content">
+    {{-- Indikator Loading --}}
+    <div wire:loading.flex class="w-full justify-center items-center py-8">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+
+    <div wire:loading.remove>
+        <div class="grid grid-cols-1 gap-4 lg:hidden">
+            @forelse ($perbaikan as $item)
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-4">
+                    {{-- Baris Atas: Kode & Status --}}
+                    <div class="flex justify-between items-start gap-4">
+                        <span class="font-mono text-sm font-bold text-gray-800 break-all">{{ $item['kode_perbaikan'] }}</span>
+                        @php
+                            $warnaBadge = ['Menunggu' => 'badge-warning', 'Diproses' => 'badge-primary', 'Selesai' => 'badge-success'][$item['status']] ?? 'badge-ghost';
+                        @endphp
+                        <span class="badge {{ $warnaBadge }} text-white font-semibold">{{ $item['status'] }}</span>
+                    </div>
+
+                    {{-- Konten Utama --}}
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <p class="font-medium text-gray-800 break-words" title="{{ $item['deskripsi_masalah'] }}">{{ Str::limit($item['deskripsi_masalah'], 120) }}</p>
+                            <p class="text-xs text-gray-500 mt-1 break-words">{{ $item['fasilitas_nama'] }} - {{ $item['gedung_nama'] }} {{ $item['ruang_nama'] }}</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-500">Teknisi:</p>
+                            @if (!empty($item['teknisi_collection']) && $item['jumlah_teknisi'] > 0)
+                                <p class="text-gray-800 break-words">{{ $item['teknisi_collection']->pluck('nama')->join(', ') }}</p>
+                            @else
+                                <p class="text-gray-400 italic">Belum ditugaskan</p>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Baris Bawah: Tanggal & Aksi --}}
+                    <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                        <p class="text-xs text-gray-500">{{ date('d M Y, H:i', strtotime($item['tanggal_perbaikan'])) }}</p>
+                        <button wire:click="goToDetail('{{ $item['id'] }}')" class="btn btn-sm btn-outline btn-primary">
+                            Lihat Detail
+                        </button>
+                    </div>
+                </div>
+            @empty
+                <div class="col-span-1 text-center py-10">
+                    @include('livewire.includes.empty-state-perbaikan')
+                </div>
+            @endforelse
+        </div>
+
+        <div class="hidden lg:block overflow-x-auto rounded-xl border border-gray-200 w-full">
+            <table class="table table-zebra w-full">
+                <thead class="bg-base-200 text-base-content">
                 <tr>
                     <th class="text-center w-[5%]">No</th>
-                    <th class="w-[15%]">
-                        <div class="flex items-center gap-1">
-                            Kode Perbaikan
-                        </div>
-                    </th>
-                    <th class="w-[30%]">
-                        <div class="flex items-center gap-1">
-                            Informasi Perbaikan
-                        </div>
-                    </th>
-                    <th class="w-[15%]">
-                        <div class="flex justify-start items-center gap-1">
-                            Tanggal
-                        </div>
-                    </th>
+                    <th class="w-[15%]">Kode Perbaikan</th>
+                    <th class="w-[30%]">Informasi Perbaikan</th>
+                    <th class="w-[15%]">Tanggal</th>
                     <th class="w-[15%]">Teknisi</th>
-                    <th class="w-[10%]">
-                        <div class="flex items-center gap-1">
-                            Status
-                        </div>
-                    </th>
+                    <th class="w-[10%]">Status</th>
                     <th class="text-center w-[10%]">Aksi</th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 @forelse ($perbaikan as $index => $item)
-                    <tr>
-                        <td class="text-center">{{ $index + 1 }}</td>
-                        <td class="text-start">
-                            <span
-                                class="font-mono text-xs px-2 py-1 bg-gray-100 rounded whitespace-nowrap">{{ $item['kode_perbaikan'] }}</span>
+                    <tr class="hover">
+                        <td class="text-center align-top">{{ $perbaikanData->firstItem() + $index }}</td>
+                        <td class="text-start align-top">
+                            <span class="font-mono text-xs px-2 py-1 bg-gray-100 rounded whitespace-nowrap">{{ $item['kode_perbaikan'] }}</span>
                         </td>
-                        <td>
+                        <td class="align-top">
                             <div class="flex flex-col">
-                                <span class="font-medium truncate"
-                                    title="{{ $item['deskripsi_masalah'] }}">{{ $item['deskripsi_masalah'] }}</span>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs text-gray-500 truncate">
-                                        {{ $item['fasilitas_nama'] }} - {{ $item['gedung_nama'] }}
-                                        {{ $item['ruang_nama'] }}
-                                    </span>
+                                <span class="font-medium truncate" title="{{ $item['deskripsi_masalah'] }}">{{ $item['deskripsi_masalah'] }}</span>
+                                <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-xs text-gray-500 truncate">
+                                            {{ $item['fasilitas_nama'] }} - {{ $item['gedung_nama'] }} {{ $item['ruang_nama'] }}
+                                        </span>
                                 </div>
                             </div>
                         </td>
-                        <td>
+                        <td class="align-top">
                             <div class="flex flex-col justify-start items-start">
                                 <span>{{ date('d M Y', strtotime($item['tanggal_perbaikan'])) }}</span>
-                                <span>{{ date('H:i', strtotime($item['tanggal_perbaikan'])) }}</span>
+                                <span class="text-xs text-gray-500">{{ date('H:i', strtotime($item['tanggal_perbaikan'])) }}</span>
                             </div>
                         </td>
-                        <td>
+                        <td class="align-top">
                             @if (!empty($item['teknisi_collection']) && $item['jumlah_teknisi'] > 0)
-                                <div class="flex flex-col gap-1">
-                                    @if ($item['jumlah_teknisi'] == 1)
-                                        <span>{{ $item['teknisi_nama'] }}</span>
-                                    @else
-                                        <div>
-                                            <span class="font-medium">{{ $item['jumlah_teknisi'] }} teknisi:</span>
-                                        </div>
-                                        <div class="text-xs text-gray-500">
-                                            {{ $item['teknisi_collection']->pluck('nama')->join(', ') }}
-                                        </div>
-                                    @endif
-                                </div>
+                                @if ($item['jumlah_teknisi'] == 1)
+                                    <span>{{ $item['teknisi_nama'] }}</span>
+                                @else
+                                    <div class="text-sm text-gray-800">
+                                        {{ $item['teknisi_collection']->pluck('nama')->join(', ') }}
+                                    </div>
+                                @endif
                             @else
                                 <span class="text-gray-400">Belum ditugaskan</span>
                             @endif
                         </td>
-                        <td>
+                        <td class="align-top">
                             @php
-                                $warnaBadge =
-                                    [
-                                        'Menunggu' => 'bg-yellow-500',
-                                        'Diproses' => 'bg-blue-500',
-                                        'Selesai' => 'bg-green-500',
-                                    ][$item['status']] ?? 'bg-gray-400';
-                                $statusText =
-                                    [
-                                        'Menunggu' => 'Menunggu',
-                                        'Diproses' => 'Diproses',
-                                        'Selesai' => 'Selesai',
-                                    ][$item['status']] ?? ucfirst($item['status']);
+                                $warnaBadge = ['Menunggu' => 'badge-warning', 'Diproses' => 'badge-primary', 'Selesai' => 'badge-success'][$item['status']] ?? 'badge-ghost';
                             @endphp
-                            <span class="badge text-white px-3 py-1 rounded-full {{ $warnaBadge }}">
-                                {{ $statusText }}
-                            </span>
+                            <span class="badge {{ $warnaBadge }} text-white font-semibold">{{ $item['status'] }}</span>
                         </td>
-                        <td class="text-center">
-                            <div class="flex items-center justify-center gap-4">
-                                <button wire:click="goToDetail('{{ $item['id'] }}')" class="text-primary"
-                                    title="Lihat Detail">
-                                    <i class="fas fa-eye"></i>
+                        <td class="text-center align-top">
+                            <div class="flex items-center justify-center">
+                                <button wire:click="goToDetail('{{ $item['id'] }}')" class="btn btn-sm btn-ghost text-primary" title="Lihat Detail">
+                                    <i class="bi bi-eye-fill"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center py-6">
-                            <div class="flex flex-col items-center justify-center text-gray-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 text-gray-300"
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span class="text-lg font-medium">Tidak ada data perbaikan ditemukan</span>
-                                <span class="text-sm">Coba cari dengan kata kunci lain atau reset filter</span>
-                                @if ($search || $selectedStatus)
-                                    <button wire:click="resetFilters" class="btn btn-sm btn-outline mt-3">
-                                        <i class="bi bi-arrow-repeat mr-1"></i> Reset Filter
-                                    </button>
-                                @endif
-                            </div>
+                        <td colspan="7">
+                            @include('livewire.includes.empty-state-perbaikan')
                         </td>
                     </tr>
                 @endforelse
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
+
 
     {{-- Pagination --}}
-    <div class="mt-4 flex justify-between items-center w-full">
+    <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:justify-between items-center w-full">
         <div class="text-sm text-gray-500">
-            Menampilkan {{ $perbaikanData->firstItem() ?? 0 }} - {{ $perbaikanData->lastItem() ?? 0 }} dari 
-            {{ $perbaikanData->total() }} data
-        </div>
-        <div class="join">
-            @if ($perbaikanData->onFirstPage())
-                <button class="join-item btn btn-sm btn-disabled">«</button>
+            @if ($perbaikanData->total() > 0)
+                Menampilkan {{ $perbaikanData->firstItem() }} - {{ $perbaikanData->lastItem() }} dari {{ $perbaikanData->total() }} data
             @else
-                <button wire:click="previousPage" wire:loading.attr="disabled" class="join-item btn btn-sm">«</button>
+                Tidak ada data untuk ditampilkan
             @endif
-            
-            @php
-                $startPage = max($page - 1, 1);
-                $endPage = min($startPage + 2, $perbaikanData->lastPage());
-                
-                if ($endPage - $startPage < 2) {
-                    $startPage = max($endPage - 2, 1);
-                }
-            @endphp
-            
-            @for ($i = $startPage; $i <= $endPage; $i++)
-                @if ($i == $perbaikanData->currentPage())
-                    <button class="join-item btn btn-sm btn-active">{{ $i }}</button>
+        </div>
+        @if ($perbaikanData->hasPages())
+            <div class="join">
+                @if ($perbaikanData->onFirstPage())
+                    <button class="join-item btn btn-sm btn-disabled">«</button>
                 @else
-                    <button wire:click="gotoPage({{ $i }})" wire:loading.attr="disabled" 
-                        class="join-item btn btn-sm">{{ $i }}</button>
+                    <button wire:click="previousPage" wire:loading.attr="disabled" class="join-item btn btn-sm">«</button>
                 @endif
-            @endfor
-            
-            @if ($perbaikanData->hasMorePages())
-                <button wire:click="nextPage" wire:loading.attr="disabled" class="join-item btn btn-sm">»</button>
-            @else
-                <button class="join-item btn btn-sm btn-disabled">»</button>
-            @endif
-        </div>
-    </div>
 
-    @push('skrip')
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                Livewire.on('showSuccessToast', (message) => {
-                    Toastify({
-                        text: `<div class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-xl"></i></div>`,
-                        duration: 3000,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                        className: "rounded-lg shadow-md",
-                        stopOnFocus: true,
-                        escapeMarkup: false,
-                        style: {
-                            minWidth: "300px"
-                        },
-                        onClick: function() {}
-                    }).showToast();
-                });
-                Livewire.on('showErrorToast', (message) => {
-                    Toastify({
-                        onClick: function() {}
-                    }).showToast();
-                });
-            });
-        </script>
-    @endpush
+                @php
+                    $startPage = max($page - 1, 1);
+                    $endPage = min($startPage + 2, $perbaikanData->lastPage());
+
+                    if ($endPage - $startPage < 2) {
+                        $startPage = max($endPage - 2, 1);
+                    }
+                @endphp
+
+                @for ($i = $startPage; $i <= $endPage; $i++)
+                    @if ($i == $perbaikanData->currentPage())
+                        <button class="join-item btn btn-sm btn-active">{{ $i }}</button>
+                    @else
+                        <button wire:click="gotoPage({{ $i }})" wire:loading.attr="disabled"
+                                class="join-item btn btn-sm">{{ $i }}</button>
+                    @endif
+                @endfor
+
+                @if ($perbaikanData->hasMorePages())
+                    <button wire:click="nextPage" wire:loading.attr="disabled" class="join-item btn btn-sm">»</button>
+                @else
+                    <button class="join-item btn btn-sm btn-disabled">»</button>
+                @endif
+            </div>
+        @endif
+    </div>
 </div>
+@push('skrip')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Livewire.on('showSuccessToast', (message) => {
+                Toastify({
+                    text: `<div class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-xl"></i></div>`,
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                    className: "rounded-lg shadow-md",
+                    stopOnFocus: true,
+                    escapeMarkup: false,
+                    style: {
+                        minWidth: "300px"
+                    },
+                    onClick: function() {}
+                }).showToast();
+            });
+            Livewire.on('showErrorToast', (message) => {
+                Toastify({
+                    onClick: function() {}
+                }).showToast();
+            });
+        });
+    </script>
+@endpush
