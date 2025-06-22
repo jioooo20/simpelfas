@@ -109,10 +109,8 @@
                             <div class="flex items-center gap-2">
                                 <i class="bi bi-gear-fill text-gray-500"></i>
                                 <div>
-                                    <div class="font-medium">{{ $pelaporan->fasilitas->barang->barang_nama ?? 'N/A' }}
+                                    <div class="font-medium">{{ $pelaporan->fasilitas->barang->barang_nama ?? 'N/A' }} <span>{{ substr($pelaporan->fasilitas->fasilitas_kode, -2) }}</span> </div>
                                     </div>
-                                    <div class="text-sm text-gray-500">
-                                        {{ $pelaporan->fasilitas->fasilitas_kode ?? '-' }}</div>
                                 </div>
                             </div>
                         </td>
@@ -272,7 +270,7 @@
                             <div class="">
                                 <span class="font-semibold">Fasilitas:</span>
                                 <div class="mt-1 text-sm flex flex-col gap-1">
-                                    <span>{{ $selectedPerbaikan->fasilitas->barang->barang_nama ?? 'N/A' }}</span>
+                                    <span class="font-bold hover:text-blue-500">{{ $selectedPerbaikan->fasilitas->barang->barang_nama ?? 'N/A' }} <span>{{ substr($pelaporan->fasilitas->fasilitas_kode, -2) }}</span></span>
                                     <span>{{ $selectedPerbaikan->fasilitas->fasilitas_kode ?? 'N/A' }}</span>
                                 </div>
                             </div>
@@ -426,7 +424,7 @@
                             <div class="space-y-3 mt-4">
                                 <div class="flex justify-between">
                                     <span class="font-semibold">Nama Fasilitas:</span>
-                                    <span>{{ $selectedPerbaikan->fasilitas->barang->barang_nama ?? 'N/A' }}</span>
+                                    <span class="font-bold cursor-pointer transition-colors duration-300 hover:text-blue-500">{{ $selectedPerbaikan->fasilitas->barang->barang_nama ?? 'N/A' }} <span>{{ substr($selectedPerbaikan->fasilitas->fasilitas_kode, -2) }}</span></span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="font-semibold">Kode Fasilitas:</span>
