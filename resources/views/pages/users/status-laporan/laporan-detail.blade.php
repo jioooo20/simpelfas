@@ -152,8 +152,6 @@
             // -----------------------------
 
             const imageMap = @json($gambar);
-            console.log(imageMap);
-
             const imageCache = {};
 
             // -----------------------------

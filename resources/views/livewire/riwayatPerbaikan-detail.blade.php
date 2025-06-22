@@ -1,6 +1,6 @@
 <div>
     <div class="mb-6">
-        <a href="#" {{-- GANTI DENGAN ROUTE ANDA, CONTOH: href="{{ route('halaman.sebelumnya') }}" --}}
+        <a href="{{ route('riwayat-perbaikan') }}" {{-- GANTI DENGAN ROUTE ANDA, CONTOH: href="{{ route('halaman.sebelumnya') }}" --}}
         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             <i class="bi bi-arrow-left"></i>
             Kembali
@@ -273,23 +273,40 @@
         </div>
     </div>
 
-    <dialog id="image_modal" class="modal modal-bottom sm:modal-middle">
-        <div class="modal-box max-w-3xl">
-            <h3 id="modal-title" class="font-bold text-lg mb-4">Foto</h3>
-            <div class="flex justify-center">
-                <img id="modal-image" src="" alt="Preview" class="max-w-full max-h-[80vh] rounded-lg">
+    <dialog id="image_modal" class="modal modal-middle">
+
+        {{-- Kita kembalikan ke struktur sederhana tanpa flex-col pada modal-box --}}
+        <div class="modal-box w-11/12 max-w-4xl p-0">
+
+            {{-- Header Modal (tidak ada perubahan) --}}
+            <div class="flex items-center justify-between p-4 border-b">
+                <h3 id="modal-title" class="font-bold text-lg">Tampilan Gambar</h3>
+                <button onclick="document.getElementById('image_modal').close()"
+                        class="btn btn-sm btn-circle btn-ghost">
+                    <i class="bi bi-x text-2xl"></i>
+                </button>
             </div>
-            <div class="modal-action">
-                <form method="dialog">
-                    <button class="btn">Tutup</button>
-                </form>
+
+            {{-- Konten Gambar --}}
+            <div class="p-4 flex justify-center items-center bg-slate-50">
+                {{--
+                  ================================================================
+                  PERUBAHAN KUNCI DI SINI:
+                  Tinggi maksimal gambar dibatasi menjadi 75% tinggi layar.
+                  Ini secara eksplisit menyisakan 25% ruang untuk header, padding,
+                  dan UI browser, sehingga scrollbar tidak akan muncul.
+                  ================================================================
+                --}}
+                <img id="modal-image" src="" alt="Tampilan Gambar"
+                     class="max-w-full max-h-[75vh] rounded-lg object-contain">
             </div>
         </div>
+
+        {{-- Klik di luar untuk menutup --}}
         <form method="dialog" class="modal-backdrop">
             <button>close</button>
         </form>
     </dialog>
-
 </div>
 
 @push('skrip')
