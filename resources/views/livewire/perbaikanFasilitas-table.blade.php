@@ -1,12 +1,12 @@
 <div class="w-full">
-    {{-- Filter dan Pencarian (Solusi Hybrid Responsif & Dinamis) --}}
-    <div class="mb-6 flex flex-col md:flex-row items-center gap-4 w-full">
+    <!-- Grup Pencarian dan Filter Status -->
+    <div class="mb-4 flex flex-col lg:flex-row items-center gap-4 w-full">
 
-        {{-- Grup Pencarian --}}
-        <div class="relative w-full md:flex-1">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="bi bi-search text-gray-500"></i>
-            </span>
+        <!-- Grup Pencarian -->
+        <div class="relative w-full lg:flex-1">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="bi bi-search text-gray-500"></i>
+        </span>
             <input wire:model.live.debounce.300ms="search" type="text"
                    placeholder="Cari kode, masalah, lokasi..."
                    class="w-full h-10 pl-10 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-400"/>
@@ -18,15 +18,17 @@
             @endif
         </div>
 
-        {{-- Grup Filter Status --}}
-        <div class="w-full md:w-auto">
-            <div class="dropdown w-full md:w-auto">
+        <!-- Filter Status -->
+        <div class="w-full lg:w-auto">
+            <div class="dropdown dropdown-end w-full lg:w-auto">
                 <label tabindex="0"
-                       class="btn {{ $selectedStatus ? 'btn-primary text-white' : 'btn-outline border-gray-300' }} gap-2 w-full md:w-auto">
+                       class="btn {{ $selectedStatus ? 'btn-primary text-white' : 'btn-outline border-gray-300' }} gap-2 w-full lg:w-auto">
                     <span>{{ $selectedStatus ?: 'Semua Status' }}</span>
-                    <i class="bi bi-chevron-down"></i>
+                    <i class="bi bi-chevron-down hidden lg:inline-block"></i>
                 </label>
-                <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-1">
+                <!-- Dropdown Menu -->
+                <ul tabindex="0"
+                    class="dropdown-content z-50 menu p-2 shadow bg-base-100 rounded-box w-full lg:w-56 mt-1">
                     <li>
                         <a wire:click="setStatusFilter('')" class="{{ !$selectedStatus ? 'bg-base-200' : '' }}">Semua
                             Status</a>
@@ -43,57 +45,25 @@
                         <a wire:click="setStatusFilter('Selesai')"
                            class="{{ $selectedStatus === 'Selesai' ? 'bg-base-200' : '' }}">Selesai</a>
                     </li>
-                </ul>
-            </div>
-        </div>
-    </div>
+                </ul> <!-- End Dropdown Menu -->
+            </div> <!-- End Filter Status -->
+        </div> <!-- End Grup Pencarian dan Filter Status -->
+    </div> <!-- End Grup Pencarian dan Filter Status -->
 
-    {{-- Indikator Filter Aktif --}}
-    @if ($selectedStatus || $search)
-        <div class="mb-4 flex flex-wrap gap-2">
-            <div class="text-sm text-gray-500">Filter aktif:</div>
-
-            @if ($selectedStatus)
-                <div class="badge badge-outline gap-1 pl-2 pr-1 py-3">
-                    Status: {{ $selectedStatus }}
-                    <button wire:click="clearStatusFilter" class="ml-1 hover:text-red-500">
-                        <i class="bi bi-x-circle"></i>
-                    </button>
-                </div>
-            @endif
-
-            @if ($search)
-                <div class="badge badge-outline gap-1 pl-2 pr-1 py-3">
-                    @if (preg_match('/^fasilitas_id:(\d+)$/', $search))
-                        <span class="flex items-center text-xs">
-                            <i class="bi bi-filter-circle-fill mr-1"></i>
-                            Menampilkan semua perbaikan untuk:
-                            <span
-                                class="font-semibold ml-1">{{ $this->getFacilityNameFromSearch() ?? 'Fasilitas terpilih' }}</span>
-                        </span>
-                    @else
-                        <span>Pencarian: "{{ $search }}"</span>
-                    @endif
-                    <button wire:click="clearSearch" class="ml-1 hover:text-red-500">
-                        <i class="bi bi-x-circle"></i>
-                    </button>
-                </div>
-            @endif
-        </div>
-    @endif
-
-    {{-- Indikator Loading --}}
+    <!-- Indikator Loading -->
     <div wire:loading.flex class="w-full justify-center items-center py-8">
         <span class="loading loading-spinner loading-lg text-primary"></span>
     </div>
 
+    <!-- Daftar Perbaikan Fasilitas -->
     <div wire:loading.remove>
         <div class="grid grid-cols-1 gap-4 lg:hidden">
             @forelse ($perbaikan as $item)
                 <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-4">
                     {{-- Baris Atas: Kode & Status --}}
                     <div class="flex justify-between items-start gap-4">
-                        <span class="font-mono text-sm font-bold text-gray-800 break-all">{{ $item['kode_perbaikan'] }}</span>
+                        <span
+                            class="font-mono text-sm font-bold text-gray-800 break-all">{{ $item['kode_perbaikan'] }}</span>
                         @php
                             $warnaBadge = ['Menunggu' => 'badge-warning', 'Diproses' => 'badge-primary', 'Selesai' => 'badge-success'][$item['status']] ?? 'badge-ghost';
                         @endphp
@@ -103,8 +73,10 @@
                     {{-- Konten Utama --}}
                     <div class="space-y-3 text-sm">
                         <div>
-                            <p class="font-medium text-gray-800 break-words" title="{{ $item['deskripsi_masalah'] }}">{{ Str::limit($item['deskripsi_masalah'], 120) }}</p>
-                            <p class="text-xs text-gray-500 mt-1 break-words">{{ $item['fasilitas_nama'] }} - {{ $item['gedung_nama'] }} {{ $item['ruang_nama'] }}</p>
+                            <p class="font-medium text-gray-800 break-words"
+                               title="{{ $item['deskripsi_masalah'] }}">{{ Str::limit($item['deskripsi_masalah'], 120) }}</p>
+                            <p class="text-xs text-gray-500 mt-1 break-words">{{ $item['fasilitas_nama'] }}
+                                - {{ $item['gedung_nama'] }} {{ $item['ruang_nama'] }}</p>
                         </div>
                         <div>
                             <p class="font-semibold text-gray-500">Teknisi:</p>
@@ -116,7 +88,7 @@
                         </div>
                     </div>
 
-                    {{-- Baris Bawah: Tanggal & Aksi --}}
+                    <!-- Baris Bawah: Tanggal & Aksi -->
                     <div class="flex justify-between items-center pt-3 border-t border-gray-100">
                         <p class="text-xs text-gray-500">{{ date('d M Y, H:i', strtotime($item['tanggal_perbaikan'])) }}</p>
                         <button wire:click="goToDetail('{{ $item['id'] }}')" class="btn btn-sm btn-outline btn-primary">
@@ -131,6 +103,7 @@
             @endforelse
         </div>
 
+        <!-- Tabel Perbaikan Fasilitas (Desktop) -->
         <div class="hidden lg:block overflow-x-auto rounded-xl border border-gray-200 w-full">
             <table class="table table-zebra w-full">
                 <thead class="bg-base-200 text-base-content">
@@ -149,11 +122,13 @@
                     <tr class="hover">
                         <td class="text-center align-top">{{ $perbaikanData->firstItem() + $index }}</td>
                         <td class="text-start align-top">
-                            <span class="font-mono text-xs px-2 py-1 bg-gray-100 rounded whitespace-nowrap">{{ $item['kode_perbaikan'] }}</span>
+                            <span
+                                class="font-mono text-xs px-2 py-1 bg-gray-100 rounded whitespace-nowrap">{{ $item['kode_perbaikan'] }}</span>
                         </td>
                         <td class="align-top">
                             <div class="flex flex-col">
-                                <span class="font-medium truncate" title="{{ $item['deskripsi_masalah'] }}">{{ $item['deskripsi_masalah'] }}</span>
+                                <span class="font-medium truncate"
+                                      title="{{ $item['deskripsi_masalah'] }}">{{ $item['deskripsi_masalah'] }}</span>
                                 <div class="flex items-center gap-2 mt-1">
                                         <span class="text-xs text-gray-500 truncate">
                                             {{ $item['fasilitas_nama'] }} - {{ $item['gedung_nama'] }} {{ $item['ruang_nama'] }}
@@ -164,7 +139,8 @@
                         <td class="align-top">
                             <div class="flex flex-col justify-start items-start">
                                 <span>{{ date('d M Y', strtotime($item['tanggal_perbaikan'])) }}</span>
-                                <span class="text-xs text-gray-500">{{ date('H:i', strtotime($item['tanggal_perbaikan'])) }}</span>
+                                <span
+                                    class="text-xs text-gray-500">{{ date('H:i', strtotime($item['tanggal_perbaikan'])) }}</span>
                             </div>
                         </td>
                         <td class="align-top">
@@ -188,7 +164,8 @@
                         </td>
                         <td class="text-center align-top">
                             <div class="flex items-center justify-center">
-                                <button wire:click="goToDetail('{{ $item['id'] }}')" class="btn btn-sm btn-ghost text-primary" title="Lihat Detail">
+                                <button wire:click="goToDetail('{{ $item['id'] }}')"
+                                        class="btn btn-sm btn-ghost text-primary" title="Lihat Detail">
                                     <i class="bi bi-eye-fill"></i>
                                 </button>
                             </div>
@@ -207,11 +184,12 @@
     </div>
 
 
-    {{-- Pagination --}}
+    <!-- Pagination -->
     <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:justify-between items-center w-full">
         <div class="text-sm text-gray-500">
             @if ($perbaikanData->total() > 0)
-                Menampilkan {{ $perbaikanData->firstItem() }} - {{ $perbaikanData->lastItem() }} dari {{ $perbaikanData->total() }} data
+                Menampilkan {{ $perbaikanData->firstItem() }} - {{ $perbaikanData->lastItem() }}
+                dari {{ $perbaikanData->total() }} data
             @else
                 Tidak ada data untuk ditampilkan
             @endif
@@ -221,7 +199,8 @@
                 @if ($perbaikanData->onFirstPage())
                     <button class="join-item btn btn-sm btn-disabled">«</button>
                 @else
-                    <button wire:click="previousPage" wire:loading.attr="disabled" class="join-item btn btn-sm">«</button>
+                    <button wire:click="previousPage" wire:loading.attr="disabled" class="join-item btn btn-sm">«
+                    </button>
                 @endif
 
                 @php
@@ -251,9 +230,10 @@
         @endif
     </div>
 </div>
+
 @push('skrip')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             Livewire.on('showSuccessToast', (message) => {
                 Toastify({
                     text: `<div class="flex items-center gap-3"><i class="bi bi-check-circle-fill text-xl"></i></div>`,
@@ -267,12 +247,14 @@
                     style: {
                         minWidth: "300px"
                     },
-                    onClick: function() {}
+                    onClick: function () {
+                    }
                 }).showToast();
             });
             Livewire.on('showErrorToast', (message) => {
                 Toastify({
-                    onClick: function() {}
+                    onClick: function () {
+                    }
                 }).showToast();
             });
         });
