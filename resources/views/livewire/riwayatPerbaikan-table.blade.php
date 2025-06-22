@@ -1,12 +1,12 @@
 <div>
-    {{-- Bagian Filter dan Pencarian --}}
-    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <!-- Grup Pencarian dan Filter -->
+    <div class="mb-6 flex flex-col lg:flex-row items-center gap-4 w-full">
 
-        {{-- Grup Pencarian --}}
-        <div class="relative w-full md:flex-grow">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="bi bi-search text-gray-500"></i>
-            </span>
+        <!-- Grup Pencarian -->
+        <div class="relative w-full lg:flex-1">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="bi bi-search text-gray-500"></i>
+        </span>
             <input wire:model.live.debounce.300ms="search" type="text"
                    placeholder="Cari kode, masalah, atau teknisi..."
                    class="w-full h-10 pl-10 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-400"/>
@@ -16,19 +16,20 @@
                     <i class="bi bi-x-circle-fill"></i>
                 </button>
             @endif
-        </div>
+        </div> <!-- End Grup Pencarian -->
 
-        {{-- Grup Filter Teknisi --}}
-        <div class="w-full md:w-auto md:min-w-[200px]">
+        <!-- Grup Filter Status -->
+        <div class="w-full lg:w-auto">
             @if(isset($teknisiList))
-                <div class="dropdown w-full">
+                <div class="dropdown dropdown-end w-full lg:w-auto">
                     <label tabindex="0"
-                           class="btn {{ isset($selectedTeknisi) && $selectedTeknisi ? 'btn-primary text-white' : 'btn-outline' }} gap-2 w-full justify-between">
+                           class="btn {{ isset($selectedTeknisi) && $selectedTeknisi ? 'btn-primary text-white' : 'btn-outline border-gray-300' }} gap-2 w-full lg:w-auto">
                         <span
                             class="truncate">{{ isset($selectedTeknisi) && $selectedTeknisi ? ($teknisiList->firstWhere('user_id', $selectedTeknisi)?->nama ?? 'Teknisi') : 'Semua Teknisi' }}</span>
-                        <i class="bi bi-chevron-down"></i>
+                        <i class="bi bi-chevron-down hidden lg:inline-block"></i>
                     </label>
-                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full mt-1">
+                    <ul tabindex="0"
+                        class="dropdown-content z-50 menu p-2 shadow bg-base-100 rounded-box w-full lg:w-56 mt-1">
                         <li>
                             <a wire:click="setTeknisiFilter('')"
                                class="{{ empty($selectedTeknisi) ? 'bg-base-200' : '' }}">Semua Teknisi</a>
@@ -42,25 +43,21 @@
                     </ul>
                 </div>
             @endif
-        </div>
-    </div>
+        </div> <!-- End Grup Filter Status -->
+    </div> <!-- End Grup Pencarian dan Filter -->
 
-    {{-- Indikator Loading --}}
+    <!-- Indikator Loading -->
     <div wire:loading.flex class="w-full justify-center items-center py-8">
         <span class="loading loading-spinner loading-lg text-primary"></span>
-    </div>
+    </div> <!-- End Indikator Loading -->
 
-    {{-- Konten Utama --}}
+    <!-- Main Content -->
     <div wire:loading.remove>
-
-        {{-- Tampilan KARTU untuk MOBILE --}}
+        <!-- Tampilan Kartu untuk MOBILE -->
         <div class="grid grid-cols-1 gap-4 lg:hidden">
             @forelse ($riwayatPerbaikan as $item)
                 <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-4">
-
-                    {{-- =============================================== --}}
-                    {{-- Bagian Header Kartu Diubah (Alternatif Baru) --}}
-                    {{-- =============================================== --}}
+                    <!-- Header Card -->
                     <div>
                         {{-- BARIS 1: KODE LAPORAN (lebar penuh) --}}
                         <p class="font-bold text-gray-800 text-base break-words">
@@ -79,13 +76,10 @@
                                 {{ $item->perbaikan_status }}
                             </span>
                         </div>
-                    </div>
-                    {{-- =============================================== --}}
-                    {{-- Akhir Bagian yang Diubah --}}
-                    {{-- =============================================== --}}
+                    </div> <!-- End Header Card -->
 
 
-                    {{-- Isi Kartu --}}
+                    <!-- Deskripsi Perbaikan dan Teknisi -->
                     <div class="space-y-3 text-sm pt-3 border-t">
                         <div>
                             <p class="font-semibold text-gray-500 mb-1">Perbaikan:</p>
@@ -106,7 +100,7 @@
                                 <p class="text-gray-400">Belum ditugaskan</p>
                             @endif
                         </div>
-                    </div>
+                    </div> <!-- End Deskripsi Perbaikan dan Teknisi -->
 
                     {{-- Aksi Kartu --}}
                     <div class="flex justify-end pt-3 border-t border-gray-100">
