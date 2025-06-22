@@ -1,7 +1,8 @@
 <div>
+    <!-- Grup Pencarian dan Filter -->
     <div class="mb-6 flex flex-col lg:flex-row items-center gap-4 w-full">
 
-        {{-- Grup Pencarian --}}
+        <!-- Grup Pencarian -->
         <div class="relative w-full lg:flex-1">
         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <i class="bi bi-search text-gray-500"></i>
@@ -15,9 +16,9 @@
                     <i class="bi bi-x-circle-fill"></i>
                 </button>
             @endif
-        </div> {{-- ========================================================== --}}
-        {{-- Filter Teknisi (Struktur Baru Sesuai Referensi) --}}
-        {{-- ========================================================== --}}
+        </div> <!-- End Grup Pencarian -->
+
+        <!-- Grup Filter Status -->
         <div class="w-full lg:w-auto">
             @if(isset($teknisiList))
                 <div class="dropdown dropdown-end w-full lg:w-auto">
@@ -42,8 +43,8 @@
                     </ul>
                 </div>
             @endif
-        </div>
-    </div>
+        </div> <!-- End Grup Filter Status -->
+    </div> <!-- End Grup Pencarian dan Filter -->
 
     <!-- Indikator Loading -->
     <div wire:loading.flex class="w-full justify-center items-center py-8">
