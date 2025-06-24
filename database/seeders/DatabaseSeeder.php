@@ -18,15 +18,15 @@ class DatabaseSeeder extends Seeder
             BarangSeeder::class,
             KriteriaSeeder::class,
             FasilitasSeederClean::class, //ini fasilitas default semua, komen kalo mau seed fasilitas rusak
-//             FasilitasSeeder::class, // ini fasilitas rusak, unkomen kalo pelaporan, status, alt skor diunkomen
-//            // PelaporanSeeder::class,
-//            // StatusPelaporanSeeder::class,
-//            // AltSkorSeeder::class,
-//             TempSeeder::class,
-//             PerbaikanSeeder::class,
-//            PerbaikanPetugasSeeder::class,
-//             StatusPerbaikanSeeder::class,
-//             FeedbackSeeder::class,
+            // FasilitasSeeder::class, // ini fasilitas rusak, unkomen kalo pelaporan, status, alt skor diunkomen
+            // PelaporanSeeder::class,
+            // StatusPelaporanSeeder::class,
+            // AltSkorSeeder::class,
+            // TempSeeder::class,
+            // PerbaikanSeeder::class,
+            //PerbaikanPetugasSeeder::class,
+            // StatusPerbaikanSeeder::class,
+            // FeedbackSeeder::class,
         ]);
     }
 }

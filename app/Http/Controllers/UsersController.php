@@ -207,46 +207,86 @@ class UsersController extends Controller
     }
 
     public function UmpanBalik()
-    {
-        $userId = auth()->id();
+{
+    $userId = auth()->id();
 
-        $perbaikan = PelaporanModel::with(['fasilitas', 'statusPelaporan' => function ($query) {
+    // Tambahkan eager loading untuk relasi barang
+    $perbaikan = PelaporanModel::with([
+        'fasilitas.barang', // Tambahkan ini
+        'statusPelaporan' => function ($query) {
             $query->orderBy('created_at');
-        }])->where('user_id', $userId)->get();
+        }
+    ])
+    ->where('user_id', $userId)
+    ->get();
 
-        $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
+    // Filter laporan yang status terakhirnya adalah SELESAI
+    $perbaikan = $perbaikan->filter(function ($item) {
+        $lastStatus = $item->statusPelaporan->sortBy('created_at')->last();
+        return $lastStatus && strtoupper($lastStatus->status_pelaporan) === 'SELESAI';
+    });
 
-        $perbaikan->transform(function ($item) use ($fasilitasOptions) {
-            $item['fasilitas_label'] = $fasilitasOptions[$item->fasilitas_id]['label'] ?? null;
-            return $item;
-        });
+    $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
 
-        return view('pages.users.feedback.index', compact('perbaikan'));
-    }
+    $perbaikan->transform(function ($item) use ($fasilitasOptions) {
+        $item['fasilitas_label'] = $fasilitasOptions[$item->fasilitas_id]['label'] ?? null;
+        
+        $fotoTeknisi = [];
+        if ($item->perbaikan && $item->perbaikan->perbaikan_gambar) {
+            $fotoTeknisi = json_decode($item->perbaikan->perbaikan_gambar, true) ?? [];
+        }
+        $item['foto_teknisi'] = $fotoTeknisi;
+        // Tambahkan format nama barang dengan kode
+        $item['barang_with_code'] = 
+            ($item->fasilitas->barang->barang_nama ?? 'Unknown') . 
+            ' - ' . 
+            substr($item->pelaporan_kode, -2);
+            
+        return $item;
+    });
+
+    return view('pages.users.feedback.index', compact('perbaikan'));
+}
+
 
     public function UmpanBalik_Create($perbaikan_id)
-    {
-        $laporan = PelaporanModel::with([
-            'fasilitas.barang',
-            'perbaikan.statusPerbaikan' => function ($query) {
-                $query->orderBy('created_at', 'desc');
-            }
-        ])->findOrFail($perbaikan_id);
+{
+    $laporan = PelaporanModel::with([
+        'fasilitas.barang',
+        'perbaikan.statusPerbaikan' => function ($query) {
+            $query->orderBy('created_at', 'desc');
+        },
+        'feedback' // Tambahkan relasi ke tabel feedback
+    ])->findOrFail($perbaikan_id);
 
-        $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
-        $laporan->fasilitas_label = $fasilitasOptions[$laporan->fasilitas_id]['label'] ?? null;
+    $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
+    $laporan->fasilitas_label = $fasilitasOptions[$laporan->fasilitas_id]['label'] ?? null;
 
-        // Ambil foto teknisi dari status perbaikan
-        $fotoTeknisi = [];
-        if ($laporan->perbaikan && $laporan->perbaikan->statusPerbaikan) {
-            $fotoTeknisi = json_decode($laporan->perbaikan->statusPerbaikan->perbaikan_gambar, true) ?? [];
+    // Ambil foto teknisi dari status perbaikan - PERBAIKAN
+    $fotoTeknisi = [];
+    if ($laporan->perbaikan && $laporan->perbaikan->statusPerbaikan) {
+        // Metode 1: Mengambil record pertama (terbaru karena sudah diurutkan)
+        $statusTerbaru = $laporan->perbaikan->statusPerbaikan->first();
+        if ($statusTerbaru && $statusTerbaru->perbaikan_gambar) {
+            $fotoTeknisi = json_decode($statusTerbaru->perbaikan_gambar, true) ?? [];
         }
-
-        return view('pages.users.feedback.create', [
-            'laporan' => $laporan,
-            'fotoTeknisi' => $fotoTeknisi
-        ]);
     }
+
+    return view('pages.users.feedback.create', [
+        'laporan' => $laporan,
+        'fotoTeknisi' => $fotoTeknisi,
+        'hasFeedback' => $laporan->feedback()->exists() //  flag  pengecekan
+    ]);
+}
+
+public function show($pelaporan_id)
+{
+    $feedback = FeedbackModel::with('pelaporan')
+                ->where('pelaporan_id', $pelaporan_id)
+                ->firstOrFail();
+    
+    return view('pages.users.feedback.detail', compact('feedback'));
+}
 
     public function storeFeedback(Request $request)
     {

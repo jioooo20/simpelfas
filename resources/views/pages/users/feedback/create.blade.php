@@ -23,6 +23,7 @@
                             <!-- Foto Fasilitas -->
                             <div class="flex-shrink-0 w-48 h-48 relative">
                                 @php
+                                    $fotoTeknisi = $items->perbaikan_gambar ?? [];
                                     $fotoUtama = !empty($fotoTeknisi) ? $fotoTeknisi[0] : null;
                                 @endphp
 
@@ -63,7 +64,7 @@
                                 </div>
 
                                 <h4 class="font-semibold text-gray-800 mb-2">
-                                    {{ $laporan->fasilitas->barang->barang_nama ?? 'Tidak tersedia' }}</h4>
+                                    {{ $laporan->fasilitas->barang->barang_nama ?? 'Unknown' }} - {{ substr($laporan->pelaporan_kode, -2) }}</h4>
                                 <div class="text-sm text-gray-600 space-y-1">
                                     <p><span class="font-medium">Gedung:</span>
                                         {{ $laporan->fasilitas->ruang->lantai->gedung->gedung_nama ?? '-' }}</p>
@@ -135,17 +136,20 @@
 
                             <div class="mb-6">
                                 <div x-data="{ rating: 0 }" class="flex flex-col items-start space-y-2">
-                                    <div class="rating rating-lg">
+                                    <div class="flex space-x-1">
                                         @for ($i = 1; $i <= 5; $i++)
-                                            <input type="radio" name="rating" value="{{ $i }}"
-                                                class="mask mask-star-2" x-model="rating"
-                                                x-bind:class="rating >= {{ $i }} ? 'bg-yellow-400': 'bg-gray-300'"
-                                                @click="rating = {{ $i }}" />
+                                            <button type="button" @click="rating = {{ $i }}"
+                                                :class="rating >= {{ $i }} ? 'text-yellow-400' : 'text-gray-300'"
+                                                class="text-5xl focus:outline-none">
+                                                ★
+                                            </button>
                                         @endfor
                                     </div>
+                                    <input type="hidden" name="rating" x-model="rating">
                                     <span class="ml-2 text-gray-600 text-sm">(1 = Buruk, 5 = Sangat Puas)</span>
                                 </div>
-                                @error('rating')More actions
+                                @error('rating')
+                                    More actions
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -186,7 +190,8 @@
                                 </svg>
                                 Batal
                             </a>
-                            <button type="submit" id="submitBtn" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-transform hover:scale-105">
+                            <button type="submit" id="submitBtn"
+                                class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-transform hover:scale-105">
                                 <i class="bi bi-send"></i>Kirim Umpan Balik
                             </button>
                         </div>
@@ -213,7 +218,7 @@
 
     <!-- Modal Konfirmasi Kirim - Fixed Structure-->
     <div id="konfirmasiKirimModal"
-         class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
+        class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
         <!-- Modal Content -->
         <div class="w-full max-w-md bg-white rounded-lg shadow-xl overflow-hidden">
             <!-- Header -->
@@ -222,24 +227,22 @@
                     Konfirmasi Pengiriman
                 </h2>
             </div>
-            
+
             <!-- Body -->
             <div class="px-6 py-4">
                 <p class="text-gray-600">
                     Apakah Anda yakin ingin mengirim umpan balik ini?
                 </p>
             </div>
-            
+
             <!-- Footer -->
             <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3">
-                <button id="batalKirimBtn"
-                        type="button"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-150 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                <button id="batalKirimBtn" type="button"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-150 focus:outline-none focus:ring-2 focus:ring-gray-300">
                     Batal
                 </button>
-                <button id="lanjutKirimBtn"
-                        type="button"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="lanjutKirimBtn" type="button"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     Ya, Kirim
                 </button>
             </div>
@@ -260,7 +263,7 @@
         // Global variables
         let isSubmitting = false;
         const PHOTOS = @json($fotoTeknisi ?? []);
-        
+
         // Photo Modal Functions
         function openPhotoModal(pelaporanId) {
             const modal = document.getElementById('photoModal');
@@ -280,8 +283,8 @@
                              class="w-full h-auto max-h-[70vh] object-contain rounded-lg shadow-sm cursor-pointer hover:shadow-md transition mx-auto"
                              onclick="window.open('{{ asset('storage/') }}/${photo}', '_blank')">
                         ${PHOTOS.length > 1 ? `<div class="absolute top-3 right-3 bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded-full">
-                                ${index + 1} / ${PHOTOS.length}
-                            </div>` : ''}
+                                    ${index + 1} / ${PHOTOS.length}
+                                </div>` : ''}
                     `;
                     photoContainer.appendChild(photoDiv);
                 });
@@ -306,28 +309,28 @@
             const toast = document.getElementById('toast');
             const toastContent = document.getElementById('toastContent');
             const toastMessage = document.getElementById('toastMessage');
-            
+
             if (!toast || !toastContent || !toastMessage) {
                 console.error('Toast elements not found');
                 alert(message); // Fallback
                 return;
             }
-            
+
             // Set message
             toastMessage.textContent = message;
-            
+
             // Set color based on type
-            const colorClass = type === 'green' ? 'bg-green-500' : 
-                              type === 'red' ? 'bg-red-500' : 'bg-blue-500';
-            
+            const colorClass = type === 'green' ? 'bg-green-500' :
+                type === 'red' ? 'bg-red-500' : 'bg-blue-500';
+
             toastContent.className = `px-6 py-3 rounded-lg shadow-lg text-white font-medium max-w-sm ${colorClass}`;
-            
+
             // Show toast with animation
             toast.classList.remove('hidden');
             setTimeout(() => {
                 toast.classList.add('transform', 'translate-x-0');
             }, 10);
-            
+
             // Hide toast after 3 seconds
             setTimeout(() => {
                 toast.classList.add('transform', 'translate-x-full');
@@ -343,24 +346,24 @@
         function validateForm() {
             const form = document.getElementById('feedbackForm');
             const rating = form.querySelector('input[name="rating"]:checked');
-            
+
             if (!rating) {
                 showToast('Mohon berikan rating kepuasan terlebih dahulu', 'red');
                 return false;
             }
-            
+
             return true;
         }
 
         // Main DOMContentLoaded event
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM Content Loaded - Starting initialization');
-            
+
             const feedbackForm = document.getElementById('feedbackForm');
             const konfirmasiModal = document.getElementById('konfirmasiKirimModal');
             const batalKirimBtn = document.getElementById('batalKirimBtn');
             const lanjutKirimBtn = document.getElementById('lanjutKirimBtn');
-            
+
             // Debug: Check if elements exist
             console.log('Elements check:', {
                 form: !!feedbackForm,
@@ -368,58 +371,58 @@
                 batalBtn: !!batalKirimBtn,
                 lanjutBtn: !!lanjutKirimBtn
             });
-            
+
             if (!feedbackForm || !konfirmasiModal || !batalKirimBtn || !lanjutKirimBtn) {
                 console.error('Required elements not found!');
                 return;
             }
-            
+
             // Prevent default form submission and show confirmation modal
             feedbackForm.addEventListener('submit', function(e) {
                 console.log('Form submit event triggered');
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 // Prevent double submission
                 if (isSubmitting) {
                     console.log('Already submitting, prevented double submit');
                     return false;
                 }
-                
+
                 // Validate form
                 if (!validateForm()) {
                     return false;
                 }
-                
+
                 // Show confirmation modal
                 console.log('Showing confirmation modal');
                 konfirmasiModal.classList.remove('hidden');
-                
+
                 // Focus on modal for accessibility
                 setTimeout(() => {
                     lanjutKirimBtn.focus();
                 }, 100);
-                
+
                 return false;
             });
-            
+
             // Handle modal buttons
             batalKirimBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 console.log('Batal button clicked');
                 konfirmasiModal.classList.add('hidden');
             });
-            
+
             lanjutKirimBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 console.log('Lanjut button clicked');
-                
+
                 // Hide modal and submit form
                 konfirmasiModal.classList.add('hidden');
                 isSubmitting = true;
                 submitFeedbackForm();
             });
-            
+
             // Close modal when clicking outside
             konfirmasiModal.addEventListener('click', function(e) {
                 if (e.target === konfirmasiModal) {
@@ -427,7 +430,7 @@
                     konfirmasiModal.classList.add('hidden');
                 }
             });
-            
+
             // Handle ESC key
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && !konfirmasiModal.classList.contains('hidden')) {
@@ -435,7 +438,7 @@
                     konfirmasiModal.classList.add('hidden');
                 }
             });
-            
+
             // Enhanced rating system
             const ratingInputs = document.querySelectorAll('input[name="rating"]');
             ratingInputs.forEach(input => {
@@ -449,7 +452,7 @@
                     }, 200);
                 });
             });
-            
+
             console.log('Initialization complete');
         });
 
@@ -458,15 +461,15 @@
             const form = document.getElementById('feedbackForm');
             const formData = new FormData(form);
             const submitBtn = document.getElementById('submitBtn');
-            
+
             console.log('Submitting form via AJAX');
-            
+
             // Disable submit button and show loading state
             const originalText = submitBtn.innerHTML;
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="bi bi-hourglass-split animate-spin"></i> Mengirim...';
             submitBtn.classList.add('opacity-75');
-            
+
             try {
                 const response = await fetch(form.action, {
                     method: 'POST',
@@ -476,12 +479,12 @@
                         'Accept': 'application/json',
                     }
                 });
-                
+
                 console.log('Response status:', response.status);
-                
+
                 const data = await response.json();
                 console.log('Response data:', data);
-                
+
                 if (response.ok) {
                     // Success
                     showToast(data.message || "Umpan balik berhasil dikirim.", "green", () => {
