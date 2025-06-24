@@ -130,8 +130,8 @@ class SarpraController extends Controller
             if ($laporan->fasilitas?->ruang?->ruang_nama && $laporan->fasilitas?->barang?->barang_nama) {
                 $fasilitasLabel =
                     $laporan->fasilitas->ruang->ruang_nama . ' - ' .
-                    $laporan->fasilitas->barang->barang_nama . ' - ' .
-                    $laporan->fasilitas->barang->barang_kode;
+                    $laporan->fasilitas->barang->barang_nama . ' ' .
+                    substr($laporan->fasilitas->fasilitas_kode, -2);
             }
 
             $statusLaporan = $laporan->latest_status_laporan ?? 'Menunggu';
@@ -164,8 +164,8 @@ class SarpraController extends Controller
         $laporan = $this->pelaporanRepository->findDetailById($pelaporan_id);
 
         $fasilitasLabel = data_get($laporan, 'fasilitas.ruang.ruang_nama', 'N/A') . ' - ' .
-            data_get($laporan, 'fasilitas.barang.barang_nama', 'N/A') . ' - ' .
-            data_get($laporan, 'fasilitas.barang.barang_kode', 'N/A');
+            data_get($laporan, 'fasilitas.barang.barang_nama', 'N/A') . ' ' .
+            substr(data_get($laporan, 'fasilitas.fasilitas_kode', 'N/A'), -2);
 
         $skalaKerusakanLabel = 'N/A';
         $frekuensiPenggunaanLabel = 'N/A';

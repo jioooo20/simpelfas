@@ -231,13 +231,28 @@ class PenugasanPerbaikanTable extends Component
 
         try {
             DB::beginTransaction();
-
             // Ambil semua laporan dengan fasilitas yang sama
             $fasilitasId = $this->selectedPerbaikan->fasilitas_id;
-            $laporanList = PelaporanModel::where('fasilitas_id', $fasilitasId)->get();
+
+            // Update fasilitas status to 'Dalam Perbaikan'
+            DB::table('t_fasilitas')
+                ->where('fasilitas_id', $fasilitasId)
+                ->update(['fasilitas_status' => 'Dalam Perbaikan']);
+
+            $laporanList = PelaporanModel::where('fasilitas_id', $fasilitasId)
+                ->whereHas('statusPelaporan', function ($query) {
+                    $query->whereIn('status_pelaporan', ['Menunggu', 'Diterima'])
+                        ->whereRaw('created_at = (
+                            SELECT MAX(created_at)
+                            FROM t_status_pelaporan
+                            WHERE pelaporan_id = m_pelaporan.pelaporan_id
+                        )');
+                })
+                ->get();
+            // dd($laporanList);
             $index = 1;
             // Generate kode dasar perbaikan
-            $tgl = date('ymd');
+            $tgl = date('sihdmY');
             // Hitung jumlah perbaikan unik berdasarkan fasilitas_id
             if (PerbaikanModel::count() != 0) {
                 $total_perbaikan_unik = PerbaikanModel::join('m_pelaporan', 'm_pelaporan.pelaporan_id', '=', 't_perbaikan.pelaporan_id')
@@ -374,6 +389,11 @@ class PenugasanPerbaikanTable extends Component
 
             // Get the pelaporan record with necessary relationships
             $pelaporan = PelaporanModel::with(['perbaikan.latestStatusPerbaikan'])->find($pelaporanId);
+
+            //ketik 1 agar menjadi baik
+            DB::table('t_fasilitas')
+                ->where('fasilitas_id', $pelaporan->fasilitas_id)
+                ->update(['fasilitas_status' => 'Baik']);
 
             if (!$pelaporan) {
                 $this->dispatch('showErrorToast', 'Data laporan tidak ditemukan');

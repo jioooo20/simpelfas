@@ -24,7 +24,6 @@ class LaporanKerusakan extends Component
     // Modal detail properties
     public $showDetailModal = false;
     public $selectedLaporan = null;
-    public $biaya = '';
 
     // Available status options
     public $statusOptions = [
@@ -78,6 +77,7 @@ class LaporanKerusakan extends Component
         $this->perPage = 10;
         $this->resetPage();
     }
+
     public function render()
     {
         // Get latest status for each pelaporan to avoid N+1 queries
@@ -173,7 +173,6 @@ class LaporanKerusakan extends Component
 
         $this->selectedLaporan->latest_status = $latestStatus ?? 'Menunggu';
 
-        $this->biaya = '';
         $this->showDetailModal = true;
     }
 
@@ -181,17 +180,10 @@ class LaporanKerusakan extends Component
     {
         $this->showDetailModal = false;
         $this->selectedLaporan = null;
-        $this->biaya = '';
     }
 
     public function terimaLaporan()
     {
-        if (empty($this->biaya) || !is_numeric($this->biaya) || $this->biaya < 0) { // bisa biaya 0
-            // if (empty($this->biaya) || !is_numeric($this->biaya) || $this->biaya < 0) {
-            $this->dispatch('showErrorToast', 'Biaya harus diisi dengan angka yang valid!');
-            return;
-        }
-
         try {
             DB::beginTransaction();
 
@@ -199,124 +191,166 @@ class LaporanKerusakan extends Component
             FasilitasModel::where('fasilitas_id', $this->selectedLaporan->fasilitas_id)
                 ->update(['fasilitas_status' => 'Rusak']);
 
-            // Hitung jumlah laporan dengan fasilitas yang sama
-            $jumlahLaporan = PelaporanModel::where('fasilitas_id', $this->selectedLaporan->fasilitas_id)
-                ->count();
+            // Cari semua pelaporan dengan fasilitas_id yang sama dan status 'Menunggu' atau 'Diterima'
+            $existingLaporans = PelaporanModel::where('fasilitas_id', $this->selectedLaporan->fasilitas_id)
+                ->whereHas('statusPelaporan', function ($q) {
+                    $q->whereIn('status_pelaporan', ['Menunggu', 'Diterima'])
+                      ->whereNotExists(function ($subQ) {
+                          $subQ->select(DB::raw(1))
+                               ->from('t_status_pelaporan as sp2')
+                               ->whereRaw('sp2.pelaporan_id = t_status_pelaporan.pelaporan_id')
+                               ->where('sp2.status_pelaporan', 'Selesai');
+                      });
+                })
+                ->get();
+
+            // Tambahkan laporan saat ini jika belum ada di collection
+            if (!$existingLaporans->contains('pelaporan_id', $this->selectedLaporan->pelaporan_id)) {
+                $existingLaporans->push($this->selectedLaporan);
+            }
+
+            $pelaporanIds = $existingLaporans->pluck('pelaporan_id')->toArray();
+            $jumlahLaporan = count($pelaporanIds);
+
+            // Ambil nilai C4 dari semua laporan dengan fasilitas yang sama
+            $existingC4Scores = SkorAltModel::where('kriteria_id', 4)
+                ->whereIn('pelaporan_id', $pelaporanIds)
+                ->pluck('nilai_skor')
+                ->toArray();
+
+            // Hitung rata-rata C4 atau ambil nilai tunggal
+            $avgC4 = !empty($existingC4Scores) ?
+                (count($existingC4Scores) > 1 ?
+                    array_sum($existingC4Scores) / count($existingC4Scores) :
+                    $existingC4Scores[0]) : 0;
 
             if ($jumlahLaporan > 1) {
-                // Ambil semua pelaporan_id dengan fasilitas yang sama
-                $pelaporanIds = PelaporanModel::where('fasilitas_id', $this->selectedLaporan->fasilitas_id)
-                    ->pluck('pelaporan_id')
+                // Ambil semua skor C2 dan C3 yang sudah ada
+                $existingC2Scores = SkorAltModel::where('kriteria_id', 2)
+                    ->whereIn('pelaporan_id', $pelaporanIds)
+                    ->pluck('nilai_skor')
                     ->toArray();
 
-                // Hitung rata-rata C2 (kriteria_id 2)
-                $avgC2 = SkorAltModel::where('kriteria_id', 2)
+                $existingC3Scores = SkorAltModel::where('kriteria_id', 3)
                     ->whereIn('pelaporan_id', $pelaporanIds)
-                    ->avg('nilai_skor') ?? 0;
+                    ->pluck('nilai_skor')
+                    ->toArray();
 
-                // Hitung rata-rata C3 (kriteria_id 3)
-                $avgC3 = SkorAltModel::where('kriteria_id', 3)
-                    ->whereIn('pelaporan_id', $pelaporanIds)
-                    ->avg('nilai_skor') ?? 0;
+                // Hitung rata-rata
+                $avgC2 = !empty($existingC2Scores) ? array_sum($existingC2Scores) / count($existingC2Scores) : 0;
+                $avgC3 = !empty($existingC3Scores) ? array_sum($existingC3Scores) / count($existingC3Scores) : 0;
 
-                //ambil user_id dari semua pelaporan
+                // Update atau create untuk semua pelaporan
+                foreach ($pelaporanIds as $pelaporanId) {
+                    // Create status 'Diterima' jika belum ada
+                    $hasAcceptedStatus = StatusPelaporanModel::where('pelaporan_id', $pelaporanId)
+                        ->where('status_pelaporan', 'Diterima')
+                        ->exists();
+
+                    if (!$hasAcceptedStatus) {
+                        StatusPelaporanModel::create([
+                            'pelaporan_id' => $pelaporanId,
+                            'status_pelaporan' => 'Diterima'
+                        ]);
+                    }
+
+                    // Update atau create skor C1 (jumlah laporan)
+                    SkorAltModel::updateOrCreate(
+                        [
+                            'pelaporan_id' => $pelaporanId,
+                            'kriteria_id' => 1
+                        ],
+                        [
+                            'skor_alt_kode' => $pelaporanId . '-C1',
+                            'nilai_skor' => $jumlahLaporan
+                        ]
+                    );
+
+                    // Update skor C2 dengan rata-rata jika ada data
+                    if (!empty($existingC2Scores)) {
+                        SkorAltModel::updateOrCreate(
+                            [
+                                'pelaporan_id' => $pelaporanId,
+                                'kriteria_id' => 2
+                            ],
+                            [
+                                'skor_alt_kode' => $pelaporanId . '-C2',
+                                'nilai_skor' => $avgC2
+                            ]
+                        );
+                    }
+
+                    // Update skor C3 dengan rata-rata jika ada data
+                    if (!empty($existingC3Scores)) {
+                        SkorAltModel::updateOrCreate(
+                            [
+                                'pelaporan_id' => $pelaporanId,
+                                'kriteria_id' => 3
+                            ],
+                            [
+                                'skor_alt_kode' => $pelaporanId . '-C3',
+                                'nilai_skor' => $avgC3
+                            ]
+                        );
+                    }
+                    // Update atau create skor C14 (biaya)
+                    SkorAltModel::updateOrCreate(
+                        [
+                            'pelaporan_id' => $pelaporanId,
+                            'kriteria_id' => 4
+                        ],
+                        [
+                            'skor_alt_kode' => $pelaporanId . '-C1',
+                            'nilai_skor' => $avgC4
+                        ]
+                    );
+                }
+
+                // Ambil user_id dari semua pelaporan untuk notifikasi
                 $userIds = PelaporanModel::whereIn('pelaporan_id', $pelaporanIds)
                     ->pluck('user_id')
                     ->unique()
                     ->toArray();
 
-                //notif
+                // Notifikasi
                 sendRoleNotification(
                     [],
                     'Laporan Diterima',
-                    'Laporan Anda dengan kode ' . $this->selectedLaporan->pelaporan_kode . ' telah diterima dan akan segera diproses.',
+                    'Laporan kerusakan ' . $this->selectedLaporan->fasilitas->barang->barang_nama . ' - ' . substr($this->selectedLaporan->fasilitas->fasilitas_kode, -2) . ' telah diterima dan akan segera diproses.',
                     'users/status-laporan',
                     $userIds
                 );
-
-                // Loop untuk setiap pelaporan_id
-                foreach ($pelaporanIds as $pelaporanId) {
-                    // Create status pelaporan 'Diterima'
-                    StatusPelaporanModel::create([
-                        'pelaporan_id' => $pelaporanId,
-                        'status_pelaporan' => 'Diterima'
-                    ]);
-
-                    // Create skor C1 (jumlah laporan)
-                    SkorAltModel::create([
-                        'pelaporan_id' => $pelaporanId,
-                        'skor_alt_kode' => $pelaporanId . '-C1',
-                        'kriteria_id' => 1,
-                        'nilai_skor' => $jumlahLaporan
-                    ]);
-
-                    // Update skor C2 dengan rata-rata
-                    SkorAltModel::updateOrCreate(
-                        [
-                            'pelaporan_id' => $pelaporanId,
-                            'kriteria_id' => 2
-                        ],
-                        [
-                            'skor_alt_kode' => $pelaporanId . '-C2',
-                            'nilai_skor' => $avgC2
-                        ]
-                    );
-
-                    // Update skor C3 dengan rata-rata
-                    SkorAltModel::updateOrCreate(
-                        [
-                            'pelaporan_id' => $pelaporanId,
-                            'kriteria_id' => 3
-                        ],
-                        [
-                            'skor_alt_kode' => $pelaporanId . '-C3',
-                            'nilai_skor' => $avgC3
-                        ]
-                    );
-
-                    // Create skor C4 (biaya perbaikan)
-                    SkorAltModel::create([
-                        'pelaporan_id' => $pelaporanId,
-                        'skor_alt_kode' => $pelaporanId . '-C4',
-                        'kriteria_id' => 4,
-                        'nilai_skor' => $this->biaya
-                    ]);
-                }
             } else {
-                // Jumlah laporan = 1, buat secara normal
-                // Update status to 'Diterima'
+                // Hanya ada 1 laporan
                 StatusPelaporanModel::create([
                     'pelaporan_id' => $this->selectedLaporan->pelaporan_id,
                     'status_pelaporan' => 'Diterima'
                 ]);
 
-                // Create skor C1 (jumlah laporan)
+                // Create skor C1 dengan nilai 1
                 SkorAltModel::create([
                     'pelaporan_id' => $this->selectedLaporan->pelaporan_id,
                     'skor_alt_kode' => $this->selectedLaporan->pelaporan_id . '-C1',
                     'kriteria_id' => 1,
-                    'nilai_skor' => $jumlahLaporan
+                    'nilai_skor' => 1
                 ]);
 
-                // Create skor C4 (biaya perbaikan)
+                // Create skor C4 dengan nilai 0
                 SkorAltModel::create([
                     'pelaporan_id' => $this->selectedLaporan->pelaporan_id,
                     'skor_alt_kode' => $this->selectedLaporan->pelaporan_id . '-C4',
                     'kriteria_id' => 4,
-                    'nilai_skor' => $this->biaya
+                    'nilai_skor' => 0
                 ]);
 
-                //ambil user_id dari pelaporan ini
-                $userId = PelaporanModel::where('pelaporan_id', $this->selectedLaporan->pelaporan_id)
-                    ->pluck('user_id')
-                    ->unique()
-                    ->toArray();
+                // Ambil user_id untuk notifikasi
+                $userId = $this->selectedLaporan->user_id;
 
-                //notif
+                // Notifikasi
                 sendRoleNotification(
                     [],
                     'Laporan Diterima',
-                    'Laporan Anda dengan kode ' . $this->selectedLaporan->pelaporan_kode . ' telah diterima dan akan segera diproses.',
+                    'Laporan kerusakan ' . $this->selectedLaporan->fasilitas->barang->barang_nama . ' - ' . substr($this->selectedLaporan->fasilitas->fasilitas_kode, -2) . ' telah diterima dan akan segera diproses.',
                     'users/status-laporan',
                     [$userId]
                 );
@@ -324,7 +358,7 @@ class LaporanKerusakan extends Component
 
             DB::commit();
 
-            $this->dispatch('showSuccessToast', 'Laporan berhasil diterima dengan biaya Rp ' . number_format($this->biaya, 0, ',', '.'));
+            $this->dispatch('showSuccessToast', 'Laporan berhasil diterima dan akan diproses');
             $this->closeModal();
 
             // Force refresh the component

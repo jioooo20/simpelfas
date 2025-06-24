@@ -7,7 +7,7 @@
             <p class="text-gray-500 text-sm mt-1">Pastikan data yang akan diolah sudah diterima pada menu <a
                     href="{{ route('sarpra.laporan-kerusakan-fasilitas') }}" class="text-blue-500">Laporan Kerusakan
                     Fasilitas</a></p>
-            <p class="text-gray-400 text-xs mt-1">Total data: {{ $laporanData->total() }} laporan</p>
+            <p class="text-gray-400 text-xs mt-1">Total data tabel ini: {{ $laporanData->total() }} fasilitas dilaporkan</p>
         </div>
         <div>
             <button wire:click="olahDss"
@@ -45,7 +45,7 @@
                     <tr>
                         <th class="text-center font-bold text-sm uppercase tracking-wide">No</th>
                         <th class="text-left font-bold text-sm uppercase tracking-wide">Fasilitas</th>
-                        <th class="text-center font-bold text-sm uppercase tracking-wide">Total Laporan</th>
+                        <th class="text-left font-bold text-sm uppercase tracking-wide">Lokasi</th>
                         <th class="text-center font-bold text-sm uppercase tracking-wide">C1</th>
                         <th class="text-center font-bold text-sm uppercase tracking-wide">C2</th>
                         <th class="text-center font-bold text-sm uppercase tracking-wide">C3</th>
@@ -62,17 +62,21 @@
                             <td class="text-left">
                                 <div class="flex flex-col">
                                     <span class="text-black text-sm font-medium">
-                                        {{ $item->barang_nama ?? '-' }}
+                                        {{ $item->barang_nama ?? '-' }} {{ substr($item->fasilitas_kode, -2) }}
                                     </span>
                                     <span class="text-gray-500 text-xs">
                                         {{ $item->fasilitas_kode ?? '-' }}
                                     </span>
                                 </div>
                             </td>
-                            <td class="text-center">
-                                <span class="px-2 py-1 rounded-md text-sm bg-blue-100 text-blue-800 font-medium">
-                                    {{ $item->total_pelaporan }}
-                                </span>
+                            <td class="text-left">
+                                <div class="text-sm text-gray-900">
+                                    @if($item->gedung_nama && $item->lantai_nama && $item->ruang_nama)
+                                        {{ $item->gedung_nama }} - {{ $item->lantai_nama }} - {{ $item->ruang_nama }}
+                                    @else
+                                        -
+                                    @endif
+                                </div>
                             </td>
                             <td class="text-center">
                                 <span

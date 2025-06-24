@@ -28,4 +28,8 @@ class FasilitasModel extends Model
     {
         return $this->belongsTo(BarangModel::class, 'barang_id', 'barang_id');
     }
+    public function pelaporan()
+    {
+        return $this->hasMany(PelaporanModel::class, 'fasilitas_id', 'fasilitas_id');
+    }
 }
