@@ -150,6 +150,7 @@ class PerbaikanFasilitasTable extends Component
                 'jumlah_teknisi' => $teknisiCollection->count(),
                 'fasilitas_id' => $fasilitas->fasilitas_id ?? null,
                 'fasilitas_nama' => $fasilitas->barang->barang_nama ?? '-',
+                'fasilitas_kode' => $fasilitas->fasilitas_kode ?? '-',
                 'additional_repairs' => $additionalRepairs
             ];
         });

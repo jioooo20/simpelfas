@@ -62,14 +62,6 @@
             Livewire.on('showErrorToast', (message) => {
                 showResponsiveToast(message, 'error');
             });
-
-            @if (session('error'))
-            showResponsiveToast("{{ session('error') }}", 'error');
-            @endif
-
-            @if (session('success'))
-            showResponsiveToast("{{ session('success') }}", 'success');
-            @endif
         });
     </script>
 @endpush

@@ -79,6 +79,9 @@ class PenugasanPerbaikanTable extends Component
         $this->resetPage();
     }
 
+    /**
+     * Ambil data perbaikan yang sudah difilter, dikelompokkan, dan dipaginate berdasarkan fasilitas unik
+     */
     public function getPerbaikanData()
     {
         $latestStatuses = DB::table('t_status_pelaporan as sp1')
@@ -94,14 +97,13 @@ class PenugasanPerbaikanTable extends Component
 
         $orderedIds = $latestStatuses->pluck('pelaporan_id')->toArray();
 
-
         $query = PelaporanModel::with([
             'fasilitas.barang',
             'fasilitas.ruang.lantai.gedung',
             'user',
-            'perbaikan.latestStatusPerbaikan', // Tambahkan relasi ke status perbaikan terbaru
+            'perbaikan.latestStatusPerbaikan',
             'statusPelaporan' => function ($query) {
-                $query->latest(); // Ambil status pelaporan terbaru
+                $query->latest();
             },
         ])->whereIn('pelaporan_id', $orderedIds);
 
@@ -171,7 +173,21 @@ class PenugasanPerbaikanTable extends Component
             $query->orderByRaw('FIELD(pelaporan_id, ' . implode(',', $orderedIds) . ')');
         }
 
-        return $query->paginate($this->perPage);
+        // Ambil data dan kelompokkan berdasarkan fasilitas_id
+        $data = $query->get()->unique('fasilitas_id')->values();
+
+        // Paginate manual collection
+        $perPage = $this->perPage;
+        $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+        $currentItems = $data->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentItems,
+            $data->count(),
+            $perPage,
+            $currentPage,
+            ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+        );
+        return $paginated;
     }
 
     public function openAssignModal($pelaporanId)

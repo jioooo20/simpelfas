@@ -109,8 +109,11 @@
                             <div class="flex items-center gap-2">
                                 <i class="bi bi-gear-fill text-gray-500"></i>
                                 <div>
-                                    <div class="font-medium">{{ $pelaporan->fasilitas->barang->barang_nama ?? 'N/A' }} <span>{{ substr($pelaporan->fasilitas->fasilitas_kode, -2) }}</span> </div>
+                                    <div class="font-medium">{{ $pelaporan->fasilitas->barang->barang_nama ?? 'N/A' }}
+                                        <span>{{ substr($pelaporan->fasilitas->fasilitas_kode, -2) }}</span>
                                     </div>
+                                    <div class="text-sm text-gray-500">
+                                        {{ $pelaporan->fasilitas->fasilitas_kode ?? '-' }}</div>
                                 </div>
                             </div>
                         </td>
@@ -207,17 +210,43 @@
     </div>
 
     {{-- Pagination --}}
-    @if ($perbaikanData->hasPages())
-        <div class="flex items-center justify-between mt-6">
-            <div class="text-sm text-gray-500">
-                Menampilkan {{ $perbaikanData->firstItem() }} - {{ $perbaikanData->lastItem() }} dari
-                {{ $perbaikanData->total() }} hasil
-            </div>
-            <div class="join">
-                {{ $perbaikanData->links() }}
-            </div>
+    <div class="flex items-center justify-between mt-6">
+        <div class="text-xs text-gray-500">
+            @if ($perbaikanData->total() > 0)
+                Menampilkan {{ $perbaikanData->firstItem() }} - {{ $perbaikanData->lastItem() }} dari {{ $perbaikanData->total() }} data
+            @else
+                Tidak ada data
+            @endif
         </div>
-    @endif
+        <div class="join join-xs">
+            {{-- Custom Pagination Window (5 tombol halaman saja, tanpa navigasi) --}}
+            @php
+                $currentPage = $perbaikanData->currentPage();
+                $lastPage = $perbaikanData->lastPage();
+                $window = 5;
+                $half = floor($window / 2);
+                $start = max(1, $currentPage - $half);
+                $end = min($lastPage, $start + $window - 1);
+                if ($end - $start + 1 < $window) {
+                    $start = max(1, $end - $window + 1);
+                }
+            @endphp
+            {{-- Ellipsis before --}}
+            @if ($start > 1)
+                <button class="btn btn-xs btn-disabled join-item">...</button>
+            @endif
+            {{-- Page Numbers --}}
+            @for ($i = $start; $i <= $end; $i++)
+                <a class="join-item" href="{{ $perbaikanData->url($i) }}">
+                    <button class="btn btn-xs {{ $currentPage == $i ? 'btn-active' : '' }}">{{ $i }}</button>
+                </a>
+            @endfor
+            {{-- Ellipsis after --}}
+            @if ($end < $lastPage)
+                <button class="btn btn-xs btn-disabled join-item">...</button>
+            @endif
+        </div>
+    </div>
 
     {{-- Assignment Modal --}}
     @if ($showAssignModal && $selectedPerbaikan)
@@ -270,7 +299,7 @@
                             <div class="">
                                 <span class="font-semibold">Fasilitas:</span>
                                 <div class="mt-1 text-sm flex flex-col gap-1">
-                                    <span class="font-bold hover:text-blue-500">{{ $selectedPerbaikan->fasilitas->barang->barang_nama ?? 'N/A' }} <span>{{ substr($pelaporan->fasilitas->fasilitas_kode, -2) }}</span></span>
+                                    <span>{{ $selectedPerbaikan->fasilitas->barang->barang_nama ?? 'N/A' }}</span>
                                     <span>{{ $selectedPerbaikan->fasilitas->fasilitas_kode ?? 'N/A' }}</span>
                                 </div>
                             </div>
@@ -424,7 +453,7 @@
                             <div class="space-y-3 mt-4">
                                 <div class="flex justify-between">
                                     <span class="font-semibold">Nama Fasilitas:</span>
-                                    <span class="font-bold cursor-pointer transition-colors duration-300 hover:text-blue-500">{{ $selectedPerbaikan->fasilitas->barang->barang_nama ?? 'N/A' }} <span>{{ substr($selectedPerbaikan->fasilitas->fasilitas_kode, -2) }}</span></span>
+                                    <span>{{ $selectedPerbaikan->fasilitas->barang->barang_nama ?? 'N/A' }}</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="font-semibold">Kode Fasilitas:</span>
