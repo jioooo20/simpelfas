@@ -2,208 +2,182 @@
 @section('judul', 'Beri Umpan Balik')
 
 @section('content')
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-4xl mx-auto">
-            <!-- Header -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">Beri Umpan Balik</h1>
-                <p class="text-gray-600">Bagikan pengalaman Anda tentang penanganan perbaikan fasilitas</p>
+    <div class="container mx-auto px-4 py-6">
+        <div class="space-y-6">
+
+            <!-- Report Info Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
+                <div class="flex items-center mb-6">
+                    <div class="w-1 h-8 bg-blue-500 rounded-full mr-4"></div>
+                    <h2 class="text-xl font-semibold text-gray-900">Laporan yang Ditangani</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Photo Section -->
+                    <div class="lg:col-span-1">
+                        <div class="aspect-square relative">
+                            @php
+                                $fotoUtama = !empty($fotoTeknisi) ? $fotoTeknisi[0] : null;
+                            @endphp
+                            
+                            @if ($fotoUtama)
+                                <img src="{{ asset('storage/' . $fotoUtama) }}" alt="Foto hasil perbaikan"
+                                    class="w-full h-full object-cover rounded-xl cursor-pointer hover:opacity-90 transition-all duration-300 shadow-sm"
+                                    onclick="openPhotoModal('{{ $laporan->pelaporan_id }}')">
+                                @if (count($fotoTeknisi) > 1)
+                                    <div class="absolute -top-2 -right-2 bg-blue-600 text-white text-sm rounded-full w-8 h-8 flex items-center justify-center font-semibold shadow-lg">
+                                        +{{ count($fotoTeknisi) - 1 }}
+                                    </div>
+                                @endif
+                            @else
+                                <div class="w-full h-full border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                                    onclick="openPhotoModal('{{ $laporan->pelaporan_id }}')">
+                                    <div class="text-center">
+                                        <i class="bi bi-camera text-gray-400 text-3xl mb-2"></i>
+                                        <p class="text-sm text-gray-500">Tidak ada foto</p>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Facility Details -->
+                    <div class="lg:col-span-1 space-y-4">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-center mb-3">
+                                <i class="bi bi-tools text-blue-600 text-lg mr-2"></i>
+                                <span class="text-sm font-medium text-gray-600">FASILITAS</span>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                                {{ $laporan->fasilitas->barang->barang_nama ?? 'Tidak tersedia' }}
+                            </h3>
+                            <div class="space-y-1 text-sm text-gray-600">
+                                <p><i class="bi bi-building mr-2"></i>{{ $laporan->fasilitas->ruang->lantai->gedung->gedung_nama ?? '-' }}</p>
+                                <p><i class="bi bi-layers mr-2"></i>{{ $laporan->fasilitas->ruang->lantai->lantai_nama ?? '-' }}</p>
+                                <p><i class="bi bi-door-open mr-2"></i>{{ $laporan->fasilitas->ruang->ruang_nama ?? '-' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="lg:col-span-1 space-y-4">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-center mb-3">
+                                <i class="bi bi-clock text-green-600 text-lg mr-2"></i>
+                                <span class="text-sm font-medium text-gray-600">TIMELINE</span>
+                            </div>
+                            
+                            @php
+                                $statusSelesai = $laporan->statusPelaporan->where('status_pelaporan', 'SELESAI')->first();
+                                $tanggalDitangani = $statusSelesai ? $statusSelesai->created_at : $laporan->tanggal_ditangani ?? $laporan->updated_at;
+                            @endphp
+                            
+                            <div class="space-y-3">
+                                <div class="flex items-start">
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full mr-3 mt-1 flex-shrink-0"></div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Dilaporkan</p>
+                                        <p class="text-sm text-gray-600">{{ \Carbon\Carbon::parse($laporan->pelaporan_tanggal)->format('d M Y, H:i') }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full mr-3 mt-1 flex-shrink-0"></div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Selesai</p>
+                                        <p class="text-sm text-gray-600">{{ \Carbon\Carbon::parse($tanggalDitangani)->format('d M Y, H:i') }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow p-8">
-                <!-- Informasi Laporan -->
-                <div class="mb-8">
-                    <div class="flex items-center mb-4">
-                        <div class="w-1 h-6 bg-blue-500 rounded-full mr-3"></div>
-                        <h2 class="text-xl font-semibold text-gray-800">Laporan yang Ditangani</h2>
-                    </div>
-
-                    <div class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-6 border border-gray-200">
-                        <div class="flex flex-col lg:flex-row gap-6 items-stretch">
-                            <!-- Foto Fasilitas -->
-                            <div class="flex-shrink-0 w-48 h-48 relative">
-                                @php
-                                    $fotoUtama = !empty($fotoTeknisi) ? $fotoTeknisi[0] : null;
-                                @endphp
-
-                                <div class="relative w-full h-full">
-                                    @if ($fotoUtama)
-                                        <img src="{{ asset('storage/' . $fotoUtama) }}" alt="Foto hasil perbaikan"
-                                            class="w-full h-full object-cover rounded-md shadow cursor-pointer hover:opacity-80 transition-opacity"
-                                            onclick="openPhotoModal('{{ $laporan->pelaporan_id }}')">
-
-                                        @if (count($fotoTeknisi) > 1)
-                                            <div
-                                                class="absolute -bottom-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
-                                                +{{ count($fotoTeknisi) - 1 }}
-                                            </div>
-                                        @endif
-                                    @else
-                                        <!-- Frame kosong untuk foto -->
-                                        <div class="w-full h-full border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                                            onclick="openPhotoModal('{{ $laporan->pelaporan_id }}')">
-                                            <div class="text-center">
-                                                <i class="bi bi-camera text-gray-400 text-2xl"></i>
-                                                <p class="text-xs text-gray-500 mt-1">Foto belum tersedia</p>
-                                            </div>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <!-- Informasi Perbaikan -->
-                            <div class="flex-1 bg-white p-4 rounded-lg border border-gray-200">
-                                <div class="badge bg-gray-100 text-gray-700 border-none mb-2">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-2m-2 0H7m0 0H5m2 0v-3a1 1 0 011-1h1a1 1 0 011 1v3m-4 0V9a1 1 0 011-1h1a1 1 0 011 1v10">
-                                        </path>
-                                    </svg>
-                                    Perbaikan Fasilitas
-                                </div>
-
-                                <h4 class="font-semibold text-gray-800 mb-2">
-                                    {{ $laporan->fasilitas->barang->barang_nama ?? 'Tidak tersedia' }}</h4>
-                                <div class="text-sm text-gray-600 space-y-1">
-                                    <p><span class="font-medium">Gedung:</span>
-                                        {{ $laporan->fasilitas->ruang->lantai->gedung->gedung_nama ?? '-' }}</p>
-                                    <p><span class="font-medium">Lantai:</span>
-                                        {{ $laporan->fasilitas->ruang->lantai->lantai_nama ?? '-' }}</p>
-                                    <p><span class="font-medium">Ruang:</span>
-                                        {{ $laporan->fasilitas->ruang->ruang_nama ?? '-' }}</p>
-                                </div>
-                            </div>
-
-                            <!-- Informasi Waktu -->
-                            <div class="flex-1 bg-white p-4 rounded-lg border border-gray-200">
-                                <div class="badge bg-gray-100 text-gray-700 border-none mb-2">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    Timeline Perbaikan
-                                </div>
-
-                                @php
-                                    $statusSelesai = $laporan->statusPelaporan
-                                        ->where('status_pelaporan', 'SELESAI')
-                                        ->first();
-                                    $tanggalDitangani = $statusSelesai
-                                        ? $statusSelesai->created_at
-                                        : $laporan->tanggal_ditangani ?? $laporan->updated_at;
-                                @endphp
-
-                                <div class="space-y-3">
-                                    <div class="flex items-center">
-                                        <div class="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                                        <div class="text-sm">
-                                            <span class="font-medium text-gray-800">Tanggal Lapor:</span>
-                                            <p class="text-gray-600">
-                                                {{ \Carbon\Carbon::parse($laporan->pelaporan_tanggal)->format('d M Y, H:i') }}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex items-center">
-                                        <div class="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                                        <div class="text-sm">
-                                            <span class="font-medium text-gray-800">Ditangani pada:</span>
-                                            <p class="text-gray-600">
-                                                {{ \Carbon\Carbon::parse($tanggalDitangani)->format('d M Y, H:i') }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Feedback Form -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                <div class="flex items-center mb-8">
+                    <div class="w-1 h-8 bg-green-500 rounded-full mr-4"></div>
+                    <h2 class="text-xl font-semibold text-gray-900">Penilaian Anda <span class="text-red-500">*</span></h2>
                 </div>
 
-                <!-- Form Umpan Balik -->
-                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 mt-6">
-                    <div class="flex items-center mb-6">
-                        <div class="w-1 h-6 bg-green-500 rounded-full mr-3"></div>
-                        <h2 class="text-xl font-semibold text-gray-800">Berikan Penilaian Anda</h2>
+                <form id="feedbackForm" action="{{ route('feedback-store') }}" method="POST" class="space-y-8">
+                    @csrf
+                    <input type="hidden" name="report_id" value="{{ $laporan->pelaporan_id }}">
+
+                    <!-- Rating Section -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <label class="block text-lg font-semibold text-gray-900 mb-4">
+                            Rating Kepuasan <span class="text-red-500">*</span>
+                        </label>
+                        <div x-data="{ rating: 0 }" class="flex flex-col sm:flex-row sm:items-center gap-4">
+                            <div class="flex items-center space-x-2">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <input type="radio" name="rating" value="{{ $i }}" class="hidden rating-input" 
+                                        x-model="rating" />
+                                    <button type="button" @click="rating = {{ $i }}; document.querySelector('input[name=rating][value=\'{{ $i }}\']').checked = true;"
+                                        x-bind:class="rating >= {{ $i }} ? 'text-yellow-400' : 'text-gray-300'"
+                                        class="text-3xl hover:text-yellow-400 transition-colors focus:outline-none hover:scale-110 transform star-button"
+                                        data-rating="{{ $i }}">
+                                        ★
+                                    </button>
+                                @endfor
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <span class="font-medium">1 = Buruk</span> • 
+                                <span class="font-medium">5 = Sangat Puas</span>
+                            </div>
+                        </div>
+                        @error('rating')
+                            <p class="text-red-500 text-sm mt-3">{{ $message }}</p>
+                        @enderror
+                        <div id="rating-error" class="text-red-500 text-sm mt-3 hidden">
+                            Rating kepuasan harus diisi!
+                        </div>
                     </div>
 
-                    <form id="feedbackForm" action="{{ route('feedback-store') }}" method="POST" class="space-y-6">
-                        @csrf
-                        <input type="hidden" name="report_id" value="{{ $laporan->pelaporan_id }}">
-
-                        <!-- Rating Section -->
-                        <div class="bg-white p-6 rounded-lg border border-gray-200">
-                            <label class="block text-gray-800 font-semibold mb-4 text-lg">Rating Kepuasan</label>
-
-                            <div class="mb-6">
-                                <div x-data="{ rating: 0 }" class="flex flex-col items-start space-y-2">
-                                    <div class="rating rating-lg">
-                                        @for ($i = 1; $i <= 5; $i++)
-                                            <input type="radio" name="rating" value="{{ $i }}"
-                                                class="mask mask-star-2" x-model="rating"
-                                                x-bind:class="rating >= {{ $i }} ? 'bg-yellow-400': 'bg-gray-300'"
-                                                @click="rating = {{ $i }}" />
-                                        @endfor
-                                    </div>
-                                    <span class="ml-2 text-gray-600 text-sm">(1 = Buruk, 5 = Sangat Puas)</span>
-                                </div>
-                                @error('rating')More actions
-                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+                    <!-- Comment Section -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <label class="block text-lg font-semibold text-gray-900 mb-4">
+                            Komentar & Saran <span class="text-gray-400 text-sm font-normal">(Opsional)</span>
+                        </label>
+                        <textarea name="comment" rows="6"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-gray-900 placeholder-gray-500"
+                            placeholder="Ceritakan pengalaman Anda tentang penanganan perbaikan ini. Apakah teknisi datang tepat waktu? Apakah perbaikan dilakukan dengan baik? Saran untuk perbaikan selanjutnya?"></textarea>
+                        
+                        <div class="mt-3 text-sm text-gray-500 bg-blue-50 rounded-lg p-3">
+                            <i class="bi bi-lightbulb text-blue-600 mr-2"></i>
+                            <strong>Tips:</strong> Berikan detail yang membantu untuk meningkatkan pelayanan kami
                         </div>
+                        
+                        @error('comment')
+                            <p class="text-red-500 text-sm mt-3">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                        <!-- Comment Section -->
-                        <div class="bg-white p-6 rounded-lg border border-gray-200">
-                            <label class="block text-gray-800 font-semibold mb-4 text-lg">Komentar & Saran</label>
-                            <textarea name="comment" rows="5"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition"
-                                placeholder="Ceritakan pengalaman Anda tentang penanganan perbaikan ini. Apakah teknisi datang tepat waktu? Apakah perbaikan dilakukan dengan baik? Saran untuk perbaikan selanjutnya?"></textarea>
-
-                            <div class="text-sm text-gray-500 mt-2">
-                                <p>💡 <strong>Tips:</strong> Berikan detail yang membantu untuk meningkatkan pelayanan kami
-                                </p>
-                            </div>
-
-                            @error('comment')
-                                <p class="text-red-500 text-sm mt-2 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                                            clip-rule="evenodd"></path>
-                                    </svg>
-                                    {{ $message }}
-                                </p>
-                            @enderror
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t border-gray-200">
-                            <a href="{{ route('users.feedback') }}"
-                                class="btn btn-outline px-6 py-3 rounded-lg text-gray-700 font-medium hover:bg-gray-50">
-                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                                Batal
-                            </a>
-                            <button type="submit" id="submitBtn" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-transform hover:scale-105">
-                                <i class="bi bi-send"></i>Kirim Umpan Balik
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t border-gray-200">
+                        <a href="{{ route('users.feedback') }}"
+                            class="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 font-medium text-center">
+                            <i class="bi bi-arrow-left mr-2"></i>Kembali
+                        </a>
+                        <button type="submit" id="submitBtn"
+                            class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all duration-200 font-medium hover:shadow-lg transform hover:scale-105">
+                            <i class="bi bi-send mr-2"></i>Kirim Umpan Balik
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
     <!-- Photo Modal -->
     <dialog id="photoModal" class="modal">
-        <div class="modal-box max-w-5xl max-h-[90vh]">
+        <div class="modal-box max-w-4xl">
             <form method="dialog">
                 <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
             </form>
             <div id="photoContainer" class="text-center">
-                <!-- Photos will be loaded here dynamically -->
+                <!-- Photos will be loaded here -->
             </div>
         </div>
         <form method="dialog" class="modal-backdrop">
@@ -211,48 +185,33 @@
         </form>
     </dialog>
 
-    <!-- Modal Konfirmasi Kirim - Fixed Structure-->
-    <div id="konfirmasiKirimModal"
-         class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <!-- Modal Content -->
-        <div class="w-full max-w-md bg-white rounded-lg shadow-xl overflow-hidden">
-            <!-- Header -->
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-xl font-semibold text-gray-800">
-                    Konfirmasi Pengiriman
-                </h2>
-            </div>
-            
-            <!-- Body -->
-            <div class="px-6 py-4">
-                <p class="text-gray-600">
-                    Apakah Anda yakin ingin mengirim umpan balik ini?
-                </p>
-            </div>
-            
-            <!-- Footer -->
-            <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3">
-                <button id="batalKirimBtn"
-                        type="button"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-150 focus:outline-none focus:ring-2 focus:ring-gray-300">
-                    Batal
-                </button>
-                <button id="lanjutKirimBtn"
-                        type="button"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    Ya, Kirim
-                </button>
+    <!-- Confirmation Modal -->
+    <div id="konfirmasiKirimModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-white rounded-lg shadow-xl">
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Konfirmasi Pengiriman</h3>
+                <p class="text-gray-600 mb-6">Apakah Anda yakin ingin mengirim umpan balik ini?</p>
+                
+                <div class="flex justify-end space-x-3">
+                    <button id="batalKirimBtn" type="button"
+                        class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                        Batal
+                    </button>
+                    <button id="lanjutKirimBtn" type="button"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                        Ya, Kirim
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification - Fixed Structure -->
+    <!-- Toast -->
     <div id="toast" class="fixed top-4 right-4 z-50 hidden transform transition-all duration-300">
-        <div id="toastContent" class="px-6 py-3 rounded-lg shadow-lg text-white font-medium max-w-sm">
+        <div id="toastContent" class="px-4 py-3 rounded-lg shadow-lg text-white font-medium">
             <span id="toastMessage"></span>
         </div>
     </div>
-
 @endsection
 
 @push('scripts')
@@ -309,7 +268,7 @@
             
             if (!toast || !toastContent || !toastMessage) {
                 console.error('Toast elements not found');
-                alert(message); // Fallback
+                alert(message; // Fallback
                 return;
             }
             
@@ -320,7 +279,7 @@
             const colorClass = type === 'green' ? 'bg-green-500' : 
                               type === 'red' ? 'bg-red-500' : 'bg-blue-500';
             
-            toastContent.className = `px-6 py-3 rounded-lg shadow-lg text-white font-medium max-w-sm ${colorClass}`;
+            toastContent.className = `px-4 py-3 rounded-lg shadow-lg text-white font-medium ${colorClass}`;
             
             // Show toast with animation
             toast.classList.remove('hidden');
@@ -339,13 +298,22 @@
             }, 3000);
         }
 
-        // Form validation function
+        // Enhanced form validation function
         function validateForm() {
             const form = document.getElementById('feedbackForm');
             const rating = form.querySelector('input[name="rating"]:checked');
+            const ratingError = document.getElementById('rating-error');
+            
+            // Hide previous error
+            ratingError.classList.add('hidden');
             
             if (!rating) {
-                showToast('Mohon berikan rating kepuasan terlebih dahulu', 'red');
+                // Show error message
+                ratingError.classList.remove('hidden');
+                ratingError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Show toast as well
+                showToast('Rating kepuasan harus diisi!', 'red');
                 return false;
             }
             
@@ -373,6 +341,34 @@
                 console.error('Required elements not found!');
                 return;
             }
+            
+            // Enhanced star rating handler
+            const starButtons = document.querySelectorAll('.star-button');
+            starButtons.forEach((button) => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const ratingValue = this.getAttribute('data-rating');
+                    const ratingInput = document.querySelector(`input[name="rating"][value="${ratingValue}"]`);
+                    
+                    if (ratingInput) {
+                        // Clear all other radio buttons
+                        document.querySelectorAll('input[name="rating"]').forEach(input => {
+                            input.checked = false;
+                        });
+                        
+                        // Set the selected one
+                        ratingInput.checked = true;
+                        
+                        // Hide error message if visible
+                        const ratingError = document.getElementById('rating-error');
+                        if (ratingError) {
+                            ratingError.classList.add('hidden');
+                        }
+                        
+                        console.log('Rating selected:', ratingValue);
+                    }
+                });
+            });
             
             // Prevent default form submission and show confirmation modal
             feedbackForm.addEventListener('submit', function(e) {
@@ -434,20 +430,6 @@
                     console.log('ESC key pressed - closing modal');
                     konfirmasiModal.classList.add('hidden');
                 }
-            });
-            
-            // Enhanced rating system
-            const ratingInputs = document.querySelectorAll('input[name="rating"]');
-            ratingInputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    console.log('Rating selected:', this.value);
-                    // Visual feedback for rating selection
-                    const ratingContainer = this.closest('.rating');
-                    ratingContainer.classList.add('opacity-75');
-                    setTimeout(() => {
-                        ratingContainer.classList.remove('opacity-75');
-                    }, 200);
-                });
             });
             
             console.log('Initialization complete');

@@ -2,19 +2,40 @@
 @section('judul', 'Umpan Balik')
 @section('content')
     <div class="container mx-auto px-4 py-6">
-        <div class="flex items-center justify-between mb-8">
-            <h1 class="text-2xl font-bold text-gray-800">Umpan Balik</h1>
+        <!-- Filter Section -->
+        <div class="mb-6 bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                <h1 class="text-2xl font-bold text-gray-800">Umpan Balik</h1>
+                
+                <div class="flex gap-2">
+                    <button onclick="filterReports('all')" 
+                            class="filter-btn px-4 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white" 
+                            data-filter="all">
+                        Semua
+                    </button>
+                    <button onclick="filterReports('unrated')" 
+                            class="filter-btn px-4 py-2 rounded-lg font-medium transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300" 
+                            data-filter="unrated">
+                        Belum Dinilai
+                    </button>
+                    <button onclick="filterReports('rated')" 
+                            class="filter-btn px-4 py-2 rounded-lg font-medium transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300" 
+                            data-filter="rated">
+                        Sudah Dinilai
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="space-y-6">
             @forelse ($perbaikan as $items)
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="report-item bg-white rounded-lg shadow-md overflow-hidden {{ $items['is_rated'] ? 'rated-report' : 'unrated-report' }}" 
+                     data-status="{{ $items['is_rated'] ? 'rated' : 'unrated' }}">
                     <div class="p-6">
                         <div class="flex flex-col md:flex-row gap-6">
                             <!-- Gambar Thumbnail -->
                             <div class="w-full md:w-48 flex-shrink-0 relative">
                                 @php
-                                    // Ambil foto dari teknisi, bukan dari user
                                     $fotoTeknisi = $items['foto_teknisi'] ?? [];
                                     $fotoUtama = !empty($fotoTeknisi) ? $fotoTeknisi[0] : null;
                                 @endphp
@@ -32,7 +53,6 @@
                                             </div>
                                         @endif
                                     @else
-                                        <!-- Frame kosong untuk foto -->
                                         <div class="w-32 h-32 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
                                              onclick="openPhotoModal('{{ $items->pelaporan_id }}')">
                                             <div class="text-center">
@@ -43,20 +63,24 @@
                                     @endif
                                 </div>
 
-                                <!-- Status badge -->
+                                <!-- Enhanced Status badge -->
                                 @php
                                     $statusHistory = \App\Models\StatusPelaporanModel::where('pelaporan_id', $items->pelaporan_id)
                                                     ->orderBy('created_at')
                                                     ->get();
-
                                     $statusTerakhir = $statusHistory->last();
                                     $status = $statusTerakhir ? $statusTerakhir->status_pelaporan : 'MENUNGGU';
                                 @endphp
 
-                                <div class="absolute top-2 left-2
-                                    {{ $status == 'SELESAI' ? 'bg-green-600' : 'bg-yellow-500' }}
-                                    text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
-                                    {{ strtoupper($status) }}
+                                <div class="absolute top-2 left-2 flex flex-col gap-1">
+                                    <div class="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
+                                        {{ strtoupper($status) }}
+                                    </div>
+                                    @if($items['is_rated'])
+                                        <div class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
+                                            <i class="bi bi-star-fill mr-1"></i>DINILAI
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
 
@@ -87,14 +111,53 @@
                                             <span class="text-gray-500">Foto hasil perbaikan belum tersedia</span>
                                         @endif
                                     </div>
+
+                                    <!-- Rating Display for Rated Reports -->
+                                    @if($items['is_rated'])
+                                        <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                            <h5 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                                <i class="bi bi-star-fill text-yellow-500"></i>
+                                                Penilaian Anda
+                                            </h5>
+                                            
+                                            <!-- Star Rating Display -->
+                                            <div class="flex items-center gap-2 mb-3">
+                                                @for($i = 1; $i <= 5; $i++)
+                                                    <i class="bi bi-star{{ $i <= ($items['user_rating'] ?? 0) ? '-fill' : '' }} 
+                                                       text-{{ $i <= ($items['user_rating'] ?? 0) ? 'yellow' : 'gray' }}-400 text-lg"></i>
+                                                @endfor
+                                                <span class="text-sm text-gray-600 ml-2">
+                                                    ({{ $items['user_rating'] ?? 0 }}/5)
+                                                </span>
+                                            </div>
+
+                                            @if($items['user_comment'])
+                                                <div class="mt-3">
+                                                    <p class="text-sm font-medium text-gray-700 mb-1">Komentar:</p>
+                                                    <p class="text-sm text-gray-600 italic">{{ $items['user_comment'] }}</p>
+                                                </div>
+                                            @endif
+
+                                            <div class="mt-3 text-xs text-gray-500">
+                                                Dinilai pada: {{ \Carbon\Carbon::parse($items['feedback_date'])->format('d M Y, H:i') }}
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
 
-                                <!-- Tombol Penilaian -->
+                                <!-- Action Button - Only for Unrated Reports -->
                                 <div class="flex justify-end">
-                                    <a href="{{ route('feedback-create', ['perbaikan_id' => $items->pelaporan_id]) }}"
-                                        class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md font-medium text-sm transition duration-150 ease-in-out">
-                                        Beri Penilaian
-                                    </a>
+                                    @if(!$items['is_rated'])
+                                        <a href="{{ route('feedback-create', ['perbaikan_id' => $items->pelaporan_id]) }}"
+                                            class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md font-medium text-sm transition duration-150 ease-in-out">
+                                            Beri Penilaian
+                                        </a>
+                                    @else
+                                        <div class="text-green-600 font-medium text-sm flex items-center gap-2">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            Sudah Dinilai
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -107,7 +170,15 @@
                 </script>
 
             @empty
-                <p class="text-gray-500 text-center">Belum ada pelaporan.</p>
+                <div class="text-center py-12">
+                    <div class="max-w-md mx-auto">
+                        <i class="bi bi-chat-dots text-6xl text-gray-300 mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-600 mb-2">Belum Ada Laporan Selesai</h3>
+                        <p class="text-gray-500">
+                            Laporan yang telah selesai diperbaiki akan muncul di sini untuk diberi penilaian.
+                        </p>
+                    </div>
+                </div>
             @endforelse
         </div>
     </div>
@@ -216,6 +287,53 @@
                 closePhotoModal();
             }
         });
+        
+        // Filter functionality
+        function filterReports(filterType) {
+            const reports = document.querySelectorAll('.report-item');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            
+            // Update button styles
+            filterButtons.forEach(btn => {
+                const btnFilter = btn.getAttribute('data-filter');
+                if (btnFilter === filterType) {
+                    btn.className = 'filter-btn px-4 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white';
+                } else {
+                    btn.className = 'filter-btn px-4 py-2 rounded-lg font-medium transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300';
+                }
+            });
+            
+            // Filter reports
+            reports.forEach(report => {
+                const reportStatus = report.getAttribute('data-status');
+                
+                if (filterType === 'all') {
+                    report.style.display = 'block';
+                } else if (filterType === 'unrated' && reportStatus === 'unrated') {
+                    report.style.display = 'block';
+                } else if (filterType === 'rated' && reportStatus === 'rated') {
+                    report.style.display = 'block';
+                } else {
+                    report.style.display = 'none';
+                }
+            });
+            
+            // Update empty state visibility
+            updateEmptyState(filterType);
+        }
+        
+        function updateEmptyState(filterType) {
+            const reports = document.querySelectorAll('.report-item');
+            const visibleReports = Array.from(reports).filter(report => 
+                report.style.display !== 'none'
+            );
+            
+            // You can add custom empty state messages for different filters here
+            if (visibleReports.length === 0) {
+                console.log(`No reports found for filter: ${filterType}`);
+                // You could show different empty state messages based on filterType
+            }
+        }
     </script>
 
 @endsection

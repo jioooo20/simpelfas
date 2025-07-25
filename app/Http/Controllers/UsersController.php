@@ -210,16 +210,86 @@ class UsersController extends Controller
     {
         $userId = auth()->id();
 
-        $perbaikan = PelaporanModel::with(['fasilitas', 'statusPelaporan' => function ($query) {
-            $query->orderBy('created_at');
-        }])->where('user_id', $userId)->get();
+        // Get all completed reports (both rated and unrated)
+        $perbaikanUnrated = PelaporanModel::with([
+            'fasilitas', 
+            'statusPelaporan' => function ($query) {
+                $query->orderBy('created_at');
+            },
+            'perbaikan.statusPerbaikan' => function ($query) {
+                $query->orderBy('created_at', 'desc');
+            }
+        ])
+        ->where('user_id', $userId)
+        ->whereHas('statusPelaporan', function ($query) {
+            $query->where('status_pelaporan', 'SELESAI');
+        })
+        ->whereDoesntHave('feedback')
+        ->get();
+
+        // Get already rated reports
+        $perbaikanRated = PelaporanModel::with([
+            'fasilitas', 
+            'statusPelaporan' => function ($query) {
+                $query->orderBy('created_at');
+            },
+            'perbaikan.statusPerbaikan' => function ($query) {
+                $query->orderBy('created_at', 'desc');
+            },
+            'feedback'
+        ])
+        ->where('user_id', $userId)
+        ->whereHas('statusPelaporan', function ($query) {
+            $query->where('status_pelaporan', 'SELESAI');
+        })
+        ->whereHas('feedback')
+        ->get();
 
         $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
 
-        $perbaikan->transform(function ($item) use ($fasilitasOptions) {
+        // Transform unrated reports
+        $perbaikanUnrated->transform(function ($item) use ($fasilitasOptions) {
             $item['fasilitas_label'] = $fasilitasOptions[$item->fasilitas_id]['label'] ?? null;
+            $item['is_rated'] = false;
+            
+            // Ambil foto teknisi dari status perbaikan 'Selesai'
+            $fotoTeknisi = [];
+            if ($item->perbaikan && $item->perbaikan->statusPerbaikan) {
+                foreach ($item->perbaikan->statusPerbaikan as $status) {
+                    if ($status->perbaikan_status === 'Selesai' && !empty($status->perbaikan_gambar)) {
+                        $fotoTeknisi[] = $status->perbaikan_gambar;
+                    }
+                }
+            }
+            $item['foto_teknisi'] = $fotoTeknisi;
+            
             return $item;
         });
+
+        // Transform rated reports
+        $perbaikanRated->transform(function ($item) use ($fasilitasOptions) {
+            $item['fasilitas_label'] = $fasilitasOptions[$item->fasilitas_id]['label'] ?? null;
+            $item['is_rated'] = true;
+            $item['user_rating'] = $item->feedback->rating ?? null;
+            $item['user_comment'] = $item->feedback->feedback_text ?? null;
+            $item['feedback_date'] = $item->feedback->created_at ?? null;
+            
+            // Ambil foto teknisi dari status perbaikan 'Selesai'
+            $fotoTeknisi = [];
+            if ($item->perbaikan && $item->perbaikan->statusPerbaikan) {
+                foreach ($item->perbaikan->statusPerbaikan as $status) {
+                    if ($status->perbaikan_status === 'Selesai' && !empty($status->perbaikan_gambar)) {
+                        $fotoTeknisi[] = $status->perbaikan_gambar;
+                    }
+                }
+            }
+            $item['foto_teknisi'] = $fotoTeknisi;
+            
+            return $item;
+        });
+
+        // Combine and sort by creation date (newest first)
+        $perbaikan = $perbaikanUnrated->concat($perbaikanRated)->sortByDesc('pelaporan_tanggal');
 
         return view('pages.users.feedback.index', compact('perbaikan'));
     }
@@ -236,10 +306,14 @@ class UsersController extends Controller
         $fasilitasOptions = $this->fasilitasRepo->getLokasiOptions()->keyBy('id');
         $laporan->fasilitas_label = $fasilitasOptions[$laporan->fasilitas_id]['label'] ?? null;
 
-        // Ambil foto teknisi dari status perbaikan
+        // Ambil foto teknisi dari status perbaikan 'Selesai'
         $fotoTeknisi = [];
         if ($laporan->perbaikan && $laporan->perbaikan->statusPerbaikan) {
-            $fotoTeknisi = json_decode($laporan->perbaikan->statusPerbaikan->perbaikan_gambar, true) ?? [];
+            foreach ($laporan->perbaikan->statusPerbaikan as $status) {
+                if ($status->perbaikan_status === 'Selesai' && !empty($status->perbaikan_gambar)) {
+                    $fotoTeknisi[] = $status->perbaikan_gambar;
+                }
+            }
         }
 
         return view('pages.users.feedback.create', [
@@ -250,11 +324,18 @@ class UsersController extends Controller
 
     public function storeFeedback(Request $request)
     {
-        // Validasi input
+        // Enhanced validation with custom messages
         $validated = $request->validate([
             'report_id' => 'required|exists:m_pelaporan,pelaporan_id',
             'rating' => 'required|integer|between:1,5',
             'comment' => 'nullable|string|max:1000',
+        ], [
+            'rating.required' => 'Rating kepuasan harus diisi.',
+            'rating.integer' => 'Rating harus berupa angka.',
+            'rating.between' => 'Rating harus antara 1 sampai 5.',
+            'report_id.required' => 'ID laporan tidak valid.',
+            'report_id.exists' => 'Laporan tidak ditemukan.',
+            'comment.max' => 'Komentar tidak boleh lebih dari 1000 karakter.',
         ]);
 
         try {
